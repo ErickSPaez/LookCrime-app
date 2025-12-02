@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    @yield('pagestyles')
+
+    <title>@yield('titulo_browser','LookCrim')</title>
+
+    <link rel="icon" href="{!! asset('img/LookCrim-Logo1.png') !!}"/>
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+
+</head>
+
+<body>
+
+<!-- Navigation -->
+
+
+<div class="top-menu" id="ovoMenu">
+
+    @if(Auth::check())
+
+        @if(Auth::check() && Auth::user()->admin)
+
+            <a href="{{url('/newsletter')}}" title="Newsletter" class="simple-a">
+                <span class="fas fa-1x fa-newspaper color-white layout-icon"></span>
+            </a>
+
+            <a href="{{url('/user/management')}}" class="simple-a">
+                <span class="fas fa-1x fa-cog color-white layout-icon"></span>
+            </a>
+        @endif
+
+        <a href="{{url('/profile')}}" class="font-top-menu">@lang('auth.wellcome') {{ Auth::user()->name }} {{ Auth::user()->nickname }}</a>
+
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit" class="font-top-menu" style="background:none;border:none;padding:0;cursor:pointer;">@lang('auth.logout')</button>
+        </form>
+
+    @else
+        <a href="{{url('/register')}}" class="font-top-menu">@lang('auth.register')</a>
+
+        @if(Auth::check() && Auth::user()->admin)
+
+            <a href="{{url('/user/management')}}" class="simple-a">
+                {{HTML ::image('img/logo-admin.png','Users Management Icon',['class' => 'visible-xs-inline-users-management-logo'])}}
+            </a>
+        @endif
+
+        <a href="{{url('/login')}}" class="font-top-menu">@lang('auth.login')</a>
+
+    @endif
+
+    <a  href="{{url('/lang/en')}}" class="font-top-menu lang">EN</a>
+   <div class="line-lang"></div>
+    <a href="{{url('/lang/pt')}}" class="font-top-menu lang">PT</a>
+
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light ">
+    <div class="container d-flex flex-column flex-md-row justify-content-between">
+            <a class="logo-head-bar" href="/">
+            <img src="{{ asset('img/LookCrim-Logo1.png') }}" alt="LookCrim Logo 1" class="visible-xs-inline-lookcrimlogo" />
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav">
+                <div class="line-menubar"></div>
+
+                <li class="nav-item {{ request()->is('project') ? 'active' : 'default' }}">
+                    <a class="font-head-bar-black" href="/project">
+                        <span class="font-head-bar-black-effect">@lang('layout.theproject')</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {{ request()->is('team') ? 'active' : 'default' }}">
+                    <a class="font-head-bar-black" href="/team">
+                        <span class="font-head-bar-black-effect">@lang('layout.people')</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {{ request()->is('research') ? 'active' : 'default' }}">
+                    <a class="font-head-bar-black" href="/research">
+                        <span class="font-head-bar-black-effect">@lang('layout.research')</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {{ request()->is('publications') ? 'active' : 'default' }}">
+                    <a class="font-head-bar-black" href="/publications">
+                        <span class="font-head-bar-black-effect">@lang('layout.publications')</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {{ request()->is('newsevents') ? 'active' : 'default' }}">
+                    <a class="font-head-bar-black" href="/newsevents">
+                        <span class="font-head-bar-black-effect">@lang('layout.newsevents')</span>
+                    </a>
+                </li>
+
+                <li class="nav-item {{ request()->is('contact') ? 'active' : 'default' }}">
+                    <a class="font-head-bar-black" href="/contact">
+                        <span class="font-head-bar-black-effect">@lang('layout.contact')</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+
+<!-- Page Content -->
+<div class="main-website">
+    @yield('conteudo')
+</div>
+<!-- /.container -->
+
+
+
+<!-- Footer -->
+<div class="bg-lcred2">
+    <div class="main-website-interior">
+        <!-- Footer Links -->
+        <div class="container-fluid text-center text-md-left">
+
+            <!-- Grid row -->
+            <div class="row">
+
+                <!-- Grid column -->
+                <div class="col-md-5 mt-md-7 ">
+
+                    <!-- Content -->
+                    <p class="font-weight-bold-white">@lang('layout.left-side-text-footer-1')
+                        <a class="white-link" href="https://opvcufp.com/" target="_blank"> @lang('layout.left-side-text-footer-opvc') </a>
+                        @lang('layout.left-side-text-footer-2')
+
+                        <a class="white-link" href="https://www.ufp.pt/" target="_blank"> @lang('layout.left-side-text-footer-ufp') </a>
+                    </p>
+
+                </div>
+                <!-- Grid column -->
+
+                <hr class="clearfix w-100 d-md-none pb-3">
+
+                <!-- Grid column -->
+                <div class="col-md-3 mb-md-0 mb-3">
+                    <div class="row">
+                        <!-- Links -->
+                        <h5 class="font-weight-bold-white-followus">@lang('layout.followus')</h5>
+
+                        <!-- Grid column -->
+                        <div class="col-md-12">
+                            <div class="mb-5 flex-center">
+                                <!-- Facebook -->
+                                <a href="https://www.facebook.com/LookCrim/" target="_blank">
+                                    {{HTML ::image('img/FB.png','Facebook Icon',['class' => 'visible-xs-inline-fblogo'])}}
+                                </a>
+
+                            </div>
+                        </div>
+                        <!-- Grid column -->
+
+                    </div>
+
+                </div>
+                <!-- Grid column -->
+
+                <!-- Grid column -->
+                <div class="col-md-4 mb-md-0 mb-3">
+
+                    <!-- Content -->
+                    <p class="font-weight-bold-white">@lang('layout.right-side-text-footer')</p>
+
+                </div>
+                <!-- Grid column -->
+
+            </div>
+            <!-- Grid row -->
+
+        </div>
+        <!-- Footer Links-->
+    </div>
+</div>
+
+
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+<script src="{{ asset('js/jquery.put-delete.js') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="{{ asset('js/tinymce/tinymce.min.js') }}"></script>
+
+<script>tinymce.init({ selector:'textarea',
+        toolbar: "sizeselect | bold italic | fontselect | forecolor backcolor | fontsizeselect | link",
+        theme: "silver",
+        plugins: "link"
+        });</script>
+
+@yield('pagescripts')
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+ <script>
+   AOS.init();
+ </script>
+
+
+<!-- Neve, enfeite para época de Inverno -->
+<!--
+<style>
+    #snowflakeContainer {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        display: none;
+    }
+
+    .snowflake {
+        position: fixed;
+        background-color: #FFFFFF;
+        user-select: none;
+        z-index: 1000;
+        pointer-events: none;
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+    }
+</style>
+
+<div id="snowflakeContainer">
+    <span class="snowflake"></span>
+</div>
+
+<script>
+    // Array to store our Snowflake objects
+    var snowflakes = [];
+
+    // Global variables to store our browser's window size
+    var browserWidth;
+    var browserHeight;
+
+    // Specify the number of snowflakes you want visible
+    var numberOfSnowflakes = 200;
+
+    // Flag to reset the position of the snowflakes
+    var resetPosition = false;
+
+    // Handle accessibility
+    var enableAnimations = false;
+    var reduceMotionQuery = matchMedia("(prefers-reduced-motion)");
+
+    // Handle animation accessibility preferences
+    function setAccessibilityState() {
+        if (reduceMotionQuery.matches) {
+            enableAnimations = false;
+        } else {
+            enableAnimations = true;
+        }
+    }
+    setAccessibilityState();
+
+    reduceMotionQuery.addListener(setAccessibilityState);
+
+    //
+    // It all starts here...
+    //
+    function setup() {
+        if (enableAnimations) {
+            window.addEventListener("DOMContentLoaded", generateSnowflakes, false);
+            window.addEventListener("resize", setResetFlag, false);
+        }
+    }
+    setup();
+
+    //
+    // Constructor for our Snowflake object
+    //
+    function Snowflake(element, speed, xPos, yPos) {
+        // set initial snowflake properties
+        this.element = element;
+        this.speed = speed;
+        this.xPos = xPos;
+        this.yPos = yPos;
+        this.scale = 1;
+
+        // declare variables used for snowflake's motion
+        this.counter = 0;
+        this.sign = Math.random() < 0.5 ? 1 : -1;
+
+        // setting an initial opacity and size for our snowflake
+        this.element.style.opacity = (.1 + Math.random()) / 3;
+    }
+
+    //
+    // The function responsible for actually moving our snowflake
+    //
+    Snowflake.prototype.update = function () {
+        // using some trigonometry to determine our x and y position
+        this.counter += this.speed / 5000;
+        this.xPos += this.sign * this.speed * Math.cos(this.counter) / 40;
+        this.yPos += Math.sin(this.counter) / 40 + this.speed / 30;
+        this.scale = .5 + Math.abs(10 * Math.cos(this.counter) / 20);
+
+        // setting our snowflake's position
+        setTransform(Math.round(this.xPos), Math.round(this.yPos), this.scale, this.element);
+
+        // if snowflake goes below the browser window, move it back to the top
+        if (this.yPos > browserHeight) {
+            this.yPos = -50;
+        }
+    }
+
+    //
+    // A performant way to set your snowflake's position and size
+    //
+    function setTransform(xPos, yPos, scale, el) {
+        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0) scale(${scale}, ${scale})`;
+    }
+
+    //
+    // The function responsible for creating the snowflake
+    //
+    function generateSnowflakes() {
+
+        // get our snowflake element from the DOM and store it
+        var originalSnowflake = document.querySelector(".snowflake");
+
+        // access our snowflake element's parent container
+        var snowflakeContainer = originalSnowflake.parentNode;
+        snowflakeContainer.style.display = "block";
+
+        // get our browser's size
+        browserWidth = document.documentElement.clientWidth;
+        browserHeight = document.documentElement.clientHeight;
+
+        // create each individual snowflake
+        for (var i = 0; i < numberOfSnowflakes; i++) {
+
+            // clone our original snowflake and add it to snowflakeContainer
+            var snowflakeClone = originalSnowflake.cloneNode(true);
+            snowflakeContainer.appendChild(snowflakeClone);
+
+            // set our snowflake's initial position and related properties
+            var initialXPos = getPosition(50, browserWidth);
+            var initialYPos = getPosition(50, browserHeight);
+            var speed = 5 + Math.random() * 40;
+
+            // create our Snowflake object
+            var snowflakeObject = new Snowflake(snowflakeClone,
+                speed,
+                initialXPos,
+                initialYPos);
+            snowflakes.push(snowflakeObject);
+        }
+
+        // remove the original snowflake because we no longer need it visible
+        snowflakeContainer.removeChild(originalSnowflake);
+
+        moveSnowflakes();
+    }
+
+    //
+    // Responsible for moving each snowflake by calling its update function
+    //
+    function moveSnowflakes() {
+
+        if (enableAnimations) {
+            for (var i = 0; i < snowflakes.length; i++) {
+                var snowflake = snowflakes[i];
+                snowflake.update();
+            }
+        }
+
+        // Reset the position of all the snowflakes to a new value
+        if (resetPosition) {
+            browserWidth = document.documentElement.clientWidth;
+            browserHeight = document.documentElement.clientHeight;
+
+            for (var i = 0; i < snowflakes.length; i++) {
+                var snowflake = snowflakes[i];
+
+                snowflake.xPos = getPosition(50, browserWidth);
+                snowflake.yPos = getPosition(50, browserHeight);
+            }
+
+            resetPosition = false;
+        }
+
+        requestAnimationFrame(moveSnowflakes);
+    }
+
+    //
+    // This function returns a number between (maximum - offset) and (maximum + offset)
+    //
+    function getPosition(offset, size) {
+        return Math.round(-1 * offset + Math.random() * (size + 2 * offset));
+    }
+
+    //
+    // Trigger a reset of all the snowflakes' positions
+    //
+    function setResetFlag(e) {
+        resetPosition = true;
+    }
+</script>
+
+-->
+<!-- Fim da Neve -->
+
+</body>
+</html>

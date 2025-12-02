@@ -1,0 +1,76 @@
+@media (min-width: 768px) {
+	.form-label {
+		text-align: right;
+	}
+}
+
+form .row {
+	margin-bottom: 5px;
+}
+
+input[type='text'] {
+	width: 100%;
+}
+
+form>.part {
+	background-color: #F7F7F7;
+	border-radius: 10px;
+}
+
+form .part .title>div {
+	display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+form .section .title>div>* {
+	align-self: center;
+}
+
+form .section-num {
+	margin-left: 10px;
+}
+
+form .up-down-controls {
+	display: inline-flex;
+    flex-direction: column;
+    font-size: 18px;
+    margin-left: 10px;
+}
+
+form .delete-controls {
+    font-size: 18px;
+    margin-left: 10px;
+}
+
+.newsletter .panel .title a:hover, .newsletter .panel .title a:active {
+	text-decoration: none;
+}
+
+.newsletter .panel {
+	border-radius: 20px;
+	color: #FFFFFF;
+	background-color: #46BF9B;
+}
+
+.newsletter .panel.off, .newsletter span.off {
+	display: none;
+}
+
+.quiz .panel .question, .quiz .panel .title {
+	font-family: 'Playfair Display', serif;
+	font-style: italic;
+	font-weight: bold;
+	font-size: 35px;
+}
+.fa {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.subject {
+	font-size: 25px;
+	font-family: "Playfair Display", serif;
+	font-weight: bold;
+	font-style: italic;
+}

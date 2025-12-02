@@ -1,0 +1,21 @@
+.grid>.isotope {
+  position: relative;
+  float: left;
+  padding: 10px;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-position: 50%, 50%;
+  background-size: contain; 
+  color: #262524;
+  border: 30px solid transparent;
+  margin-bottom: 12px;
+  margin-top: 12px;
+  background-clip: padding-box;
+  cursor: pointer;
+}
+
+.grid>.isotope:before {
+  content: "";
+  display: block;
+  padding-top: 100%;
+}

@@ -1,0 +1,26 @@
+Plan breve de migración — pasos inmediatos
+
+1) Scaffolding
+  - Crear un proyecto Laravel 10 en `lookcrim-pagina-web-updated` y `LookCrim-WebApp-updated` usando Composer.
+  - Ejecutar `flutter create .` en `LookCrim-Mobile-updated`.
+
+2) Migrar código por capas
+  - Modelos y lógica (app/Models, app/Services).
+  - Repositorios / consultas DB.
+  - Controladores y rutas.
+  - Vistas/Blades y assets.
+
+3) Dependencias
+  - Auditar `composer.json` viejo y actualizar paquetes compatibles con Laravel 10.
+  - Revisar `package.json` y actualizar build tools (posible migración a Vite).
+  - Actualizar `pubspec.yaml` y migrar a null-safety.
+
+4) Tests y CI
+  - Añadir pruebas básicas y pipeline GitHub Actions.
+
+5) Validación
+  - Probar migraciones de DB y seeders.
+  - Probar API y app móvil contra la nueva API.
+
+6) Entrega
+  - Documentación de instalación y cambios.

@@ -1,0 +1,75 @@
+{
+    "Dashboard": "Dashboard",
+    "Email": "Email",
+    "Password": "Password",
+    "Log in": "Log in",
+    "Log Out": "Log Out",
+    "Register": "Register",
+    "Remember me": "Remember me",
+    "Forgot your password?": "Forgot your password?",
+    "Users": "Users",
+    "Create": "Create",
+    "Edit": "Edit",
+    "Delete": "Delete",
+    "Submit": "Submit",
+    "Name": "Name",
+    "Nickname": "Nickname",
+    "Institution": "Institution",
+    "Apply Changes": "Apply Changes",
+    "Send Password Reset E-mail": "Send Password Reset E-mail",
+    "Read more": "Read more",
+    "Subscribe": "Subscribe",
+    "Contact Us": "Contact Us",
+    "Search": "Search",
+    "Back": "Back",
+    "Confirm": "Confirm",
+    "Cancel": "Cancel",
+    "Home": "Home",
+    "Dashboard - LookCrim": "Dashboard - LookCrim"
+    ,"User Management": "User Management"
+    ,"Basic users list (paged).": "Basic users list (paged)."
+    ,"Create User": "Create User"
+    ,"Actions": "Actions"
+    ,"Ban": "Ban"
+    ,"Unban": "Unban"
+    ,"Ban user": "Ban user"
+    ,"Unban user": "Unban user"
+    ,"Are you sure you want to ban this user?": "Are you sure you want to ban this user?"
+    ,"Are you sure you want to unban this user?": "Are you sure you want to unban this user?"
+    ,"Send password reset link to this user?": "Send password reset link to this user?"
+    ,"No users registered.": "No users registered."
+    ,"Confirm Action": "Confirm Action"
+    ,"Are you sure?": "Are you sure?"
+    ,"Edit User": "Edit User"
+    ,"New Password (leave blank to keep)": "New Password (leave blank to keep)"
+    ,"Save": "Save"
+    ,"Admin": "Admin"
+    ,"Create Newsletter": "Create Newsletter"
+    ,"Subject": "Subject"
+    ,"Content": "Content"
+    ,"Image": "Image"
+    ,"Edit Newsletter": "Edit Newsletter"
+    ,"Sections": "Sections"
+    ,"Main image": "Main image"
+    ,"Delete Newsletter": "Delete Newsletter"
+    ,"Confirm you want to delete this newsletter?": "Confirm you want to delete this newsletter?"
+    ,"Delete": "Delete"
+    ,"Send Newsletter": "Send Newsletter"
+    ,"Confirm sending of newsletter:": "Confirm sending of newsletter:"
+    ,"Send to all confirmed subscriptions": "Send to all confirmed subscriptions"
+    ,"Send Test": "Send Test"
+    ,"Send a copy to your email (authenticated user).": "Send a copy to your email (authenticated user)."
+    ,"Send to me": "Send to me"
+    ,"Newsletters": "Newsletters"
+    ,"No newsletters yet.": "No newsletters yet."
+    ,"Send": "Send"
+    ,"Welcome back,": "Welcome back,"
+    ,"Use the quick links below to navigate:": "Use the quick links below to navigate:"
+    ,"Publications": "Publications"
+    ,"News / Events": "News / Events"
+    ,"Project": "Project"
+    ,"User": "User"
+    ,"Account banned": "Account banned"
+    ,"Your account has been banned by an administrator. If you believe this is a mistake, contact the site administrators.": "Your account has been banned by an administrator. If you believe this is a mistake, contact the site administrators."
+    ,"Return to login": "Return to login"
+}

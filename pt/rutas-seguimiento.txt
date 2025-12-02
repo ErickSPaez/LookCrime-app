@@ -1,0 +1,60 @@
+Hacer pruebas end-to-end rápidas: abrir/llenar/submit en:
+/publications/create (subida de imagen)
+/publications/{id}/edit
+/newsletter/{id}/edit (si aplica) o la edición/creación de newsletters
+/project/create y /project/edit
+Verificar storage/logs/laravel.log tras cada envío
+Reconstruir assets Vite (si quieres que haga npm install y npm run build) y verificar que la plantilla base carga app.css y app.js producidos por Vite.
+Eliminar el shim LegacyForm/LegacyHTML y las alias en AppServiceProvider (solo si quieres quitar la compatibilidad circunstancial ahora).
+
+
+
+Siguientes pasos recomendados (opciones)
+
+Pulir CSS/JS visual: revisar estilos y scripts que necesitan ajustes (p. ej. menús, tipografías, tamaños). Puedo hacer un pase de correcciones CSS globales si me indicas prioridades.
+Optimizar imágenes: mover logos y assets a resources y referenciarlos con asset() o importarlos vía Vite para control de cache.
+Eliminar shims LegacyForm/LegacyHTML y hacer limpieza final (solo después de QA).
+Ejecutar las pruebas E2E pendientes del newsletter (crear/editar secciones) ahora que assets están listos.
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+Breve diagnóstico (qué falta y por qué importa)
+
+Assets públicos
+
+Logos, fotos y algunos CSS/JS todavía vivían en public. Hay que copiar los recursos usados por vistas (logos en img/logos, css/style.css, js/tinymce, js/jquery.put-delete.js, etc.) al proyecto updated y asegurarse de que las vistas los referencien con asset() o se importen vía Vite.
+Resultado esperado: imágenes y estilos se muestran igual que en la app antigua.
+Vistas y parcialess faltantes o desactualizadas
+
+La estructura de vistas parece parcialmente convertida; quedan plantillas en la carpeta legacy que pueden no existir o ser diferentes en resources/views updated. Necesitamos un listado de archivos que estén en legacy y no en updated para copiarlos o adaptarlos (por ejemplo, plantillas de news, publications, project, newsletter con html antiguo).
+Resultado esperado: no hay vistas “rota/404” o fallos por funciones antiguas faltantes.
+Rutas / nombres de ruta
+
+Algunas vistas usan nombres de ruta legacy (e.g., news-create) que faltaban — ya añadimos rutas en web.php para evitar errores. Debemos comparar todas las rutas legacy vs updated y crear aliases o convertir las vistas para usar los nuevos nombres.
+Resultado esperado: botones y enlaces administrativos aparecen y funcionan.
+Traducciones
+
+Muchos textos en las vistas usan @lang('layout.theproject') y claves que pueden existir en el legacy resources/lang. Hay que sincronizar claves faltantes al updated para que los textos aparezcan correctamente (ahora ves claves en pantalla: p. ej. layout.theproject en vez de "Project").
+Resultado esperado: textos traducidos en lugar de claves.
+Integraciones JS (TinyMCE, AOS, jQuery)
+
+TinyMCE y AOS se cargan desde public/js y CDNs; confirmar que los ficheros locales (ej. tinymce) existen y que Vite no rompe su carga. Ajustar si es necesario.
+Resultado esperado: editores y animaciones funcionan.
+Storage & uploads
+
+Asegurar que php artisan storage:link fue ejecutado y copiar archivos de storage si son necesarios (publicaciones, newsletter images).
+Resultado esperado: imágenes subidas se ven en frontend.
+Prioridades recomendadas (orden para avanzar)
+
+Comparar vistas legacy → generar lista de archivos faltantes (automático). (Tarea 1)
+Sincronizar assets críticos: logos, css/style.css, TinyMCE, js/jquery.put-delete.js. (Tarea 2+3)
+Sincronizar traducciones faltantes. (Tarea 5)
+Ejecutar php artisan storage:link y copiar uploads si faltan. (Tarea 6)
+QA visual rápido y ajustar CSS (ya a medio hacer). (Tarea 7)
+Eliminar shims y limpieza final. (Tarea 8)
+Documentar todo. (Tarea 9)
+
+
+.
+
+
+Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated"; php artisan view:clear; php artisan optimize:clear; Start-Process php -ArgumentList 'artisan','serve' -NoNewWindow; npm run dev

@@ -1,0 +1,14 @@
+﻿en\auth.php
+en\buttons.php
+en\layout.php
+en\pages.php
+en\pagination.php
+en\passwords.php
+en\validation.php
+pt\auth.php
+pt\buttons.php
+pt\layout.php
+pt\pages.php
+pt\pagination.php
+pt\passwords.php
+pt\validation.php
