@@ -47,6 +47,9 @@ Route::get('/dashboard', function () {
         Route::get('/publications', ['as' => 'publications', 'uses' => 'PublicationsController@index']);
         Route::get('/publications/{id}', ['as' => 'publication', 'uses' => 'PublicationsController@show'])->where('id','[0-9]+');
 
+        // Map view showing publications with coordinates
+        Route::get('/map', [App\Http\Controllers\PublicationsController::class, 'map'])->name('publications-map');
+
         // Backwards-compatible admin aliases for publications (legacy templates expect these names)
         Route::get('/publications/create', [PublicationsController::class, 'create'])->name('publications-create');
         Route::post('/publications', [PublicationsController::class, 'store'])->name('publications-store');

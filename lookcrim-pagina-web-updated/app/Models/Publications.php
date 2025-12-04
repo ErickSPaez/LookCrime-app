@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Publications extends Model {
 
     protected $fillable = [
-        'title_en','title_pt','content_en','content_pt','image','embed_url','embed_url_en','private'
+        'title_en','title_pt','content_en','content_pt','image','embed_url','embed_url_en','private',
+        'latitude','longitude'
     ];
 
     public function title() {
@@ -48,6 +50,36 @@ class Publications extends Model {
     public function get_embed_url_en()
     {
         return $this->embed_url_en ?? '';
+    }
+
+    /**
+     * Normalize and return a usable image URL for templates.
+     * Handles absolute URLs, storage paths and bare filenames.
+     */
+    public function image_url()
+    {
+        $img = $this->image ?? null;
+        if (!$img) return null;
+
+        // Absolute URL -> return as-is
+        if (preg_match('/^https?:\/\//i', $img)) {
+            return $img;
+        }
+
+        // If already points to storage/ (public/storage) or starts with /storage
+        if (Str::startsWith($img, 'storage/') || Str::startsWith($img, '/storage/')) {
+            return asset($img);
+        }
+
+        // If path stored as public/..., convert to storage/ and return
+        if (Str::startsWith($img, 'public/')) {
+            $path = preg_replace('#^public/#', 'storage/', $img);
+            return asset($path);
+        }
+
+        // If it's a bare filename or other, assume it lives under storage/publications/<basename>
+        $basename = basename($img);
+        return asset('storage/publications/' . $basename);
     }
 
 }

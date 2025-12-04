@@ -1,6 +1,7 @@
-@if(!empty($publications->image))
+@php $imgUrl = method_exists($publications, 'image_url') ? $publications->image_url() : ($publications->image ? asset($publications->image) : null); @endphp
+@if(!empty($imgUrl))
 	<a href="#img{{$publications->id}}" data-toggle="modal">
-		<img src="{{ asset($publications->image) }}" alt="" class="img-fluid" />
+		<img src="{{ $imgUrl }}" alt="" class="img-fluid" />
 	</a>
 
 	<div class="modal fade" id="img{{$publications->id}}" tabindex="-1" role="dialog" aria-labelledby="img{{$publications->id}}label" aria-hidden="true">
@@ -10,7 +11,7 @@
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				</div>
 				<div class="modal-body text-center">
-					<img src="{{ asset($publications->image) }}" alt="" class="img-fluid" />
+					<img src="{{ $imgUrl }}" alt="" class="img-fluid" />
 				</div>
 			</div>
 		</div>

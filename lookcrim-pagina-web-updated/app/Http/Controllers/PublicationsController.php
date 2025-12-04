@@ -28,6 +28,8 @@ class PublicationsController extends Controller
             'title_en' => 'required',
             'content_pt' => 'required',
             'content_en' => 'required',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $image = $request->file('image');
@@ -37,6 +39,8 @@ class PublicationsController extends Controller
         $publications->title_en = $request->input('title_en');
         $publications->content_pt = $request->input('content_pt');
         $publications->content_en = $request->input('content_en');
+        $publications->latitude = $request->input('latitude');
+        $publications->longitude = $request->input('longitude');
         $publications->save(); // necessary to get ID
 
         if ($request->hasFile('image') && $image && $image->isValid()){
@@ -66,6 +70,8 @@ class PublicationsController extends Controller
             'title_en' => 'required',
             'content_pt' => 'required',
             'content_en' => 'required',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
         ]);
 
         $publications = Publications::findOrFail($id);
@@ -83,6 +89,8 @@ class PublicationsController extends Controller
         $publications->embed_url = $request->input('embed_url');
         $publications->embed_url_en = $request->input('embed_url_en');
         $publications->private = $request->has('private') ? $request->input('private') : 0;
+        $publications->latitude = $request->input('latitude');
+        $publications->longitude = $request->input('longitude');
         $publications->save();
         return redirect()->route('publications');
     }
@@ -124,5 +132,29 @@ class PublicationsController extends Controller
         } else {
             return view('publications.show', ['publications' => $publications]);
         }
+    }
+
+    /**
+     * Show a public map with all publications that have coordinates.
+     */
+    public function map()
+    {
+        if(Auth::check()) {
+            $publications = Publications::orderBy('created_at', 'DESC')->get();
+        } else {
+            $publications = Publications::where('private', '=', 0)->orderBy('created_at', 'DESC')->get();
+        }
+        $mapData = $publications->map(function($p){
+            return [
+                'id' => $p->id,
+                'title' => $p->title(),
+                'lat' => $p->latitude,
+                'lng' => $p->longitude,
+                'image' => $p->image_url(),
+                'url' => url('/publications/'.$p->id)
+            ];
+        })->values();
+
+        return view('publications.map', ['publications' => $publications, 'mapData' => $mapData]);
     }
 }

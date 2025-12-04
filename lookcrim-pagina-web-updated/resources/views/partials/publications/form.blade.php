@@ -93,6 +93,9 @@
 
 <div class="row">
 	<div class="col-12 submit-text">
+		{{-- Map for selecting publication location --}}
+		@include('publications.partials.map')
+
 		<button type="submit" class="btn btn-lookcrim">{{ Lang::get('buttons.submit') }}</button>
 	</div>
 </div>

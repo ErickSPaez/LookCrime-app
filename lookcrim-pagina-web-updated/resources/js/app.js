@@ -16,3 +16,8 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 
 Alpine.start();
+
+// Leaflet: import CSS and expose L globally so blades can use it in inline scripts
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+window.L = L;
