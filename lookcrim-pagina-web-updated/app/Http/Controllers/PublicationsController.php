@@ -26,6 +26,7 @@ class PublicationsController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
+            'category' => 'nullable|string|max:64',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
@@ -42,6 +43,7 @@ class PublicationsController extends Controller
         $publications->content_en = $content;
         $publications->latitude = $request->input('latitude');
         $publications->longitude = $request->input('longitude');
+        $publications->category = $request->input('category');
         $publications->save(); // necessary to get ID
 
         if ($request->hasFile('image') && $image && $image->isValid()){
@@ -70,6 +72,7 @@ class PublicationsController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
+            'category' => 'nullable|string|max:64',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
@@ -81,6 +84,7 @@ class PublicationsController extends Controller
         $publications->title_en = $title;
         $publications->content_pt = $content;
         $publications->content_en = $content;
+        $publications->category = $request->input('category');
         if($request->hasFile('image') && $request->file('image')->isValid()) {
             $image = $request->file('image');
             $ext = $image->getClientOriginalExtension();
@@ -94,6 +98,7 @@ class PublicationsController extends Controller
         $publications->private = $request->has('private') ? $request->input('private') : 0;
         $publications->latitude = $request->input('latitude');
         $publications->longitude = $request->input('longitude');
+        $publications->category = $request->input('category');
         $publications->save();
         return redirect()->route('publications');
     }
@@ -154,10 +159,21 @@ class PublicationsController extends Controller
                 'lat' => $p->latitude,
                 'lng' => $p->longitude,
                 'image' => $p->image_url(),
-                'url' => url('/publications/'.$p->id)
+                'url' => url('/publications/'.$p->id),
+                'category' => $p->category ?? null
             ];
         })->values();
 
-        return view('publications.map', ['publications' => $publications, 'mapData' => $mapData]);
+        // Prepare translated labels for categories according to current locale
+        $categoryLabels = [
+            'robo' => trans('pages.robo'),
+            'poco_iluminacion' => trans('pages.poco_iluminacion'),
+            'zona_insegura' => trans('pages.zona_insegura'),
+            'zona_transitada' => trans('pages.zona_transitada'),
+            'construccion' => trans('pages.construccion'),
+            'otro' => trans('pages.otro'),
+        ];
+
+        return view('publications.map', ['publications' => $publications, 'mapData' => $mapData, 'categoryLabels' => $categoryLabels]);
     }
 }

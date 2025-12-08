@@ -135,4 +135,12 @@ return [
 
     'newsletter-subscribe-saudations' => '</br></br>Best regards,</br>
     <b>The team Lookcrim.</b>',
+    // Categories for publications map/form
+    'robo' => 'Robbery',
+    'poco_iluminacion' => 'Poor lighting',
+    'zona_insegura' => 'Unsafe area',
+    'zona_transitada' => 'Busy area',
+    'construccion' => 'Construction',
+    'otro' => 'Other',
+    'categories' => 'Categories',
 ];

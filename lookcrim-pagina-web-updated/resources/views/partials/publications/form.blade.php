@@ -46,6 +46,26 @@
 	</div>
 </div>
 
+<div class="row" style="margin-top:12px;">
+	<div class="col-12 textarea-lang">
+		<label for="category">Categoría</label>
+	</div>
+	<div class="col-xl-12 col-sm-8 textarea-edit">
+		<select name="category" id="category" class="form-control" style="width:100%">
+			@php
+				$cat = old('category', isset($publications) ? $publications->category : null);
+			@endphp
+			<option value="">-- {{ __('pages.categories') }} --</option>
+			<option value="robo" {{ $cat == 'robo' ? 'selected' : '' }}>{{ __('pages.robo') }}</option>
+			<option value="poco_iluminacion" {{ $cat == 'poco_iluminacion' ? 'selected' : '' }}>{{ __('pages.poco_iluminacion') }}</option>
+			<option value="zona_insegura" {{ $cat == 'zona_insegura' ? 'selected' : '' }}>{{ __('pages.zona_insegura') }}</option>
+			<option value="zona_transitada" {{ $cat == 'zona_transitada' ? 'selected' : '' }}>{{ __('pages.zona_transitada') }}</option>
+			<option value="construccion" {{ $cat == 'construccion' ? 'selected' : '' }}>{{ __('pages.construccion') }}</option>
+			<option value="otro" {{ $cat == 'otro' ? 'selected' : '' }}>{{ __('pages.otro') }}</option>
+		</select>
+	</div>
+</div>
+
 <div class="form-group row">
 	<div class="col-md-6">
 			<input type="checkbox" name="private" id="private" value="1" {{ old('private', isset($publications) ? $publications->private : 0) == 1 ? 'checked' : '' }}>

@@ -155,4 +155,13 @@ return [
     'continuous-text3' => ' para completar as suas informações.',
 
     'the-team' => '<br/><br/>A equipa,<br/>LookCrim.'
+,
+    // Categorias para publicações (mapa/formulário)
+    'robo' => 'Roubo',
+    'poco_iluminacion' => 'Pouca iluminação',
+    'zona_insegura' => 'Zona insegura',
+    'zona_transitada' => 'Zona transitada',
+    'construccion' => 'Construção',
+    'otro' => 'Outro'
+    , 'categories' => 'Categorias'
 ];

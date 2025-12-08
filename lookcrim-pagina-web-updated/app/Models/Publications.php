@@ -9,7 +9,7 @@ class Publications extends Model {
 
     protected $fillable = [
         'title_en','title_pt','content_en','content_pt','image','embed_url','embed_url_en','private',
-        'latitude','longitude'
+        'latitude','longitude','category'
     ];
 
     public function title() {
