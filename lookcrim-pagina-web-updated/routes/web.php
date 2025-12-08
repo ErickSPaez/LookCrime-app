@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 });
 
 // Banned notice page
@@ -91,7 +91,7 @@ require __DIR__.'/auth.php';
 */
 
 Route::namespace('App\\Http\\Controllers')->group(function () {
-    Route::get('/', ['as' => 'homepage', 'uses' => 'HomepageController@show']);
+    Route::get('/homepage', ['as' => 'homepage', 'uses' => 'HomepageController@show']);
     Route::get('/lang/{lang}', 'LanguageController@setLanguage');
 
     // Public read routes

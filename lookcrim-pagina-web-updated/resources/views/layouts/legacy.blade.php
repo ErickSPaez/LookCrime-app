@@ -121,6 +121,13 @@
                         <span class="font-head-bar-black-effect">@lang('layout.contact')</span>
                     </a>
                 </li>
+
+                <!-- Dashboard link in main navbar (visible to all; protected by route middleware) -->
+                <li class="nav-item {{ request()->is('dashboard') ? 'active' : 'default' }}">
+                    <a class="font-head-bar-black" href="{{ url('/dashboard') }}">
+                        <span class="font-head-bar-black-effect">Dashboard</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

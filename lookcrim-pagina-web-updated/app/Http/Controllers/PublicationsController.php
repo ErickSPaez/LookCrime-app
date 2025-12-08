@@ -24,10 +24,8 @@ class PublicationsController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title_pt' => 'required',
-            'title_en' => 'required',
-            'content_pt' => 'required',
-            'content_en' => 'required',
+            'title' => 'required',
+            'content' => 'required',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
@@ -35,10 +33,13 @@ class PublicationsController extends Controller
         $image = $request->file('image');
 
         $publications = new Publications;
-        $publications->title_pt = $request->input('title_pt');
-        $publications->title_en = $request->input('title_en');
-        $publications->content_pt = $request->input('content_pt');
-        $publications->content_en = $request->input('content_en');
+        // Single-language input: fill both locale columns for compatibility
+        $title = $request->input('title');
+        $content = $request->input('content');
+        $publications->title_pt = $title;
+        $publications->title_en = $title;
+        $publications->content_pt = $content;
+        $publications->content_en = $content;
         $publications->latitude = $request->input('latitude');
         $publications->longitude = $request->input('longitude');
         $publications->save(); // necessary to get ID
@@ -50,8 +51,9 @@ class PublicationsController extends Controller
             $publications->image = 'storage/publications/' . $filename;
         }
 
-        $publications->embed_url = $request->input('embed_url');
-        $publications->embed_url_en = $request->input('embed_url_en');
+        $embed = $request->input('embed_url');
+        $publications->embed_url = $embed;
+        $publications->embed_url_en = $embed;
         $publications->private = $request->has('private') ? $request->input('private') : 0;
         $publications->save();
         return redirect()->route('publications');
@@ -66,19 +68,19 @@ class PublicationsController extends Controller
     public function update($id, Request $request)
     {
         $request->validate([
-            'title_pt' => 'required',
-            'title_en' => 'required',
-            'content_pt' => 'required',
-            'content_en' => 'required',
+            'title' => 'required',
+            'content' => 'required',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
 
         $publications = Publications::findOrFail($id);
-        $publications->title_pt = $request->input('title_pt');
-        $publications->title_en = $request->input('title_en');
-        $publications->content_pt = $request->input('content_pt');
-        $publications->content_en = $request->input('content_en');
+        $title = $request->input('title');
+        $content = $request->input('content');
+        $publications->title_pt = $title;
+        $publications->title_en = $title;
+        $publications->content_pt = $content;
+        $publications->content_en = $content;
         if($request->hasFile('image') && $request->file('image')->isValid()) {
             $image = $request->file('image');
             $ext = $image->getClientOriginalExtension();
@@ -86,8 +88,9 @@ class PublicationsController extends Controller
             $image->storeAs('public/publications', $filename);
             $publications->image = 'storage/publications/' . $filename;
         }
-        $publications->embed_url = $request->input('embed_url');
-        $publications->embed_url_en = $request->input('embed_url_en');
+        $embed = $request->input('embed_url');
+        $publications->embed_url = $embed;
+        $publications->embed_url_en = $embed;
         $publications->private = $request->has('private') ? $request->input('private') : 0;
         $publications->latitude = $request->input('latitude');
         $publications->longitude = $request->input('longitude');
