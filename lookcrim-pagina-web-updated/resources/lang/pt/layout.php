@@ -16,13 +16,7 @@ return [
     /*
      * Header
      */
-
-    'theproject' => 'O Projeto',
-    'people' => 'Equipa de Investigação',
-    'research' => 'Investigação',
     'publications' => 'Produção Científica',
-    'newsevents' => 'Notícias/Eventos',
-    'contact' => 'Contacte-nos',
 
     /*
      * Footer

@@ -45,6 +45,4 @@ return [
     'comments' => 'Comentário',
     'register-email' => 'E-mail de Registo',
     'send-password-email' => 'Enviar E-mail de Reposição de Password',
-    'create-newsletter' => 'Criar Newsletter',
-    'unsubscribe-newsletter' => 'Para deixar de subscrever a newsletter, <b>clique aqui</b>.',
 ];

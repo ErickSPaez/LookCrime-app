@@ -3,7 +3,6 @@ import 'bootstrap/dist/js/bootstrap.bundle';
 
 // Import local legacy scripts (copied to resources/js/vendor)
 import './vendor/jquery.put-delete.js';
-import './vendor/newsletter.js';
 
 // Application entry (can add modern JS here)
 window.LC = window.LC || {};

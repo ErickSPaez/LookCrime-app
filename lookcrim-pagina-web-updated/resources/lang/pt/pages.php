@@ -86,53 +86,11 @@ return [
      'events' => 'Eventos',
      'highlights' => 'Destaques',
      'publications' => 'Publicações',
-     'newsletter-text-no-login' => 'Fica a saber tudo sobre o Lookcrim ao subscrever a nossa <b>Newsletter</b>!',
+
+    // Landing (public)
+    'landing_private_platform' => 'Plataforma privada del Observatorio Permanente Violência e Crime (LookCrim).',
 
     'edit-homepage-title' => 'Editar Os Conteúdos da Homepage',
-
-
-    /*
-     * The Project
-     */
-
-    'add-project' => 'Adicionar Conteúdo - O Projeto',
-    'edit-project-title' => 'Editar Conteúdo - O Projeto',
-
-    /*
-     * Researches Team
-     */
-
-    'add-team' => 'Adicionar Conteúdo Para Esta Secção Sobre A Equipa de Investigação',
-    'edit-team-title' => 'Editar O Conteúdo Sobre A Equipa de Investigação',
-
-
-    /*
-     * Contact Us
-     */
-
-    'add-contact' => 'Adicionar Conteúdo Para Esta Secção Sobre Os Contactos',
-    'edit-contact-title' => 'Editar O Conteúdo Sobre Os Contactos',
-    'address' => 'Endereço',
-    'office' => 'Gabinete em Português',
-    'phone' => 'Número de Telefone',
-    'email' => 'E-mail',
-    'maps' => 'Mapa',
-
-    /*
-    * Newsletter
-    */
-
-    'newsletter-subscribe-hello' => 'Caro/a ',
-
-    'newsletter-subscribe' => ',<br/>De acordo com o novo Regulamento Geral sobre a Proteção de Dados da União Europeia (RGPD) necessitamos que confirme a sua subscrição da nossa newsletter para que possamos enviar-lhe as nossas novidades via e-mail.<br/>No caso de não confirmar a sua subscrição deixará de receber todos os nossos e-mails de divulgação.<br/>',
-
-    'newsletter-subscribe-clique' => 'Para confirmar a subscrição, ',
-
-    'newsletter-clique' => '<b>clique aqui.</b>',
-
-    'newsletter-clique-in' => '<b>clique em: </b>',
-
-    'newsletter-subscribe-saudations' => '<br/>Com os melhores cumprimentos,<br/><b>A Equipa Lookcrim.</b>',
 
     /******/
 

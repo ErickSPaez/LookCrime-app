@@ -1,0 +1,30 @@
+solucionar error de las imagenes 
+
+Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated\public"
+Get-Item .\storage | Format-List Name,FullName,Attributes,Mode
+
+(Get-Item .\storage).LinkType
+(Get-Item .\storage).Target
+
+fsutil reparsepoint query ".\storage"
+
+
+# Carpeta física
+Get-ChildItem "..\storage\app\public" | Select-Object Name | Sort-Object Name | Out-String
+
+# Carpeta pública (enlace)
+Get-ChildItem ".\storage" | Select-Object Name | Sort-Object Name | Out-String
+
+
+Set-Location ".\storage\publications"
+Get-ChildItem | Format-Table Name,Length,LastWriteTime
+
+
+
+borrar y crear de nuevo y todo deberia correr 
+
+Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated\public"
+Remove-Item "storage" -Force -Recurse
+
+Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated"
+php artisan storage:link

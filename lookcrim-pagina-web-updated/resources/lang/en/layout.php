@@ -16,13 +16,7 @@ return [
     /*
      * Header
      */
-
-    'theproject' => 'The Project',
-    'people' => 'Researches Team',
-    'research' => 'Researches',
     'publications' => 'Scientific Production',
-    'newsevents' => 'News/Events',
-    'contact' => 'Contact Us',
 
     /*
      * Footer

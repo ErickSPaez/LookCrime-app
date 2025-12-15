@@ -34,10 +34,6 @@
 
         @if(Auth::check() && Auth::user()->admin)
 
-            <a href="{{url('/newsletter')}}" title="Newsletter" class="simple-a">
-                <span class="fas fa-1x fa-newspaper color-white layout-icon"></span>
-            </a>
-
             <a href="{{url('/user/management')}}" class="simple-a">
                 <span class="fas fa-1x fa-cog color-white layout-icon"></span>
             </a>
@@ -51,8 +47,6 @@
         </form>
 
     @else
-        <a href="{{url('/register')}}" class="font-top-menu">@lang('auth.register')</a>
-
         @if(Auth::check() && Auth::user()->admin)
 
             <a href="{{url('/user/management')}}" class="simple-a">
@@ -82,39 +76,9 @@
             <ul class="navbar-nav">
                 <div class="line-menubar"></div>
 
-                <li class="nav-item {{ request()->is('project') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="/project">
-                        <span class="font-head-bar-black-effect">@lang('layout.theproject')</span>
-                    </a>
-                </li>
-
-                <li class="nav-item {{ request()->is('team') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="/team">
-                        <span class="font-head-bar-black-effect">@lang('layout.people')</span>
-                    </a>
-                </li>
-
-                <li class="nav-item {{ request()->is('research') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="/research">
-                        <span class="font-head-bar-black-effect">@lang('layout.research')</span>
-                    </a>
-                </li>
-
                 <li class="nav-item {{ request()->is('publications') ? 'active' : 'default' }}">
                     <a class="font-head-bar-black" href="/publications">
                         <span class="font-head-bar-black-effect">@lang('layout.publications')</span>
-                    </a>
-                </li>
-
-                <li class="nav-item {{ request()->is('newsevents') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="/newsevents">
-                        <span class="font-head-bar-black-effect">@lang('layout.newsevents')</span>
-                    </a>
-                </li>
-
-                <li class="nav-item {{ request()->is('contact') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="/contact">
-                        <span class="font-head-bar-black-effect">@lang('layout.contact')</span>
                     </a>
                 </li>
             </ul>

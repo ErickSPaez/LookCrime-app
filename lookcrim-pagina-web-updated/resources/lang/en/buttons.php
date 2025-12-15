@@ -39,7 +39,5 @@ return [
     'institution' => 'Institution',
     'comment' => 'Add a comment',
     'send-password-email' => 'Send Password Reset E-mail',
-    'create-newsletter' => 'Create Newsletter',
-    'unsubscribe-newsletter' => '',
 
 ];
