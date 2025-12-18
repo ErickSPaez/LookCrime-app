@@ -10,7 +10,7 @@
                 <p>{{ __('Welcome back,') }} <strong>{{ Auth::user() ? Auth::user()->name : __('User') }}</strong>.</p>
                 <p>{{ __('Use the quick links below to navigate:') }}</p>
                 <ul>
-                    <li><a href="{{ url('/publications') }}">{{ __('Publications') }}</a></li>
+                    <li><a href="{{ url('/registers') }}">{{ __('Publications') }}</a></li>
                     <li><a href="{{ url('/map') }}">{{ __('Map') }}</a></li>
                 </ul>
             </div>

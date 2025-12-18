@@ -109,7 +109,7 @@
                 <div class="line-menubar"></div>
 
                 <li class="nav-item {{ request()->is('publications') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="/publications">
+                    <a class="font-head-bar-black" href="/registers">
                         <span class="font-head-bar-black-effect">@lang('layout.publications')</span>
                     </a>
                 </li>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Publications;
 
@@ -45,6 +46,14 @@ class PublicationsController extends Controller
         $publications->longitude = $request->input('longitude');
         $publications->category = $request->input('category');
         $publications->save(); // necessary to get ID
+
+        // If lat/lng provided, store as PostGIS geometry Point (SRID 4326)
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+        if (!is_null($lat) && !is_null($lng)) {
+            // Use parameter binding to avoid SQL injection
+            DB::update('UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?', [$lng, $lat, $publications->id]);
+        }
 
         if ($request->hasFile('image') && $image && $image->isValid()){
             $ext = $image->getClientOriginalExtension();
@@ -98,6 +107,12 @@ class PublicationsController extends Controller
         $publications->private = $request->has('private') ? $request->input('private') : 0;
         $publications->latitude = $request->input('latitude');
         $publications->longitude = $request->input('longitude');
+        // Update geometry column if lat/lng given
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+        if (!is_null($lat) && !is_null($lng)) {
+            DB::update('UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?', [$lng, $lat, $publications->id]);
+        }
         $publications->category = $request->input('category');
         $publications->save();
         return redirect()->route('publications');
@@ -148,18 +163,19 @@ class PublicationsController extends Controller
     public function map()
     {
         if(Auth::check()) {
-            $publications = Publications::orderBy('created_at', 'DESC')->get();
+            $publications = Publications::select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))->orderBy('created_at', 'DESC')->get();
         } else {
-            $publications = Publications::where('private', '=', 0)->orderBy('created_at', 'DESC')->get();
+            $publications = Publications::where('private', '=', 0)->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))->orderBy('created_at', 'DESC')->get();
         }
         $mapData = $publications->map(function($p){
             return [
                 'id' => $p->id,
                 'title' => $p->title(),
-                'lat' => $p->latitude,
-                'lng' => $p->longitude,
+                // Prefer coordinates extracted from geometry; fallback to numeric columns
+                'lat' => $p->lat_from_location ?? $p->latitude,
+                'lng' => $p->lng_from_location ?? $p->longitude,
                 'image' => $p->image_url(),
-                'url' => url('/publications/'.$p->id),
+                'url' => url('/registers/'.$p->id),
                 'category' => $p->category ?? null
             ];
         })->values();

@@ -114,7 +114,7 @@
                 <div class="line-menubar"></div>
 
                 <li class="nav-item {{ request()->is('publications') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="{{ url('/publications') }}">
+                    <a class="font-head-bar-black" href="{{ url('/registers') }}">
                         <span class="font-head-bar-black-effect">@lang('layout.publications')</span>
                     </a>
                 </li>

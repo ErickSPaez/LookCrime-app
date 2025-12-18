@@ -56,7 +56,7 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group">
+                    <div class="form-group" style="width:100%">
                         <label class="form-label">{{ __('Role') }}</label>
                         <select class="form-input" name="role" id="role-select">
                             @php $selectedRole = old('role', 'user'); @endphp
@@ -64,11 +64,7 @@
                                 <option value="{{ $role }}" {{ $selectedRole === $role ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ', $role)) }}</option>
                             @endforeach
                         </select>
-                    </div>
-                    <div class="form-group" style="align-items:center; flex:0 0 auto;">
-                        <label class="form-label">{{ __('Admin') }}</label>
-                        <input type="checkbox" name="admin" value="1" {{ old('admin') ? 'checked' : '' }}>
-                        <small class="form-text text-muted">{{ __('Only needed if you want admin rights aside from role') }}</small>
+                        <small class="form-text text-muted">{{ __('pages.permissions_from_role') }}</small>
                     </div>
                 </div>
 
@@ -84,18 +80,37 @@
                                 @php
                                     $isChecked = old("permissions.$perm", $roleDefaults[$perm] ?? false);
                                 @endphp
-                                <div class="form-row">
-                                    <div class="form-group" style="width:100%">
-                                        <label class="form-label">{{ __('Role') }}</label>
-                                        <select class="form-input" name="role" id="role-select">
-                                            @php $selectedRole = old('role', 'user'); @endphp
-                                            @foreach($roles as $role)
-                                                <option value="{{ $role }}" {{ $selectedRole === $role ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ', $role)) }}</option>
-                                            @endforeach
-                                        </select>
-                                        <small class="form-text text-muted">{{ __('pages.permissions_from_role') }}</small>
-                                    </div>
+                                <div class="permission-item">
+                                    <label>
+                                        <input type="checkbox" name="permissions[{{ $perm }}]" value="1" {{ $isChecked ? 'checked' : '' }}>
+                                        {{ ucfirst(str_replace('_',' ', $perm)) }}
+                                    </label>
                                 </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn-lookcrim" type="submit">{{ __('Create') }}</button>
+                    <a href="{{ route('users-list') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @section('pagescripts')
+    <script>
+    (function(){
+        const roleDefinitions = @json($roleDefinitions);
+        const roleSelect = document.getElementById('role-select');
+
+        function applyRoleDefaults(role) {
+            const roleDefaults = roleDefinitions[role] || {};
+            Object.keys(roleDefaults).forEach(function(k){
+                const checkbox = document.querySelector('input[name="permissions[' + k + ']" ]');
+                if (checkbox) checkbox.checked = !!roleDefaults[k];
+            });
             const adminCheckbox = document.querySelector('input[name="admin"]');
             if (adminCheckbox) {
                 adminCheckbox.checked = (role === 'super_usuario');

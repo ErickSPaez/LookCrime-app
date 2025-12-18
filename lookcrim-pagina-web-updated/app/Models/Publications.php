@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Publications extends Model {
+    /**
+     * Use the new database table name `registers` (DB rename done).
+     * Keeps the model class name for compatibility in code.
+     */
+    protected $table = 'registers';
 
     protected $fillable = [
         'title_en','title_pt','content_en','content_pt','image','embed_url','embed_url_en','private',
