@@ -17,3 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+use App\Http\Controllers\Api\RegistersSearchController;
+
+// Search registers by radius or bbox with optional filters
+Route::post('/registers/search-radius', [RegistersSearchController::class, 'search']);
