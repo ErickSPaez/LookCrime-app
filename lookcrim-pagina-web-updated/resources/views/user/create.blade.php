@@ -56,17 +56,59 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group" style="flex:0 0 auto; align-items:center;">
+                    <div class="form-group">
+                        <label class="form-label">{{ __('Role') }}</label>
+                        <select class="form-input" name="role" id="role-select">
+                            @php $selectedRole = old('role', 'user'); @endphp
+                            @foreach($roles as $role)
+                                <option value="{{ $role }}" {{ $selectedRole === $role ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ', $role)) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group" style="align-items:center; flex:0 0 auto;">
                         <label class="form-label">{{ __('Admin') }}</label>
-                        <input type="checkbox" name="admin" value="1">
+                        <input type="checkbox" name="admin" value="1" {{ old('admin') ? 'checked' : '' }}>
+                        <small class="form-text text-muted">{{ __('Only needed if you want admin rights aside from role') }}</small>
                     </div>
                 </div>
 
-                <div class="form-actions">
-                    <button class="btn-lookcrim" type="submit">{{ __('Create') }}</button>
-                    <a href="{{ route('users-list') }}" class="btn-secondary">{{ __('Cancel') }}</a>
-                </div>
-            </form>
-        </div>
-    </div>
+                <div class="form-row">
+                    <div class="form-group" style="width:100%">
+                        <label class="form-label">{{ __('pages.permissions') }}</label>
+                        <div id="permissions-list" class="lc-permissions-grid">
+                            @php $roleDefaults = $roleDefinitions[$selectedRole] ?? []; @endphp
+                            @foreach($permissionsList as $perm)
+                                @if($perm === 'manage_users')
+                                    @continue
+                                @endif
+                                @php
+                                    $isChecked = old("permissions.$perm", $roleDefaults[$perm] ?? false);
+                                @endphp
+                                <div class="form-row">
+                                    <div class="form-group" style="width:100%">
+                                        <label class="form-label">{{ __('Role') }}</label>
+                                        <select class="form-input" name="role" id="role-select">
+                                            @php $selectedRole = old('role', 'user'); @endphp
+                                            @foreach($roles as $role)
+                                                <option value="{{ $role }}" {{ $selectedRole === $role ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ', $role)) }}</option>
+                                            @endforeach
+                                        </select>
+                                        <small class="form-text text-muted">{{ __('pages.permissions_from_role') }}</small>
+                                    </div>
+                                </div>
+            const adminCheckbox = document.querySelector('input[name="admin"]');
+            if (adminCheckbox) {
+                adminCheckbox.checked = (role === 'super_usuario');
+            }
+        }
+
+        roleSelect && roleSelect.addEventListener('change', function(){
+            applyRoleDefaults(this.value);
+        });
+
+        // initial sync (in case of server defaults)
+        applyRoleDefaults(roleSelect ? roleSelect.value : 'user');
+    })();
+    </script>
+    @endsection
 @endsection

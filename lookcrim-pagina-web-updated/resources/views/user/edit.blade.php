@@ -22,6 +22,7 @@
             <form action="{{ route('users.update', $user->id) }}" method="POST">
                 @csrf
                 @method('PUT')
+
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">{{ __('Name') }}</label>
@@ -57,9 +58,15 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group" style="flex:0 0 auto; align-items:center;">
-                        <label class="form-label">{{ __('Admin') }}</label>
-                        <input type="checkbox" name="admin" value="1" {{ $user->admin ? 'checked' : '' }}>
+                    <div class="form-group" style="width:100%">
+                        <label class="form-label">{{ __('Role') }}</label>
+                        <select class="form-input" name="role" id="role-select">
+                            @php $selectedRole = old('role', $user->role ?? 'user'); @endphp
+                            @foreach($roles as $role)
+                                <option value="{{ $role }}" {{ $selectedRole === $role ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ', $role)) }}</option>
+                            @endforeach
+                        </select>
+                        <small class="form-text text-muted">{{ __('pages.permissions_from_role') }}</small>
                     </div>
                 </div>
 
@@ -70,4 +77,25 @@
             </form>
         </div>
     </div>
+
+    @section('pagescripts')
+    <script>
+    (function(){
+        const roleDefinitions = @json($roleDefinitions);
+        const roleSelect = document.getElementById('role-select');
+
+        function applyRoleDefaults(role) {
+            // no per-user checkboxes in this UI; function kept to sync admin checkbox if needed in future
+            const adminCheckbox = document.querySelector('input[name="admin"]');
+            if (adminCheckbox) {
+                adminCheckbox.checked = (role === 'super_usuario');
+            }
+        }
+
+        roleSelect && roleSelect.addEventListener('change', function(){
+            applyRoleDefaults(this.value);
+        });
+    })();
+    </script>
+    @endsection
 @endsection

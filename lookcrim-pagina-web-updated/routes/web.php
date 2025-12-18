@@ -93,4 +93,12 @@ Route::namespace('App\\Http\\Controllers')->group(function () {
     Route::get('/user/{id}/edit', [\App\Http\Controllers\UserController::class, 'edit'])->name('users.edit')->middleware(['auth','can:admin']);
     Route::put('/user/{id}', [\App\Http\Controllers\UserController::class, 'update'])->name('users.update')->middleware(['auth','can:admin']);
     Route::post('/user/ban/{id}', [\App\Http\Controllers\UserController::class, 'ban'])->name('users.ban')->middleware(['auth','can:admin']);
+
+    // Page Settings - Roles management
+    Route::get('/settings/roles', [\App\Http\Controllers\Settings\RolesController::class, 'index'])->name('settings.roles.index')->middleware(['auth','can:admin']);
+    Route::get('/settings/roles/{slug}/edit', [\App\Http\Controllers\Settings\RolesController::class, 'edit'])->name('settings.roles.edit')->middleware(['auth','can:admin']);
+    Route::put('/settings/roles/{slug}', [\App\Http\Controllers\Settings\RolesController::class, 'update'])->name('settings.roles.update')->middleware(['auth','can:admin']);
+    Route::get('/settings/roles/create', [\App\Http\Controllers\Settings\RolesController::class, 'create'])->name('settings.roles.create')->middleware(['auth','can:admin']);
+    Route::post('/settings/roles', [\App\Http\Controllers\Settings\RolesController::class, 'store'])->name('settings.roles.store')->middleware(['auth','can:admin']);
+    Route::delete('/settings/roles/{slug}', [\App\Http\Controllers\Settings\RolesController::class, 'destroy'])->name('settings.roles.destroy')->middleware(['auth','can:admin']);
 });

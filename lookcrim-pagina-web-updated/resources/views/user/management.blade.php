@@ -15,6 +15,7 @@
                     <th>ID</th>
                     <th>{{ __('Name') }}</th>
                     <th>{{ __('Email') }}</th>
+                    <th>{{ __('Role') }}</th>
                     <th>{{ __('buttons.created-at') }}</th>
                     <th>{{ __('Actions') }}</th>
                 </tr>
@@ -25,6 +26,7 @@
                         <td>{{ $user->id }}</td>
                         <td>{{ $user->name ?? $user->nome ?? '-' }}</td>
                         <td>{{ $user->email ?? '-' }}</td>
+                        <td>{{ $user->role ?? 'user' }}</td>
                         <td>{{ $user->created_at ? $user->created_at->format('Y-m-d') : '-' }}</td>
                         <td>
                             <a href="{{ route('users.edit', $user->id) }}" class="btn">{{ __('Edit') }}</a>

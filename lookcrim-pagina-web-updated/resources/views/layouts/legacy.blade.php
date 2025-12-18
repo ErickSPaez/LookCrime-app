@@ -71,6 +71,7 @@
 
                 @if(Auth::user()->admin)
                     <a class="dropdown-item" href="{{ url('/user/management') }}">{{ __('auth.management') }}</a>
+                    <a class="dropdown-item" href="{{ route('settings.roles.index') }}">{{ __('pages.page_settings') }}</a>
                 @endif
 
                 <a class="dropdown-item" href="{{ url('/profile') }}">{{ __('auth.profile') }}</a>
