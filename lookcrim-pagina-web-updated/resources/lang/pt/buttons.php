@@ -19,7 +19,7 @@ return [
     'delete' => 'Eliminar',
     'create' => 'Criar',
     'add-new' => 'Adicionar Notícia',
-    'add-publication' => 'Adicionar Produção Científica',
+    'add-publication' => 'Adicionar Registo',
     'add-research' => 'Adicionar Investigação',
     'by' => 'por',
     'created-at' => 'Criado a',

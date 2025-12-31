@@ -140,13 +140,8 @@
                 <!-- Grid column -->
                 <div class="col-md-5 mt-md-7 ">
 
-                    <!-- Content -->
-                    <p class="font-weight-bold-white">@lang('layout.left-side-text-footer-1')
-                        <a class="white-link" href="https://opvcufp.com/" target="_blank"> @lang('layout.left-side-text-footer-opvc') </a>
-                        @lang('layout.left-side-text-footer-2')
-
-                        <a class="white-link" href="https://www.ufp.pt/" target="_blank"> @lang('layout.left-side-text-footer-ufp') </a>
-                    </p>
+                    <!-- Content (removed — reserved for sponsors) -->
+                    <p class="font-weight-bold-white">&nbsp;</p>
 
                 </div>
                 <!-- Grid column -->
@@ -156,17 +151,13 @@
                 <!-- Grid column -->
                 <div class="col-md-3 mb-md-0 mb-3">
                     <div class="row">
-                        <!-- Links -->
-                        <h5 class="font-weight-bold-white-followus">@lang('layout.followus')</h5>
+                        <!-- Links (text removed) -->
+                        <h5 class="font-weight-bold-white-followus">&nbsp;</h5>
 
                         <!-- Grid column -->
                         <div class="col-md-12">
                             <div class="mb-5 flex-center">
-                                <!-- Facebook -->
-                                <a href="https://www.facebook.com/LookCrim/" target="_blank">
-                                    {{HTML ::image('img/FB.png','Facebook Icon',['class' => 'visible-xs-inline-fblogo'])}}
-                                </a>
-
+                                <!-- Facebook icon removed -->
                             </div>
                         </div>
                         <!-- Grid column -->
@@ -179,8 +170,8 @@
                 <!-- Grid column -->
                 <div class="col-md-4 mb-md-0 mb-3">
 
-                    <!-- Content -->
-                    <p class="font-weight-bold-white">@lang('layout.right-side-text-footer')</p>
+                    <!-- Content (removed — reserved for sponsors) -->
+                    <p class="font-weight-bold-white">&nbsp;</p>
 
                 </div>
                 <!-- Grid column -->

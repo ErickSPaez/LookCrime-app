@@ -16,7 +16,7 @@ return [
     /*
      * Header
      */
-    'publications' => 'Produção Científica',
+    'publications' => 'REGISTROS',
 
     /*
      * Footer

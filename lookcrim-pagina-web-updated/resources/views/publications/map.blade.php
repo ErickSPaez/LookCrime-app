@@ -1,6 +1,6 @@
 @extends('layouts.legacy')
 
-@section('titulo_browser','Map - LookCrim')
+@section('titulo_browser', __('pages.map_title'))
 
 @section('pagestyles')
     <style>
@@ -14,30 +14,30 @@
 
 @section('conteudo')
 <div class="main-website-interior">
-    <h1 class="font-title-for-customization interior-title">{{ __('Map of publications') }}</h1>
+    <h1 class="font-title-for-customization interior-title">{{ __('pages.map_title') }}</h1>
     <hr class="interior-title-line">
 
     <div style="margin-bottom:0.75rem">
         <div id="map-filters" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <label style="font-size:0.9rem">{{ __('Radius (km)') }}:
+            <label style="font-size:0.9rem">{{ __('pages.radius_km') }}:
                 <input id="filter-radius" type="number" step="0.5" min="0" value="5" style="width:80px;margin-left:6px"> 
             </label>
-            <label style="font-size:0.9rem">{{ __('Types') }}:
+            <label style="font-size:0.9rem">{{ __('pages.types') }}:
                 <div id="filter-types-container" style="display:inline-block;min-width:180px;max-width:420px;margin-left:6px;vertical-align:middle">
                     @foreach($categoryLabels as $k => $v)
                         <label style="display:inline-block;margin-right:8px;white-space:nowrap"><input class="filter-type" type="checkbox" value="{{ $k }}"> {{ $v }}</label>
                     @endforeach
                 </div>
-                <button id="select-all-types" type="button" style="margin-left:6px">{{ __('Select all') }}</button>
+                <button id="select-all-types" type="button" style="margin-left:6px">{{ __('pages.select_all') }}</button>
             </label>
             <label style="font-size:0.9rem">
-                <input type="checkbox" id="use-bbox"> {{ __('Search in current map view (instead of radius)') }}
+                <input type="checkbox" id="use-bbox"> {{ __('pages.search_in_map_view') }}
             </label>
             <label style="font-size:0.9rem">
-                <input type="checkbox" id="use-my-location"> {{ __('Use my current location on open') }}
+                <input type="checkbox" id="use-my-location"> {{ __('pages.use_my_location') }}
             </label>
-            <button id="apply-filters" class="btn-lookcrim">{{ __('Apply') }}</button>
-            <button id="clear-filters" class="btn-secondary">{{ __('Clear') }}</button>
+            <button id="apply-filters" class="btn-lookcrim">{{ __('pages.apply') }}</button>
+            <button id="clear-filters" class="btn-secondary">{{ __('pages.clear') }}</button>
             <div id="map-info" style="margin-left:auto;font-size:0.9rem;color:#666"></div>
         </div>
     </div>
@@ -48,6 +48,31 @@
 
 @section('pagescripts')
 <script>
+    @php
+        $__translations = [
+            'map_title' => __('pages.map_title'),
+            'radius_km' => __('pages.radius_km'),
+            'types' => __('pages.types'),
+            'select_all' => __('pages.select_all'),
+            'search_in_map_view' => __('pages.search_in_map_view'),
+            'use_my_location' => __('pages.use_my_location'),
+            'apply' => __('pages.apply'),
+            'clear' => __('pages.clear'),
+            'categories' => __('pages.categories'),
+            'you_are_here' => __('pages.you_are_here'),
+            'confirm_use_location' => __('pages.confirm_use_location'),
+            'searching' => __('pages.searching'),
+            'no_publications' => __('pages.no_publications'),
+            'error_network' => __('pages.error_network'),
+            'results_suffix' => __('pages.results_suffix'),
+            'porto' => __('pages.porto'),
+            'braga' => __('pages.braga'),
+            'publication' => __('pages.publication'),
+            'server_error' => __('pages.server_error')
+        ];
+    @endphp
+    const TRANSLATIONS = {!! json_encode($__translations) !!};
+
 document.addEventListener('DOMContentLoaded', function(){
     // publications data prepared in controller (initial set)
     const publications = @json($mapData);
@@ -91,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function(){
         });
         let popupHtml = '<div style="min-width:180px">';
         if(pub.image) popupHtml += '<a href="'+pub.url+'"><img src="'+pub.image+'" alt="'+pub.title+'"></a>';
-        popupHtml += '<div><a href="'+(pub.url||'#')+'"><strong>'+ (pub.title || (pub.properties && pub.properties.title) || 'Publication') +'</strong></a></div>';
+        popupHtml += '<div><a href="'+(pub.url||'#')+'"><strong>'+ (pub.title || (pub.properties && pub.properties.title) || TRANSLATIONS.publication) +'</strong></a></div>';
         if(cat) popupHtml += '<div style="margin-top:6px;font-size:0.9rem;color:#444"><em>'+ (categoryLabels[cat] || cat) +'</em></div>';
         popupHtml += '</div>';
         marker.bindPopup(popupHtml);
@@ -114,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const legend = L.control({position: 'topright'});
     legend.onAdd = function () {
         const div = L.DomUtil.create('div', 'map-legend');
-        const legendTitle = '{{ addslashes(__('pages.categories')) }}';
+        const legendTitle = TRANSLATIONS.categories;
         let html = '<strong>'+legendTitle+'</strong><div style="margin-top:6px">';
         Object.keys(categoryColors).forEach(function(k){
             const color = categoryColors[k];
@@ -139,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function(){
                         map.setView([lat,lng], 14);
                         currentCenter = {lat: lat, lng: lng};
                         if(userLocationMarker) map.removeLayer(userLocationMarker);
-                        userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup('You are here').openPopup();
+                        userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup(TRANSLATIONS.you_are_here).openPopup();
                         // DO NOT draw a circle or run a search automatically — user will set radius and click Apply
                     }, function(err){
                         console.warn('Geolocation denied or unavailable', err);
@@ -152,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function(){
     // Additionally, offer a prompt when page opens so users can accept immediately
     try{
         if(navigator.geolocation){
-            const want = confirm('¿Permitir usar tu ubicación para centrar el mapa?');
+            const want = confirm(TRANSLATIONS.confirm_use_location);
             if(want){
                 document.getElementById('use-my-location').checked = true;
                 navigator.geolocation.getCurrentPosition(function(pos){
@@ -161,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     map.setView([lat,lng], 14);
                     currentCenter = {lat: lat, lng: lng};
                     if(userLocationMarker) map.removeLayer(userLocationMarker);
-                    userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup('You are here').openPopup();
+                    userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup(TRANSLATIONS.you_are_here).openPopup();
                     // DO NOT draw circle or run search automatically — wait for user action
                 }, function(err){
                     console.warn('Geolocation denied or unavailable', err);
@@ -197,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function(){
     portoBtn.onAdd = function(){
         const div = L.DomUtil.create('div', 'leaflet-bar');
         div.style.padding = '6px';
-        div.innerHTML = '<button id="btn-porto" class="btn-lookcrim" style="font-size:0.85rem">Porto</button> <button id="btn-braga" class="btn-lookcrim" style="font-size:0.85rem">Braga</button>';
+        div.innerHTML = '<button id="btn-porto" class="btn-lookcrim" style="font-size:0.85rem">'+TRANSLATIONS.porto+'</button> <button id="btn-braga" class="btn-lookcrim" style="font-size:0.85rem">'+TRANSLATIONS.braga+'</button>';
         return div;
     };
     portoBtn.addTo(map);
@@ -247,7 +272,7 @@ document.addEventListener('DOMContentLoaded', function(){
         if(selected.length) payload.types = selected;
         payload.limit = 500;
 
-        document.getElementById('map-info').textContent = 'Searching...';
+        document.getElementById('map-info').textContent = TRANSLATIONS.searching;
         // draw circle before query
         updateSearchCircle();
         try{
@@ -261,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function(){
             markersLayer.clearLayers();
             let count = 0;
             if(!res.ok){
-                const msg = json && json.error ? json.error : (json && json.message ? json.message : 'Server error');
+                const msg = json && json.error ? json.error : (json && json.message ? json.message : TRANSLATIONS.server_error);
                 document.getElementById('map-info').textContent = 'Error: ' + msg;
                 return;
             }
@@ -275,13 +300,13 @@ document.addEventListener('DOMContentLoaded', function(){
                 });
             }
             if(count === 0){
-                document.getElementById('map-info').textContent = 'No publications to show';
+                document.getElementById('map-info').textContent = TRANSLATIONS.no_publications;
             } else {
-                document.getElementById('map-info').textContent = count + ' results';
+                document.getElementById('map-info').textContent = count + ' ' + TRANSLATIONS.results_suffix;
             }
         }catch(err){
             console.error(err);
-            document.getElementById('map-info').textContent = 'Error (network)';
+            document.getElementById('map-info').textContent = TRANSLATIONS.error_network;
         }
     }
 
@@ -311,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     map.setView([lat,lng], 14);
                     currentCenter = {lat: lat, lng: lng};
                     if(userLocationMarker) map.removeLayer(userLocationMarker);
-                    userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup('You are here').openPopup();
+                    userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup(TRANSLATIONS.you_are_here).openPopup();
                     // DO NOT draw a circle or run a search automatically
                 }, function(err){ console.warn('Geolocation denied or unavailable', err); });
             }
