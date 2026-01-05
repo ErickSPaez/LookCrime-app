@@ -119,6 +119,11 @@ return [
     'server_error' => 'Server error',
     'select_location' => 'Select location',
     'select_location_mode' => 'Click on the map to choose the center',
+    'users' => 'Users',
+    'all_users' => 'All users',
+    'filter_by_time' => 'Filter by time',
+    'from_date' => 'From',
+    'to_date' => 'To',
 
     // Settings / Roles
     'page_settings' => 'Page Settings',

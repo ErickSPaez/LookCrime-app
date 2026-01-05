@@ -190,6 +190,15 @@ class PublicationsController extends Controller
             'otro' => trans('pages.otro'),
         ];
 
-        return view('publications.map', ['publications' => $publications, 'mapData' => $mapData, 'categoryLabels' => $categoryLabels]);
+        // add basic users list for map filtering (id, name/email)
+        $users = [];
+        try{
+            $users = \App\Models\User::select('id','name','email')->orderBy('name')->get();
+        }catch(\Throwable $e){
+            // ignore if User model/table not present
+            $users = [];
+        }
+
+        return view('publications.map', ['publications' => $publications, 'mapData' => $mapData, 'categoryLabels' => $categoryLabels, 'users' => $users]);
     }
 }

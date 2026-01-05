@@ -35,6 +35,21 @@
             <label style="font-size:0.9rem">
                 <input type="checkbox" id="use-bbox"> {{ __('pages.search_in_map_view') }}
             </label>
+            <!-- User filter (minimal) -->
+            <label style="font-size:0.9rem">{{ __('pages.users') }}:
+                <select id="filter-user" style="margin-left:6px;min-width:180px">
+                    <option value="">{{ __('pages.all_users') }}</option>
+                    @if(isset($users) && count($users))
+                        @foreach($users as $u)
+                            <option value="{{ $u->id }}">{{ $u->name ?? $u->email ?? ('User '+$u->id) }}</option>
+                        @endforeach
+                    @endif
+                </select>
+            </label>
+            <!-- Time range filter (minimal) -->
+            <label style="font-size:0.9rem">{{ __('pages.filter_by_time') }}:
+                <input id="filter-from" type="date" style="margin-left:6px"> — <input id="filter-to" type="date">
+            </label>
             <label style="font-size:0.9rem">
                 <input type="checkbox" id="use-my-location"> {{ __('pages.use_my_location') }}
             </label>
@@ -72,7 +87,12 @@
             'porto' => __('pages.porto'),
             'braga' => __('pages.braga'),
             'publication' => __('pages.publication'),
-            'server_error' => __('pages.server_error')
+            'server_error' => __('pages.server_error'),
+            'users' => __('pages.users'),
+            'all_users' => __('pages.all_users'),
+            'filter_by_time' => __('pages.filter_by_time'),
+            'from_date' => __('pages.from_date'),
+            'to_date' => __('pages.to_date')
         ];
     @endphp
     const TRANSLATIONS = {!! json_encode($__translations) !!};
@@ -318,6 +338,12 @@ document.addEventListener('DOMContentLoaded', function(){
         const radiusKm = parseFloat(document.getElementById('filter-radius').value) || 0;
         const checked = Array.from(document.querySelectorAll('#filter-types-container input.filter-type:checked'));
         const selected = checked.map(c=>c.value);
+        // user filter
+        const userEl = document.getElementById('filter-user');
+        const selectedUser = userEl && userEl.value ? userEl.value : null;
+        // time filters (YYYY-MM-DD)
+        const fromDate = (document.getElementById('filter-from') && document.getElementById('filter-from').value) || null;
+        const toDate = (document.getElementById('filter-to') && document.getElementById('filter-to').value) || null;
 
         const payload = {};
         if(useBbox){
@@ -339,6 +365,9 @@ document.addEventListener('DOMContentLoaded', function(){
         }
 
         if(selected.length) payload.types = selected;
+        if(selectedUser) payload.user_id = selectedUser;
+        if(fromDate) payload.from_date = fromDate;
+        if(toDate) payload.to_date = toDate;
         payload.limit = 500;
 
         document.getElementById('map-info').textContent = TRANSLATIONS.searching;
@@ -389,6 +418,9 @@ document.addEventListener('DOMContentLoaded', function(){
         const checks = document.querySelectorAll('#filter-types-container input.filter-type');
         checks.forEach(c=>c.checked = false);
         document.getElementById('use-bbox').checked = false;
+        // clear user/time filters
+        try{ document.getElementById('filter-user').value = ''; }catch(e){}
+        try{ document.getElementById('filter-from').value = ''; document.getElementById('filter-to').value = ''; }catch(e){}
         markersLayer.clearLayers();
         if(searchCircle) { map.removeLayer(searchCircle); searchCircle = null; }
         if(centerMarker) { map.removeLayer(centerMarker); centerMarker = null; }
