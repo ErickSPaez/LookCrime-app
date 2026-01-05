@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function(){
     const markersLayer = L.layerGroup().addTo(map);
     let searchCircle = null;
     let userLocationMarker = null;
+    let centerMarker = null;
     let currentCenter = null; // store actual center (could be user location)
     function addPublicationMarker(pub){
         if(!pub.lat || !pub.lng) return null;
@@ -199,17 +200,25 @@ document.addEventListener('DOMContentLoaded', function(){
     function updateSearchCircle(){
         const radiusKm = parseFloat(document.getElementById('filter-radius').value) || 0;
         const meters = Math.round(radiusKm * 1000);
-        // choose center: user-provided currentCenter or map center
-        const center = currentCenter || map.getCenter();
+        // Only draw a circle if the user explicitly selected a center (currentCenter)
+        if(!currentCenter){
+            if(searchCircle){ map.removeLayer(searchCircle); searchCircle = null; }
+            return;
+        }
+        const center = currentCenter;
         if(searchCircle) map.removeLayer(searchCircle);
         if(meters > 0){
             searchCircle = L.circle([center.lat, center.lng], { radius: meters, color: '#d9534f', weight: 1, fillOpacity: 0.08 }).addTo(map);
         }
+        // update or add center marker visual
+        if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
+        centerMarker = L.marker([center.lat, center.lng], { opacity: 0.0 }).addTo(map);
     }
 
     // update circle when radius input changes or map moved (if using center)
-    document.getElementById('filter-radius').addEventListener('input', updateSearchCircle);
-    map.on('move', function(){ if(!document.getElementById('use-my-location').checked){ currentCenter = null; updateSearchCircle(); } });
+    document.getElementById('filter-radius').addEventListener('input', function(){ if(currentCenter) updateSearchCircle(); });
+    // do not clear currentCenter on simple map move; only update circle when a center exists
+    map.on('move', function(){ if(currentCenter) updateSearchCircle(); });
 
     // select-all types (checkboxes)
     document.getElementById('select-all-types').addEventListener('click', function(){
@@ -241,6 +250,16 @@ document.addEventListener('DOMContentLoaded', function(){
         map.setView([currentCenter.lat, currentCenter.lng], 12);
         updateSearchCircle();
         performSearch();
+    });
+
+    // allow user to pick a center by clicking the map
+    map.on('click', function(e){
+        currentCenter = { lat: e.latlng.lat, lng: e.latlng.lng };
+        if(userLocationMarker){ map.removeLayer(userLocationMarker); userLocationMarker = null; }
+        if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
+        centerMarker = L.marker([currentCenter.lat, currentCenter.lng]).addTo(map);
+        // draw circle if radius > 0
+        updateSearchCircle();
     });
 
     // Search helper: call API and render GeoJSON results
@@ -322,6 +341,8 @@ document.addEventListener('DOMContentLoaded', function(){
         document.getElementById('use-bbox').checked = false;
         markersLayer.clearLayers();
         if(searchCircle) { map.removeLayer(searchCircle); searchCircle = null; }
+        if(centerMarker) { map.removeLayer(centerMarker); centerMarker = null; }
+        currentCenter = null;
         publications.forEach(function(pub){ if(pub.lat && pub.lng) addPublicationMarker(pub); });
         document.getElementById('map-info').textContent = '';
     });
@@ -337,11 +358,15 @@ document.addEventListener('DOMContentLoaded', function(){
                     currentCenter = {lat: lat, lng: lng};
                     if(userLocationMarker) map.removeLayer(userLocationMarker);
                     userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup(TRANSLATIONS.you_are_here).openPopup();
+                    // also add a center marker so updateSearchCircle will draw when radius set
+                    if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
+                    centerMarker = L.marker([lat,lng]).addTo(map);
                     // DO NOT draw a circle or run a search automatically
                 }, function(err){ console.warn('Geolocation denied or unavailable', err); });
             }
         } else {
             if(userLocationMarker) { map.removeLayer(userLocationMarker); userLocationMarker = null; }
+            if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
             currentCenter = null;
         }
     });
