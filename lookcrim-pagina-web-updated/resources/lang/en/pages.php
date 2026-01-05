@@ -117,6 +117,8 @@ return [
     'braga' => 'Braga',
     'publication' => 'Publication',
     'server_error' => 'Server error',
+    'select_location' => 'Select location',
+    'select_location_mode' => 'Click on the map to choose the center',
 
     // Settings / Roles
     'page_settings' => 'Page Settings',

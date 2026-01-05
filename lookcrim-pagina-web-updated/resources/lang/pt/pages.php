@@ -140,6 +140,8 @@ return [
     , 'braga' => 'Braga'
     , 'publication' => 'Publicação'
     , 'server_error' => 'Erro no servidor'
+    , 'select_location' => 'Selecionar local'
+    , 'select_location_mode' => 'Clique no mapa para escolher o centro'
     , 'page_settings' => 'Configurações da Página'
     , 'roles' => 'Perfis'
     , 'permissions' => 'Permissões'

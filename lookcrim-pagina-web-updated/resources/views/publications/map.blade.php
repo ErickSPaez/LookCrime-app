@@ -22,14 +22,16 @@
             <label style="font-size:0.9rem">{{ __('pages.radius_km') }}:
                 <input id="filter-radius" type="number" step="0.5" min="0" value="5" style="width:80px;margin-left:6px"> 
             </label>
-            <label style="font-size:0.9rem">{{ __('pages.types') }}:
+            <label style="font-size:0.9rem">{{ __('pages.types') }}:</label>
                 <div id="filter-types-container" style="display:inline-block;min-width:180px;max-width:420px;margin-left:6px;vertical-align:middle">
                     @foreach($categoryLabels as $k => $v)
                         <label style="display:inline-block;margin-right:8px;white-space:nowrap"><input class="filter-type" type="checkbox" value="{{ $k }}"> {{ $v }}</label>
                     @endforeach
                 </div>
-                <button id="select-all-types" type="button" style="margin-left:6px">{{ __('pages.select_all') }}</button>
-            </label>
+                <button id="select-all-types" type="button" class="btn-secondary" style="margin-left:6px;padding:6px 8px;min-width:90px">{{ __('pages.select_all') }}</button>
+                <button id="btn-select-location" type="button" class="btn-secondary" style="margin-left:6px;padding:6px 8px;min-width:120px;background:#6c757d;color:#fff;border:1px solid #5a6268;border-radius:4px;overflow:visible;" aria-label="{{ __('pages.select_location') }}">
+                    <span class="btn-label" style="color:#fff;font-weight:600;display:inline-block;visibility:visible!important;opacity:1!important;text-indent:0!important;text-shadow:none!important;-webkit-text-fill-color:#fff!important">{{ __('pages.select_location') }}</span>
+                </button>
             <label style="font-size:0.9rem">
                 <input type="checkbox" id="use-bbox"> {{ __('pages.search_in_map_view') }}
             </label>
@@ -54,6 +56,8 @@
             'radius_km' => __('pages.radius_km'),
             'types' => __('pages.types'),
             'select_all' => __('pages.select_all'),
+            'select_location' => __('pages.select_location'),
+            'select_location_mode' => __('pages.select_location_mode'),
             'search_in_map_view' => __('pages.search_in_map_view'),
             'use_my_location' => __('pages.use_my_location'),
             'apply' => __('pages.apply'),
@@ -208,11 +212,11 @@ document.addEventListener('DOMContentLoaded', function(){
         const center = currentCenter;
         if(searchCircle) map.removeLayer(searchCircle);
         if(meters > 0){
-            searchCircle = L.circle([center.lat, center.lng], { radius: meters, color: '#d9534f', weight: 1, fillOpacity: 0.08 }).addTo(map);
+            searchCircle = L.circle([center.lat, center.lng], { radius: meters, color: '#d9534f', weight: 1, fillOpacity: 0.08, interactive: false }).addTo(map);
         }
         // update or add center marker visual
         if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
-        centerMarker = L.marker([center.lat, center.lng], { opacity: 0.0 }).addTo(map);
+        centerMarker = L.marker([center.lat, center.lng], { opacity: 0.0, interactive: false }).addTo(map);
     }
 
     // update circle when radius input changes or map moved (if using center)
@@ -253,13 +257,59 @@ document.addEventListener('DOMContentLoaded', function(){
     });
 
     // allow user to pick a center by clicking the map
+    let selectMode = false; // when true, clicks set center; when false, clicks interact with markers
+    const selectBtn = document.getElementById('btn-select-location');
+    function setSelectMode(enabled){
+        selectMode = !!enabled;
+        // ensure the button and label remain visible regardless of other CSS
+        try{
+            selectBtn.style.color = '#fff';
+            const lblEl = selectBtn.querySelector('.btn-label');
+            if(lblEl){
+                lblEl.style.color = '#fff';
+                lblEl.style.visibility = 'visible';
+                lblEl.style.opacity = '1';
+                lblEl.style.textIndent = '0';
+                lblEl.style.textShadow = 'none';
+                lblEl.style.webkitTextFillColor = '#fff';
+            }
+        }catch(e){}
+        if(selectMode){
+            const lbl = selectBtn.querySelector('.btn-label'); if(lbl) lbl.textContent = TRANSLATIONS.select_location + ' — ' + TRANSLATIONS.select_location_mode; else selectBtn.textContent = TRANSLATIONS.select_location + ' — ' + TRANSLATIONS.select_location_mode;
+            selectBtn.classList.add('active');
+            document.getElementById('map-info').textContent = TRANSLATIONS.select_location_mode;
+            map.getContainer().style.cursor = 'crosshair';
+        } else {
+            const lbl2 = selectBtn.querySelector('.btn-label'); if(lbl2) lbl2.textContent = TRANSLATIONS.select_location; else selectBtn.textContent = TRANSLATIONS.select_location;
+            // re-apply visibility styles after toggling off
+            try{
+                selectBtn.style.color = '#fff';
+                if(lbl2){
+                    lbl2.style.color = '#fff';
+                    lbl2.style.visibility = 'visible';
+                    lbl2.style.opacity = '1';
+                }
+            }catch(e){}
+            selectBtn.classList.remove('active');
+            document.getElementById('map-info').textContent = '';
+            map.getContainer().style.cursor = '';
+        }
+    }
+    selectBtn.addEventListener('click', function(){
+        // toggle selection mode
+        setSelectMode(!selectMode);
+    });
+
     map.on('click', function(e){
+        if(!selectMode) return; // only act on clicks when in select mode
         currentCenter = { lat: e.latlng.lat, lng: e.latlng.lng };
         if(userLocationMarker){ map.removeLayer(userLocationMarker); userLocationMarker = null; }
         if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
         centerMarker = L.marker([currentCenter.lat, currentCenter.lng]).addTo(map);
         // draw circle if radius > 0
         updateSearchCircle();
+        // once a center is selected, exit select mode so marker clicks behave normally
+        setSelectMode(false);
     });
 
     // Search helper: call API and render GeoJSON results
@@ -343,6 +393,10 @@ document.addEventListener('DOMContentLoaded', function(){
         if(searchCircle) { map.removeLayer(searchCircle); searchCircle = null; }
         if(centerMarker) { map.removeLayer(centerMarker); centerMarker = null; }
         currentCenter = null;
+        // ensure select mode is off and button remains visible after clear
+        try{ setSelectMode(false); }catch(e){/* ignore if not initialized */}
+        const selectBtnElem = document.getElementById('btn-select-location');
+        if(selectBtnElem) selectBtnElem.style.display = '';
         publications.forEach(function(pub){ if(pub.lat && pub.lng) addPublicationMarker(pub); });
         document.getElementById('map-info').textContent = '';
     });
