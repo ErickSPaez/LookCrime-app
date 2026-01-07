@@ -68,29 +68,6 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group" style="width:100%">
-                        <label class="form-label">{{ __('pages.permissions') }}</label>
-                        <div id="permissions-list" class="lc-permissions-grid">
-                            @php $roleDefaults = $roleDefinitions[$selectedRole] ?? []; @endphp
-                            @foreach($permissionsList as $perm)
-                                @if($perm === 'manage_users')
-                                    @continue
-                                @endif
-                                @php
-                                    $isChecked = old("permissions.$perm", $roleDefaults[$perm] ?? false);
-                                @endphp
-                                <div class="permission-item">
-                                    <label>
-                                        <input type="checkbox" name="permissions[{{ $perm }}]" value="1" {{ $isChecked ? 'checked' : '' }}>
-                                        {{ ucfirst(str_replace('_',' ', $perm)) }}
-                                    </label>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
                 <div class="form-actions">
                     <button class="btn-lookcrim" type="submit">{{ __('Create') }}</button>
                     <a href="{{ route('users-list') }}" class="btn-secondary">{{ __('Cancel') }}</a>
@@ -98,32 +75,4 @@
             </form>
         </div>
     </div>
-
-    @section('pagescripts')
-    <script>
-    (function(){
-        const roleDefinitions = @json($roleDefinitions);
-        const roleSelect = document.getElementById('role-select');
-
-        function applyRoleDefaults(role) {
-            const roleDefaults = roleDefinitions[role] || {};
-            Object.keys(roleDefaults).forEach(function(k){
-                const checkbox = document.querySelector('input[name="permissions[' + k + ']" ]');
-                if (checkbox) checkbox.checked = !!roleDefaults[k];
-            });
-            const adminCheckbox = document.querySelector('input[name="admin"]');
-            if (adminCheckbox) {
-                adminCheckbox.checked = (role === 'super_usuario');
-            }
-        }
-
-        roleSelect && roleSelect.addEventListener('change', function(){
-            applyRoleDefaults(this.value);
-        });
-
-        // initial sync (in case of server defaults)
-        applyRoleDefaults(roleSelect ? roleSelect.value : 'user');
-    })();
-    </script>
-    @endsection
 @endsection

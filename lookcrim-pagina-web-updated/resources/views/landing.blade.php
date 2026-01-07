@@ -4,7 +4,7 @@
 
 @section('conteudo')
 <style>
-    /* Ocultar la barra de navegación principal en la landing y mostrar solo el enlace Dashboard arriba */
+    /* Ocultar la barra de navegación principal en la landing */
     nav.navbar, .logo-head-bar, .line-menubar { display: none !important; }
     /* Mantener el top-menu visible */
     .top-menu { display: block !important; }

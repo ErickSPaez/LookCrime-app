@@ -25,12 +25,15 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        // Define a simple admin ability based on the `admin` column on users table.
-        Gate::define('admin', function (?User $user) {
-            if (! $user) {
-                return false;
+        // Admin bypass as super-user shortcut.
+        Gate::before(function (?User $user) {
+            if ($user && ($user->admin ?? false)) {
+                return true;
             }
-            return (bool) $user->admin;
+            return null;
         });
+
+        // Legacy: simple admin ability based on the `admin` column on users table.
+        Gate::define('admin', fn (?User $user) => (bool) ($user?->admin ?? false));
     }
 }

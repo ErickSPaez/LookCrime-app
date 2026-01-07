@@ -16,7 +16,7 @@ return [
     'login' => 'Login',
     'logout' => 'Logout',
     'profile' => 'Profile',
-    'management' => 'Management',
+    'management' => 'MANAGEMENT',
 
     'failed' => 'The entered email may not have associated logging or the corresponding password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',

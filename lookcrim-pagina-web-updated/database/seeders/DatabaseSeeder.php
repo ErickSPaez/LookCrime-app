@@ -12,19 +12,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Legacy initial data (port from old project)
-        \DB::table('homepage')->insertIfNotExists = function() {
-            // noop placeholder to keep structure (we'll insert directly below)
-        };
-
-        // Homepage
-        if (!\DB::table('homepage')->exists()) {
-            \DB::table('homepage')->insert([
-                'center_text_en' => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-                'center_text_pt' => 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-            ]);
-        }
-
         // Users (legacy)
         if (!\DB::table('users')->where('email', 'admin1@ufp.edu.pt')->exists()) {
             \DB::table('users')->insert([

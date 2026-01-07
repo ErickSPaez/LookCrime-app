@@ -16,7 +16,7 @@ return [
     'login' => 'Entrar',
     'logout' => 'Sair',
     'profile' => 'Perfil',
-    'management' => 'Gestão',
+    'management' => 'GESTÃO',
 
     'failed' => 'O e-mail inserido poderá não ter registo associado ou a senha correspondente está incorreta.',
     'throttle' => 'Demasiadas tentativas de login. Por favor tenta novamente em :seconds segundos.',

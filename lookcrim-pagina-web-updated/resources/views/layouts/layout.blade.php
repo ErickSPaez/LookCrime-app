@@ -65,10 +65,6 @@
 
                 <div class="dropdown-divider"></div>
 
-                @if(Auth::user()->admin)
-                    <a class="dropdown-item" href="{{ url('/user/management') }}">{{ __('auth.management') }}</a>
-                @endif
-
                 <a class="dropdown-item" href="{{ url('/profile') }}">{{ __('auth.profile') }}</a>
 
                 <form action="{{ route('logout') }}" method="POST" style="margin:0;">
@@ -79,15 +75,7 @@
         </div>
 
     @else
-        @if(Auth::check() && Auth::user()->admin)
-
-            <a href="{{url('/user/management')}}" class="simple-a">
-                {{HTML ::image('img/logo-admin.png','Users Management Icon',['class' => 'visible-xs-inline-users-management-logo'])}}
-            </a>
-        @endif
-
         <a href="{{url('/login')}}" class="font-top-menu">@lang('auth.login')</a>
-
     @endif
 
     <a  href="{{url('/lang/en')}}" class="font-top-menu lang">EN</a>
@@ -113,6 +101,22 @@
                         <span class="font-head-bar-black-effect">@lang('layout.publications')</span>
                     </a>
                 </li>
+
+                    @can('view_page_management')
+                    <li class="nav-item {{ request()->is('user/management') ? 'active' : 'default' }}">
+                        <a class="font-head-bar-black" href="{{ url('/user/management') }}">
+                            <span class="font-head-bar-black-effect">{{ __('auth.management') }}</span>
+                        </a>
+                    </li>
+                @endcan
+
+                    @can('view_page_settings_roles')
+                    <li class="nav-item {{ request()->is('settings/roles*') ? 'active' : 'default' }}">
+                        <a class="font-head-bar-black" href="{{ route('settings.roles.index') }}">
+                            <span class="font-head-bar-black-effect">{{ __('pages.page_settings') }}</span>
+                        </a>
+                    </li>
+                @endcan
             </ul>
         </div>
     </div>

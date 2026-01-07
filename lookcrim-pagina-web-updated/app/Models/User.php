@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+    use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -25,8 +27,6 @@ class User extends Authenticatable
         'password',
         'admin',
         'banned',
-        'role',
-        'permissions',
     ];
 
     /**
@@ -48,29 +48,5 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'admin' => 'boolean',
         'banned' => 'boolean',
-        'permissions' => 'array',
     ];
-
-    /**
-     * Return permissions merged: role defaults + per-user overrides (if provided).
-     */
-    public function effectivePermissions(): array
-    {
-        $role = $this->role ?? 'user';
-        $roleDefaults = config("roles.definitions.$role", config('roles.definitions.user', []));
-        $custom = $this->permissions ?? [];
-
-        // Merge: user custom overrides role defaults; ensure booleans.
-        $merged = [];
-        foreach ($roleDefaults as $perm => $value) {
-            $merged[$perm] = (bool) ($custom[$perm] ?? $value);
-        }
-        // Include any extra custom flags not in role defaults
-        foreach ($custom as $perm => $value) {
-            if (!array_key_exists($perm, $merged)) {
-                $merged[$perm] = (bool) $value;
-            }
-        }
-        return $merged;
-    }
 }

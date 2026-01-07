@@ -32,7 +32,8 @@ return [
     'center-text_en'=>'Texto Central Inglês Nº',
     'private' => 'Privada',
     'highlight' => 'Destacada',
-    'empty-page' => 'Lamentamos, mas não existe conteúdo nesta página.',
+    'empty-page' => 'Ainda não existem registos para mostrar.',
+    'empty-page-cta' => 'Crie o seu primeiro registo usando o botão abaixo.',
 
 
     'notification' => 'Notificação',
@@ -88,7 +89,7 @@ return [
      'publications' => 'Publicações',
 
     // Landing (public)
-    'landing_private_platform' => 'Plataforma privada del Observatorio Permanente Violência e Crime (LookCrim).',
+    'landing_private_platform' => 'Plataforma privada do Observatório Permanente de Violência e Crime (LookCrim).',
 
     'edit-homepage-title' => 'Editar Os Conteúdos da Homepage',
 
@@ -138,11 +139,14 @@ return [
     , 'results_suffix' => 'resultados'
     , 'porto' => 'Porto'
     , 'braga' => 'Braga'
+    , 'view_list' => 'Lista'
+    , 'view_map' => 'Mapa'
+    , 'view_toggle_aria' => 'Alternar entre vista de lista e mapa'
     , 'publication' => 'Publicação'
     , 'server_error' => 'Erro no servidor'
     , 'select_location' => 'Selecionar local'
     , 'select_location_mode' => 'Clique no mapa para escolher o centro'
-    , 'page_settings' => 'Configurações da Página'
+    , 'page_settings' => 'DEFINIÇÕES DE PAPÉIS'
     , 'roles' => 'Perfis'
     , 'permissions' => 'Permissões'
     , 'name' => 'Nome'

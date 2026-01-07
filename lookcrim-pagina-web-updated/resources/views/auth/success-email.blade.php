@@ -16,9 +16,11 @@
 
                     <div class="form-group row mb-0">
                         <div class="col-md-12 center">
-                            <a href="{{url('/user/management')}}" class="btn btn-lookcrim" style="padding-left: 20px;">
-                                @lang('buttons.back')
-                            </a>
+                            @can('view_page_management')
+                                <a href="{{url('/user/management')}}" class="btn btn-lookcrim" style="padding-left: 20px;">
+                                    @lang('buttons.back')
+                                </a>
+                            @endcan
                         </div>
                     </div>
                 </div>

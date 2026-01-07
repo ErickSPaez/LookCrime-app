@@ -32,12 +32,34 @@
             <div class="form-row">
                 <div class="form-group" style="width:100%">
                     <label class="form-label">{{ __('pages.permissions') }}</label>
-                    <div class="lc-permissions-grid">
-                        @foreach($permissionsList as $perm)
-                            <label class="perm-item">
-                                <input type="checkbox" name="permissions[{{ $perm }}]" value="1" {{ old('permissions.'.$perm) ? 'checked' : '' }}>
-                                <span>{{ ucwords(str_replace('_',' ', $perm)) }}</span>
-                            </label>
+
+                    <div class="lc-perm-actions" style="margin-bottom:8px;">
+                        <button type="button" class="btn btn-sm" onclick="lcSelectAll(true)">Select all</button>
+                        <button type="button" class="btn btn-sm" onclick="lcSelectAll(false)">Do not select any</button>
+                    </div>
+
+                    <div class="row">
+                        @foreach($permissionGroups as $category => $group)
+                            <div class="col-lg-4 col-md-6 lc-perm-group" style="margin-bottom:16px;">
+                                @php
+                                    $groupLabel = \Illuminate\Support\Facades\Lang::has('permissions.group.'.$category)
+                                        ? __('permissions.group.'.$category)
+                                        : ucwords(str_replace('_',' ', $category));
+                                @endphp
+                                <h5 style="font-weight:600;margin-bottom:8px;">{{ $groupLabel }}</h5>
+                                @foreach($group as $perm)
+                                    @php
+                                        $name = $perm->name;
+                                        $label = \Illuminate\Support\Facades\Lang::has('permissions.'.$name)
+                                            ? __('permissions.'.$name)
+                                            : ucwords(str_replace('_',' ', $name));
+                                    @endphp
+                                    <div class="form-check lc-perm-item">
+                                        <input class="form-check-input lc-perm" id="perm-{{ $name }}" type="checkbox" name="permissions[{{ $name }}]" value="1" {{ old('permissions.'.$name) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="perm-{{ $name }}">{{ $label }}</label>
+                                    </div>
+                                @endforeach
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -50,4 +72,21 @@
         </form>
     </div>
 </div>
+@endsection
+
+@section('pagestyles')
+<style>
+.lc-perm-group{min-width:280px;padding-right:16px;}
+.lc-perm-item{display:flex;align-items:flex-start;gap:8px;}
+.lc-perm-item .form-check-input{margin-top:2px;}
+.lc-perm-actions{margin-bottom:10px;}
+</style>
+@endsection
+
+@section('pagescripts')
+<script>
+function lcSelectAll(val){
+    document.querySelectorAll('.lc-perm').forEach(cb => { cb.checked = !!val; });
+}
+</script>
 @endsection

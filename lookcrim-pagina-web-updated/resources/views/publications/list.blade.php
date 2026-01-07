@@ -10,18 +10,23 @@
     </h1>
     <hr class="interior-title-line">
 
+    @include('publications.partials.view-toggle')
+
     @if($publications[0] != null)
     <div class="row row-list-research">
         @each('partials.publications.short', $publications, 'publications')
     </div>
 
     @else
-        <div class="col-12 warning-message">
-            <span class="alert alert-danger" role="alert">@lang('pages.empty-page')</span>
+        <div class="col-12" style="margin: 12px 0;">
+            <div class="lc-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;text-align:center;">
+                <div style="font-size:1.1rem;color:#333;margin-bottom:6px;">@lang('pages.empty-page')</div>
+                <div style="font-size:0.98rem;color:#555;">@lang('pages.empty-page-cta')</div>
+            </div>
         </div>
     @endif
 
-    @if(Auth::check() && Auth::user()->admin)
+    @auth
         <div class="row research flex-align-center">
             <div class="col-xs-10 image">
                 <a class="btn btn-lookcrim btn-sm edit-text" href="{{route('publications-create')}}">
@@ -29,7 +34,7 @@
                 </a>
         </div>
     </div>
-    @endif
+    @endauth
 </div>
 
 

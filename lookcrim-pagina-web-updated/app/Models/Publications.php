@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\User;
 
 class Publications extends Model {
     /**
@@ -14,8 +15,13 @@ class Publications extends Model {
 
     protected $fillable = [
         'title_en','title_pt','content_en','content_pt','image','embed_url','embed_url_en','private',
-        'latitude','longitude','category'
+        'latitude','longitude','category','user_id'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function title() {
         switch(app()->getLocale()) {

@@ -2,7 +2,7 @@
 
 @section('conteudo')
 <div class="container">
-    <h1 class="mb-3-form-title">{{ __('pages.edit_role') }}: {{ $role->slug }}</h1>
+    <h1 class="mb-3-form-title">{{ __('pages.edit_role') }}: {{ $role->name }}</h1>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -15,31 +15,49 @@
     @endif
 
     <div class="form-card">
-        <form action="{{ route('settings.roles.update', $role->slug) }}" method="POST">
+        <form action="{{ route('settings.roles.update', $role->name) }}" method="POST">
             @csrf
             @method('PUT')
 
             <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">{{ __('pages.name_en') }}</label>
-                    <input class="form-input" type="text" name="name_en" value="{{ old('name_en', $role->name_en) }}" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">{{ __('pages.name_pt') }}</label>
-                    <input class="form-input" type="text" name="name_pt" value="{{ old('name_pt', $role->name_pt) }}" required>
+                <div class="form-group" style="width:100%">
+                    <label class="form-label">{{ __('pages.role_name') }}</label>
+                    <input class="form-input" type="text" name="name" value="{{ old('name', $role->nameLocalized()) }}" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group" style="width:100%">
                     <label class="form-label">{{ __('pages.permissions') }}</label>
-                    <div class="lc-permissions-grid">
-                        @foreach($permissionsList as $perm)
-                            @php $isChecked = old("permissions.$perm", $perms[$perm] ?? false); @endphp
-                            <label class="perm-item">
-                                <input type="checkbox" name="permissions[{{ $perm }}]" value="1" {{ $isChecked ? 'checked' : '' }}>
-                                <span>{{ ucwords(str_replace('_',' ', $perm)) }}</span>
-                            </label>
+
+                    <div class="lc-perm-actions" style="margin-bottom:8px;">
+                        <button type="button" class="btn btn-sm" onclick="lcSelectAll(true)">Select all</button>
+                        <button type="button" class="btn btn-sm" onclick="lcSelectAll(false)">Do not select any</button>
+                    </div>
+
+                    <div class="row">
+                        @foreach($permissionGroups as $category => $group)
+                            <div class="col-lg-4 col-md-6 lc-perm-group" style="margin-bottom:16px;">
+                                @php
+                                    $groupLabel = \Illuminate\Support\Facades\Lang::has('permissions.group.'.$category)
+                                        ? __('permissions.group.'.$category)
+                                        : ucwords(str_replace('_',' ', $category));
+                                @endphp
+                                <h5 style="font-weight:600;margin-bottom:8px;">{{ $groupLabel }}</h5>
+                                @foreach($group as $perm)
+                                    @php
+                                        $name = $perm->name;
+                                        $checked = in_array($name, old('permissions') ? array_keys(old('permissions')) : $assigned);
+                                        $label = \Illuminate\Support\Facades\Lang::has('permissions.'.$name)
+                                            ? __('permissions.'.$name)
+                                            : ucwords(str_replace('_',' ', $name));
+                                    @endphp
+                                    <div class="form-check lc-perm-item">
+                                        <input class="form-check-input lc-perm" id="perm-{{ $name }}" type="checkbox" name="permissions[{{ $name }}]" value="1" {{ $checked ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="perm-{{ $name }}">{{ $label }}</label>
+                                    </div>
+                                @endforeach
+                            </div>
                         @endforeach
                     </div>
                 </div>
@@ -50,11 +68,30 @@
                 <a href="{{ route('settings.roles.index') }}" class="btn-secondary">{{ __('pages.back') }}</a>
             </div>
         </form>
-        <form action="{{ route('settings.roles.destroy', $role->slug) }}" method="POST" style="display:inline-block;margin-top:12px;" onsubmit="return confirm('{{ __('pages.confirm_delete_role') }}');">
+        @can('delete_role')
+        <form action="{{ route('settings.roles.destroy', $role->name) }}" method="POST" style="display:inline-block;margin-top:12px;" onsubmit="return confirm('{{ __('pages.confirm_delete_role') }}');">
             @csrf
             @method('DELETE')
             <button class="btn-danger" type="submit">{{ __('pages.delete') }}</button>
         </form>
+        @endcan
     </div>
 </div>
+@endsection
+
+@section('pagestyles')
+<style>
+.lc-perm-group{min-width:280px;padding-right:16px;}
+.lc-perm-item{display:flex;align-items:flex-start;gap:8px;}
+.lc-perm-item .form-check-input{margin-top:2px;}
+.lc-perm-actions{margin-bottom:10px;}
+</style>
+@endsection
+
+@section('pagescripts')
+<script>
+function lcSelectAll(val){
+    document.querySelectorAll('.lc-perm').forEach(cb => { cb.checked = !!val; });
+}
+</script>
 @endsection

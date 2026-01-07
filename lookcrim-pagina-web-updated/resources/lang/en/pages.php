@@ -37,6 +37,10 @@ return [
 
     'notification' => 'Notification',
 
+    // Empty states
+    'empty-page' => 'No registers to show yet.',
+    'empty-page-cta' => 'Create your first register using the button below.',
+
 
     /*
      * Error Pages
@@ -118,6 +122,9 @@ return [
     'publication' => 'Publication',
     'server_error' => 'Server error',
     'select_location' => 'Select location',
+    'view_list' => 'List',
+    'view_map' => 'Map',
+    'view_toggle_aria' => 'Toggle view between list and map',
     'select_location_mode' => 'Click on the map to choose the center',
     'users' => 'Users',
     'all_users' => 'All users',
@@ -126,7 +133,7 @@ return [
     'to_date' => 'To',
 
     // Settings / Roles
-    'page_settings' => 'Page Settings',
+    'page_settings' => 'ROLE SETTINGS',
     'roles' => 'Roles',
     'permissions' => 'Permissions',
     'name' => 'Name',

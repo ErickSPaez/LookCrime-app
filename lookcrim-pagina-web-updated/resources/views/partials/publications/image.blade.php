@@ -19,6 +19,6 @@
 @endif
 @if(!empty($publications->get_embed_url()))
 	<div class="youtube-video">
-		<iframe src="{{ $publications->get_embed_url() }}" style="border: 0px; width: 700px; height: 394px;" allowfullscreen title="{{ $publications->title() }}"></iframe>
+		<iframe src="{{ $publications->get_embed_url() }}" style="border: 0px; width: 100%; max-width: 100%; height: 394px;" allowfullscreen title="{{ $publications->title() }}"></iframe>
 	</div>
 @endif

@@ -2,20 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Spatie\Permission\Models\Role as SpatieRole;
 
-class Role extends Model
+class Role extends SpatieRole
 {
-    protected $fillable = ['slug','name_en','name_pt','permissions'];
-
-    protected $casts = [
-        'permissions' => 'array',
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'name_en',
+        'name_pt',
     ];
 
     public function nameLocalized(): string
     {
         $loc = app()->getLocale();
-        if ($loc === 'pt') return $this->name_pt;
-        return $this->name_en;
+        if ($loc === 'pt') {
+            return $this->name_pt ?: $this->name;
+        }
+        return $this->name_en ?: $this->name;
     }
 }

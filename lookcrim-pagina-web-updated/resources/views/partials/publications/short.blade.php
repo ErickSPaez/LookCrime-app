@@ -25,15 +25,17 @@
 
 							<a class="card-view-more" href="{{route('publication', $publications->id)}}" title="{{ $publications->title() }}">@lang('buttons.readmore')</a>
 
-							@if(Auth::check() && Auth::user()->admin)
+							@if(Auth::check() && (Auth::id() === ($publications->user_id ?? null) || Auth::user()->can('edit_all_registers')))
 							<div class="row card-buttons">
 								<a class="card-edit-buttons" href="{{route('publications-edit', $publications->id)}}">
 									@lang('buttons.edit')
 								</a>
 
+								@can('delete_registers')
 								<a class="card-edit-buttons" href="{{route('publications-delete', $publications->id)}}">
 									@lang('buttons.delete')
 								</a>
+								@endcan
 							</div>
 							@endif
 						</div>

@@ -61,7 +61,7 @@
                     <div class="form-group" style="width:100%">
                         <label class="form-label">{{ __('Role') }}</label>
                         <select class="form-input" name="role" id="role-select">
-                            @php $selectedRole = old('role', $user->role ?? 'user'); @endphp
+                            @php $selectedRole = old('role', $user->roles->first()->name ?? 'user'); @endphp
                             @foreach($roles as $role)
                                 <option value="{{ $role }}" {{ $selectedRole === $role ? 'selected' : '' }}>{{ ucfirst(str_replace('_',' ', $role)) }}</option>
                             @endforeach
@@ -77,25 +77,4 @@
             </form>
         </div>
     </div>
-
-    @section('pagescripts')
-    <script>
-    (function(){
-        const roleDefinitions = @json($roleDefinitions);
-        const roleSelect = document.getElementById('role-select');
-
-        function applyRoleDefaults(role) {
-            // no per-user checkboxes in this UI; function kept to sync admin checkbox if needed in future
-            const adminCheckbox = document.querySelector('input[name="admin"]');
-            if (adminCheckbox) {
-                adminCheckbox.checked = (role === 'super_usuario');
-            }
-        }
-
-        roleSelect && roleSelect.addEventListener('change', function(){
-            applyRoleDefaults(this.value);
-        });
-    })();
-    </script>
-    @endsection
 @endsection

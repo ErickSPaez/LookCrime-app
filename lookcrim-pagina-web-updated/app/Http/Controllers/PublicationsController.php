@@ -12,8 +12,8 @@ class PublicationsController extends Controller
 {
     public function __construct()
     {
-        // Allow public listing and viewing; protect create/edit/delete to authenticated users
-        $this->middleware('auth')->except(['index', 'show']);
+        // Entire app is gated; require authentication for all actions
+        $this->middleware('auth');
     }
 
     public function create()
@@ -35,6 +35,7 @@ class PublicationsController extends Controller
         $image = $request->file('image');
 
         $publications = new Publications;
+        $publications->user_id = Auth::id();
         // Single-language input: fill both locale columns for compatibility
         $title = $request->input('title');
         $content = $request->input('content');
@@ -73,6 +74,9 @@ class PublicationsController extends Controller
     public function edit($id)
     {
         $publications = Publications::findOrFail($id);
+        if (!(\Auth::id() === ($publications->user_id ?? null) || \Auth::user()->can('edit_all_registers'))) {
+            abort(403);
+        }
         return view('publications.edit', ['publications' => $publications]);
     }
 
@@ -87,6 +91,12 @@ class PublicationsController extends Controller
         ]);
 
         $publications = Publications::findOrFail($id);
+        if (!(\Auth::id() === ($publications->user_id ?? null) || \Auth::user()->can('edit_all_registers'))) {
+            abort(403);
+        }
+        if (empty($publications->user_id) && Auth::check()) {
+            $publications->user_id = Auth::id();
+        }
         $title = $request->input('title');
         $content = $request->input('content');
         $publications->title_pt = $title;
@@ -121,11 +131,17 @@ class PublicationsController extends Controller
     public function confirmDelete($id)
     {
         $publications = Publications::findOrFail($id);
+        if (!\Auth::user()->can('delete_registers')) {
+            abort(403);
+        }
         return view('publications.delete', ['publications' => $publications]);
     }
 
     public function delete($id, Request $request)
     {
+        if (!\Auth::user()->can('delete_registers')) {
+            abort(403);
+        }
         if($request->input('confirm') === 'yes') {
             Publications::findOrFail($id)->delete();
         }
@@ -135,7 +151,13 @@ class PublicationsController extends Controller
     public function index()
     {
         if(Auth::check()) {
-            $publications = Publications::orderBy('created_at', 'DESC')->paginate(15);
+            if (Auth::user()->can('view_all_registers')) {
+                $publications = Publications::orderBy('created_at', 'DESC')->paginate(15);
+            } else {
+                $publications = Publications::where('user_id', Auth::id())
+                    ->orderBy('created_at', 'DESC')
+                    ->paginate(15);
+            }
         } else {
             $publications = Publications::where('private', '=', 0)
                 ->orderBy('created_at', 'DESC')
@@ -146,15 +168,25 @@ class PublicationsController extends Controller
 
     public function show($id)
     {
-        $publications = Publications::findOrFail($id);
-        if($publications->private != 0) {
-            if(Auth::check())
+        $publications = Publications::with('user')
+            ->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
+            ->findOrFail($id);
+        $isOwner = Auth::check() && (Auth::id() === ($publications->user_id ?? null));
+        $canViewAll = Auth::check() && Auth::user()->can('view_all_registers');
+
+        if ($publications->private != 0) {
+            // Private: only owner or users with view_all_registers
+            if ($isOwner || $canViewAll) {
                 return view('publications.show', ['publications' => $publications]);
-            else
-                return redirect()->route('publications');
-        } else {
-            return view('publications.show', ['publications' => $publications]);
+            }
+            return redirect()->route('publications');
         }
+
+        // Public: guests can view; authenticated normal users cannot view others unless canViewAll
+        if (Auth::check() && !$isOwner && !$canViewAll) {
+            return redirect()->route('publications');
+        }
+        return view('publications.show', ['publications' => $publications]);
     }
 
     /**
@@ -163,9 +195,18 @@ class PublicationsController extends Controller
     public function map()
     {
         if(Auth::check()) {
-            $publications = Publications::select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))->orderBy('created_at', 'DESC')->get();
+            if (Auth::user()->can('view_all_registers')) {
+                $publications = Publications::select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
+                    ->orderBy('created_at', 'DESC')->get();
+            } else {
+                $publications = Publications::where('user_id', Auth::id())
+                    ->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
+                    ->orderBy('created_at', 'DESC')->get();
+            }
         } else {
-            $publications = Publications::where('private', '=', 0)->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))->orderBy('created_at', 'DESC')->get();
+            $publications = Publications::where('private', '=', 0)
+                ->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
+                ->orderBy('created_at', 'DESC')->get();
         }
         $mapData = $publications->map(function($p){
             return [
