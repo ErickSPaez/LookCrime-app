@@ -54,7 +54,7 @@ Eliminar shims y limpieza final. (Tarea 8)
 Documentar todo. (Tarea 9)
 
 
-.
+.........
 
 
 Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated"; php artisan view:clear; php artisan optimize:clear; Start-Process php -ArgumentList 'artisan','serve' -NoNewWindow; npm run dev
