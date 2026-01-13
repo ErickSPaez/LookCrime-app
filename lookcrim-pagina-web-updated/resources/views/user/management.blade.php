@@ -5,10 +5,25 @@
         <h1>{{ __('User Management') }}</h1>
         <p>{{ __('Basic users list (paged).') }}</p>
 
-        @can('create_user')
+        @if (session('success'))
+            <div class="alert-success">{{ session('success') }}</div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger">{{ session('error') }}</div>
+        @endif
+
+        @can('admin')
         <div style="margin-bottom:1rem;">
             <a href="{{ route('users.create') }}" class="btn btn-lookcrim">{{ __('Create User') }}</a>
         </div>
+
+        <form action="{{ route('users.mail.test') }}" method="POST" style="margin-bottom:1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            @csrf
+            <label for="test_email" style="margin:0;">{{ __('Send test email to') }}</label>
+            <input id="test_email" name="test_email" type="email" value="{{ old('test_email') }}" class="form-control" style="max-width:320px;" placeholder="{{ __('Email') }}" required>
+            <button type="submit" class="btn btn-lookcrim">{{ __('Send test email') }}</button>
+        </form>
         @endcan
 
         <table class="table">
@@ -42,17 +57,17 @@
                                 </form>
                             @endcan
 
-                            @can('send_password_reset')
+                            @can('admin')
                                 <form id="pwd-form-{{ $user->id }}" action="{{ route('users.password.create', $user->id) }}" method="POST" style="display:inline;margin-left:6px;">
                                     @csrf
-                                    <button type="button" class="btn lc-confirm-trigger" data-form-id="pwd-form-{{ $user->id }}" data-title="{{ __('Send Password Reset E-mail') }}" data-message="{{ __('Send password reset link to this user?') }}">{{ __('Send Password Reset E-mail') }}</button>
+                                    <button type="button" class="btn lc-confirm-trigger" data-form-id="pwd-form-{{ $user->id }}" data-title="{{ __('Send Password Setup E-mail') }}" data-message="{{ __('Send password setup link to this user?') }}">{{ __('Send Password Setup E-mail') }}</button>
                                 </form>
                             @endcan
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4">{{ __('No users registered.') }}</td>
+                        <td colspan="6">{{ __('No users registered.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

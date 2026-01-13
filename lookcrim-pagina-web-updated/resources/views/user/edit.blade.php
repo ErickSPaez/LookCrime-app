@@ -35,16 +35,13 @@
                     </div>
                 </div>
 
+                @can('admin')
                 <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">{{ __('New Password (leave blank to keep)') }}</label>
-                        <input class="form-input" type="password" name="password">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">{{ __('Confirm Password') }}</label>
-                        <input class="form-input" type="password" name="password_confirmation">
+                    <div class="form-group" style="width:100%">
+                        <small class="form-text text-muted">{{ __('To change the password, send the setup email to the user.') }}</small>
                     </div>
                 </div>
+                @endcan
 
                 <div class="form-row">
                     <div class="form-group">
@@ -75,6 +72,15 @@
                     <a href="{{ route('users-list') }}" class="btn-secondary">{{ __('Cancel') }}</a>
                 </div>
             </form>
+
+            @can('admin')
+                <div style="margin-top:12px;">
+                    <form action="{{ route('users.password.create', $user->id) }}" method="POST" style="display:inline">
+                        @csrf
+                        <button type="submit" class="btn-secondary">{{ __('Send Password Setup E-mail') }}</button>
+                    </form>
+                </div>
+            @endcan
         </div>
     </div>
 @endsection

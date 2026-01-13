@@ -34,13 +34,8 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">{{ __('Password') }}</label>
-                        <input class="form-input" type="password" name="password" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">{{ __('Confirm Password') }}</label>
-                        <input class="form-input" type="password" name="password_confirmation" required>
+                    <div class="form-group" style="width:100%">
+                        <small class="form-text text-muted">{{ __('The user will receive an email to choose their password.') }}</small>
                     </div>
                 </div>
 

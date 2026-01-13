@@ -7,6 +7,43 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## LookCrime (setup rápido)
+
+### Requisitos
+
+- PHP 8.1+
+- Composer
+- Base de datos (MySQL/MariaDB, etc.)
+- (Opcional para desarrollo) Node.js + npm
+
+### Instalación (PowerShell)
+
+```powershell
+composer install
+Copy-Item .env.example .env
+php artisan key:generate
+
+# Configurá DB_* y (si aplica) MAIL_* en .env
+php artisan migrate
+
+# Importante para ver imágenes subidas
+php artisan storage:link
+
+php artisan serve
+```
+
+### Assets (Vite)
+
+- Para desarrollo con hot reload: `npm install` y `npm run dev`.
+- Para producción/demos (sin `public/hot`): `npm run build`.
+
+### Demo público (Cloudflare Tunnel)
+
+- Iniciar (build + Laravel + tunnel y muestra URL): `./scripts/public-demo-start.ps1`
+- Detener: `./scripts/public-demo-stop.ps1`
+
+Nota: el link `trycloudflare.com` es temporal y cambia en cada inicio.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

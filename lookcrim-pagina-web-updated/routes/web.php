@@ -70,15 +70,19 @@ Route::namespace('App\\Http\\Controllers')->group(function () {
 
     Route::post('/user/password/{id}', [\App\Http\Controllers\UserController::class, 'password_replacement'])
         ->name('users.password.create')
-        ->middleware(['auth','permission:send_password_reset']);
+        ->middleware(['auth','permission:send_password_reset','can:admin']);
+
+    Route::post('/users/mail/test', [\App\Http\Controllers\UserController::class, 'sendTestEmail'])
+        ->name('users.mail.test')
+        ->middleware(['auth','can:admin']);
 
     Route::get('/users/create', [\App\Http\Controllers\UserController::class, 'create'])
         ->name('users.create')
-        ->middleware(['auth','permission:create_user']);
+        ->middleware(['auth','permission:create_user','can:admin']);
 
     Route::post('/users', [\App\Http\Controllers\UserController::class, 'store'])
         ->name('users.store')
-        ->middleware(['auth','permission:create_user']);
+        ->middleware(['auth','permission:create_user','can:admin']);
 
     Route::get('/user/{id}/edit', [\App\Http\Controllers\UserController::class, 'edit'])
         ->name('users.edit')

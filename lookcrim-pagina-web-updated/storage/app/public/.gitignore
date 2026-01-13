@@ -1,2 +1,6 @@
 *
 !.gitignore
+
+# Ensure the uploads root folder exists in the repo (but keep uploads ignored).
+!registers/
+!registers/.gitignore

@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TestSmtpMail;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -30,7 +33,6 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
             'nickname' => 'nullable|string|max:255',
             'institution' => 'nullable|string|max:255',
             'role' => 'nullable|string|exists:roles,name',
@@ -39,9 +41,10 @@ class UserController extends Controller
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'nickname' => $data['nickname'] ?? null,
-            'institution' => $data['institution'] ?? null,
+            // Admin does not set passwords. User will choose it via the reset-token email.
+            'password' => Hash::make(Str::random(48)),
+            'nickname' => $data['nickname'] ?? '',
+            'institution' => $data['institution'] ?? '',
             'admin' => false,
         ]);
 
@@ -49,7 +52,19 @@ class UserController extends Controller
             $user->syncRoles([$data['role']]);
         }
 
-        return Redirect::route('users-list')->with('success', 'Usuario creado.');
+        try {
+            $status = Password::sendResetLink(['email' => $user->email]);
+            if ($status !== Password::RESET_LINK_SENT) {
+                return Redirect::back()
+                    ->withInput()
+                    ->withErrors(['email' => __($status)]);
+            }
+        } catch (\Throwable $e) {
+            return Redirect::route('users-list')
+                ->with('error', __('Email send failed: :message', ['message' => $e->getMessage()]));
+        }
+
+        return Redirect::route('users-list')->with('success', __('User created. Password setup email sent.'));
     }
 
     public function edit($id)
@@ -66,8 +81,15 @@ class UserController extends Controller
     public function password_replacement($id)
     {
         $user = User::findOrFail($id);
-        Password::sendResetLink(['email' => $user->email]);
-        return view('auth.success-email');
+        try {
+            $status = Password::sendResetLink(['email' => $user->email]);
+            if ($status !== Password::RESET_LINK_SENT) {
+                return Redirect::back()->with('error', __($status));
+            }
+        } catch (\Throwable $e) {
+            return Redirect::back()->with('error', __('Email send failed: :message', ['message' => $e->getMessage()]));
+        }
+        return Redirect::route('users-list')->with('success', __('Password setup email sent.'));
     }
 
     public function update(Request $request, $id)
@@ -77,7 +99,6 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:6|confirmed',
             'nickname' => 'nullable|string|max:255',
             'institution' => 'nullable|string|max:255',
             'role' => 'nullable|string|exists:roles,name',
@@ -85,9 +106,6 @@ class UserController extends Controller
 
         $user->name = $data['name'];
         $user->email = $data['email'];
-        if (!empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
-        }
         $user->nickname = $data['nickname'] ?? $user->nickname;
         $user->institution = $data['institution'] ?? $user->institution;
         $user->save();
@@ -96,7 +114,7 @@ class UserController extends Controller
             $user->syncRoles($data['role'] ? [$data['role']] : []);
         }
 
-        return Redirect::route('users-list')->with('success', 'Usuario actualizado.');
+        return Redirect::route('users-list')->with('success', __('User updated.'));
     }
 
     public function ban($id)
@@ -104,7 +122,22 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->banned = !(bool) $user->banned;
         $user->save();
-        return Redirect::back()->with('success', 'Estado de ban actualizado.');
+        return Redirect::back()->with('success', __('User status updated.'));
+    }
+
+    public function sendTestEmail(Request $request)
+    {
+        $data = $request->validate([
+            'test_email' => 'required|email',
+        ]);
+
+        try {
+            Mail::to($data['test_email'])->send(new TestSmtpMail());
+        } catch (\Throwable $e) {
+            return Redirect::back()->with('error', __('Test email failed: :message', ['message' => $e->getMessage()]));
+        }
+
+        return Redirect::back()->with('success', __('Test email sent.'));
     }
 
 }
