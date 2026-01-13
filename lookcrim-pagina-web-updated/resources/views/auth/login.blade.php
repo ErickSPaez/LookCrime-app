@@ -1,6 +1,5 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-lc-toast :message="session('status')" type="success" />
 
     <form method="POST" action="{{ route('login') }}" style="margin-top:4px;">
         @csrf
