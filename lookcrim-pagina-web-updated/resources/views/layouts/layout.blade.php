@@ -96,9 +96,9 @@
             <ul class="navbar-nav">
                 <div class="line-menubar"></div>
 
-                <li class="nav-item {{ request()->is('publications') ? 'active' : 'default' }}">
+                <li class="nav-item {{ request()->is('registers*') || request()->is('map') ? 'active' : 'default' }}">
                     <a class="font-head-bar-black" href="/registers">
-                        <span class="font-head-bar-black-effect">@lang('layout.publications')</span>
+                        <span class="font-head-bar-black-effect">@lang('layout.registers')</span>
                     </a>
                 </li>
 

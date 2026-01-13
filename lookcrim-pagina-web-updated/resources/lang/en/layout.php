@@ -17,6 +17,7 @@ return [
      * Header
      */
     'publications' => 'REGISTERS',
+    'registers' => 'REGISTERS',
 
     /*
      * Footer

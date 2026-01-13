@@ -1,20 +1,20 @@
 @extends('layouts.legacy')
 
-@section('titulo_browser',$aux=trans('layout.publications'). ' - LookCrim')
+@section('titulo_browser',$aux=trans('layout.registers'). ' - LookCrim')
 
 @section('conteudo')
 
 <div class="main-website-interior">
     <h1 class="font-title-for-customization interior-title">
-        @lang('layout.publications')
+        @lang('layout.registers')
     </h1>
     <hr class="interior-title-line">
 
-    @include('publications.partials.view-toggle')
+    @include('registers.partials.view-toggle')
 
-    @if($publications[0] != null)
+    @if(count($registers) > 0)
     <div class="row row-list-research">
-        @each('partials.publications.short', $publications, 'publications')
+        @each('partials.registers.short', $registers, 'register')
     </div>
 
     @else
@@ -29,14 +29,13 @@
     @auth
         <div class="row research flex-align-center">
             <div class="col-xs-10 image">
-                <a class="btn btn-lookcrim btn-sm edit-text" href="{{route('publications-create')}}">
-                    @lang('buttons.add-publication')
+                <a class="btn btn-lookcrim btn-sm edit-text" href="{{ route('registers.create') }}">
+                    @lang('buttons.add-register')
                 </a>
         </div>
     </div>
     @endauth
 </div>
 
-
-{{ $publications->links()}}
+{{ $registers->links()}}
 @endsection

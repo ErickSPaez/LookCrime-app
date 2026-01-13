@@ -19,6 +19,7 @@ return [
     'delete' => 'Delete',
     'create' => 'Create',
     'add-new' => 'Add A New',
+    'add-register' => 'Add Register',
     'add-publication' => 'Add Register',
     'add-research' => 'Add A Researches',
     'by' => 'by',

@@ -17,7 +17,7 @@
     <h1 class="font-title-for-customization interior-title">{{ __('pages.map_title') }}</h1>
     <hr class="interior-title-line">
 
-    @include('publications.partials.view-toggle')
+    @include('registers.partials.view-toggle')
 
     <div style="margin-bottom:0.75rem">
         <div id="map-filters" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">

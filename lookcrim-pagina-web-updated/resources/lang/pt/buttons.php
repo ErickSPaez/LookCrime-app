@@ -19,6 +19,7 @@ return [
     'delete' => 'Eliminar',
     'create' => 'Criar',
     'add-new' => 'Adicionar Notícia',
+    'add-register' => 'Adicionar Registo',
     'add-publication' => 'Adicionar Registo',
     'add-research' => 'Adicionar Investigação',
     'by' => 'por',

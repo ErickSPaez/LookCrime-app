@@ -1,7 +1,7 @@
 @php
-    $isMap = request()->routeIs('publications-map') || request()->is('map');
-    $listUrl = route('publications');
-    $mapUrl = route('publications-map');
+    $isMap = request()->routeIs('registers.map') || request()->is('map');
+    $listUrl = route('registers.index');
+    $mapUrl = route('registers.map');
 @endphp
 
 <div class="d-flex align-items-center justify-content-end" style="margin: -6px 0 12px 0;">

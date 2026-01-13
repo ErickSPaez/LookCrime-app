@@ -14,7 +14,7 @@
 		<label for="title">{{ __('pages.title') }}</label>
 	</div>
 	<div class="col-xl-12 col-sm-8 textarea-edit">
-		<input type="text" name="title" id="title" value="{{ old('title', isset($publications) ? $publications->title() : '') }}" style="width:100%" class="form-control">
+		<input type="text" name="title" id="title" value="{{ old('title', isset($register) ? $register->title() : '') }}" style="width:100%" class="form-control">
 	</div>
 </div>
 
@@ -23,16 +23,16 @@
 		<label for="content">{{ 'Content' }}</label>
 	</div>
 	<div class="col-xl-12 col-sm-8 textarea-edit">
-		<textarea name="content" id="content" class="form-control">{{ old('content', isset($publications) ? $publications->content() : '') }}</textarea>
+		<textarea name="content" id="content" class="form-control">{{ old('content', isset($register) ? $register->content() : '') }}</textarea>
 	</div>
 </div>
 
 <div class="row">
 	<div class="col-12 textarea-lang">
-		<label for="image">Imagem</label>
+		<label for="images">Imagens (máx. 3)</label>
 	</div>
 	<div class="col-xl-12 col-sm-8 textarea-edit">
-		<input type="file" name="image" id="image" class="form-control-file">
+		<input type="file" name="images[]" id="images" class="form-control-file" accept="image/*" multiple>
 	</div>
 </div>
 
@@ -41,7 +41,7 @@
 		<label for="embed_url">Video embed URL</label>
 	</div>
 	<div class="col-xl-12 col-sm-8 textarea-edit">
-		<input type="text" name="embed_url" id="embed_url" value="{{ old('embed_url', isset($publications) ? $publications->get_embed_url() : '') }}" style="width:100%" class="form-control">
+		<input type="text" name="embed_url" id="embed_url" value="{{ old('embed_url', isset($register) ? $register->get_embed_url() : '') }}" style="width:100%" class="form-control">
 		<small class="form-text text-muted">Formato: https://www.youtube.com/embed/&lt;ID&gt; o https://player.vimeo.com/video/&lt;ID&gt;</small>
 	</div>
 </div>
@@ -53,7 +53,7 @@
 	<div class="col-xl-12 col-sm-8 textarea-edit">
 		<select name="category" id="category" class="form-control" style="width:100%">
 			@php
-				$cat = old('category', isset($publications) ? $publications->category : null);
+				$cat = old('category', isset($register) ? $register->category : null);
 			@endphp
 			<option value="">-- {{ __('pages.categories') }} --</option>
 			<option value="robo" {{ $cat == 'robo' ? 'selected' : '' }}>{{ __('pages.robo') }}</option>
@@ -68,7 +68,7 @@
 
 <div class="form-group row">
 	<div class="col-md-6">
-			<input type="checkbox" name="private" id="private" value="1" {{ old('private', isset($publications) ? $publications->private : 0) == 1 ? 'checked' : '' }}>
+			<input type="checkbox" name="private" id="private" value="1" {{ old('private', isset($register) ? $register->private : 0) == 1 ? 'checked' : '' }}>
 
 		@if ($errors->has('private'))
 			<span class="invalid-feedback" role="alert">
@@ -82,8 +82,7 @@
 
 <div class="row">
 	<div class="col-12 submit-text">
-		{{-- Map for selecting publication location --}}
-		@include('publications.partials.map')
+		@include('registers.partials.map')
 
 		<button type="submit" class="btn btn-lookcrim">{{ Lang::get('buttons.submit') }}</button>
 	</div>

@@ -784,27 +784,27 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     padding: 0;
 }
 
-.card-image-content.image-news img {
+.card-image-content.image-register img {
     width: 100%;
     height: auto;
     max-height: none;
 }
 
-.card-body.card-with-margin.card-news {
+.card-body.card-with-margin.card-register {
     padding: 12px;
 }
 
-.card-view-more.card-view-news {
+.card-view-more.card-view-register {
     text-align: left;
 }
 
-.news-date {
+.register-date {
     font-family: Trebuchet MS;
     font-size: 10px;
     color: grey;
 }
 
-.title-research.news-title {
+.title-research.register-title {
     margin-bottom: 0;
 }
 
@@ -931,30 +931,30 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     padding-top: 0;
 }
 
-.image-news-complete {
+.register-image-complete {
     text-align: center;
     margin: 4px auto;
 }
 
-.news-date.complete-news {
+.register-date.complete-register {
     text-align: center;
     color: rgb(0, 0, 0);
     font-size: 13px;
     margin-bottom: 44px;
 }
 
-.line-news-complete {
+.line-register-complete {
     border-top: 1px solid rgba(123, 30, 33, 0.12);
 }
 
-.news-content {
+.register-content {
     font-family: "Trebuchet MS" !important;
     margin: 40px 109px;
     font-size: 15px;
     line-height: 28px;
 }
 
-.font-title-for-customization.news-title {
+.font-title-for-customization.register-title {
     color: black !important;
     padding-top: 10px;
 }
@@ -964,7 +964,7 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     text-align: center;
 }
 
-.interior-title-line.news-line-title {
+.interior-title-line.register-line-title {
     border-color: black;
     margin-bottom: 10px;
 }
@@ -998,13 +998,13 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     margin-bottom: 0;
 }
 
-.newsletter-email {
+.register-email {
     width: 100% !important;
     text-align: center;
     margin: 15px;
 }
 
-.edit-text.newsletter-text-button {
+.edit-text.register-text-button {
     margin: 15px;
 }
 
@@ -1037,11 +1037,11 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     text-align: center;
 }
 
-.col-lg-20.newsletter-center {
+.col-lg-20.register-center {
     text-align: center;
 }
 
-.font-title-for-customization.news-title.color-black a {
+.font-title-for-customization.register-title.color-black a {
     color: black;
 }
 
@@ -1065,12 +1065,12 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     padding: 7px;
 }
 
-.card-newsletter-item {
+.card-register-item {
     max-width: 720px;
     margin: 80px auto;
 }
 
-.title-newsletter {
+.title-register {
     font-size: 18px;
     font-family: "Trebuchet MS" !important;
     margin-bottom: 0;
@@ -1080,7 +1080,7 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     margin: 7px;
 }
 
-.interior-title.news-newsletter {
+.interior-title.register-heading {
     text-align: left;
 }
 
@@ -1090,11 +1090,11 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
     background-color: rgba(123, 30, 33, 0.05);
 }
 
-.newsletter-unsubscribe {
+.register-unsubscribe {
     color: black;
     margin-top: 1rem;
 }
 
-.newsletter-unsubscribe a:hover {
+.register-unsubscribe a:hover {
     text-decoration: none;
 }

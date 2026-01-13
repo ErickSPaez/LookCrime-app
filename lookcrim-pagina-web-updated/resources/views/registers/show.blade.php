@@ -1,12 +1,12 @@
 @extends('layouts.legacy')
 
-@section('titulo_browser',$aux=trans('layout.publications'). ' - LookCrim')
+@section('titulo_browser',$aux=trans('layout.registers'). ' - LookCrim')
 
 @php
-	$lat = $publications->lat_from_location ?? $publications->latitude ?? null;
-	$lng = $publications->lng_from_location ?? $publications->longitude ?? null;
-	$authorName = $publications->user->name
-		?? $publications->user->email
+	$lat = $register->lat_from_location ?? $register->latitude ?? null;
+	$lng = $register->lng_from_location ?? $register->longitude ?? null;
+	$authorName = $register->user->name
+		?? $register->user->email
 		?? null;
 @endphp
 
@@ -22,7 +22,7 @@
 @endsection
 
 @section('conteudo')
-@include('partials.publications.show')
+@include('partials.registers.show')
 @endsection
 
 @section('pagescripts')

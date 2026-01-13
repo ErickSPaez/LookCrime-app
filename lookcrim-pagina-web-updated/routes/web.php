@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PublicationsController;
+use App\Http\Controllers\RegistersController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,17 +28,17 @@ Route::get('/banned', function () {
 
 // Gate all registers and map routes behind auth
 Route::middleware('auth')->group(function () {
-    Route::get('/registers', [PublicationsController::class, 'index'])->name('publications');
-    Route::get('/registers/{id}', [PublicationsController::class, 'show'])->name('publication')->where('id','[0-9]+');
+    Route::get('/registers', [RegistersController::class, 'index'])->name('registers.index');
+    Route::get('/registers/{id}', [RegistersController::class, 'show'])->name('registers.show')->where('id','[0-9]+');
 
-    Route::get('/registers/create', [PublicationsController::class, 'create'])->name('publications-create');
-    Route::post('/registers', [PublicationsController::class, 'store'])->name('publications-store');
-    Route::get('/registers/{id}/edit', [PublicationsController::class, 'edit'])->name('publications-edit')->where('id','[0-9]+');
-    Route::put('/registers/{id}', [PublicationsController::class, 'update'])->name('publications-update')->where('id','[0-9]+');
-    Route::get('/registers/{id}/delete', [PublicationsController::class, 'confirmDelete'])->name('publications-delete')->where('id','[0-9]+');
-    Route::post('/registers/{id}/delete', [PublicationsController::class, 'delete'])->name('publications-delete-post')->where('id','[0-9]+');
+    Route::get('/registers/create', [RegistersController::class, 'create'])->name('registers.create');
+    Route::post('/registers', [RegistersController::class, 'store'])->name('registers.store');
+    Route::get('/registers/{id}/edit', [RegistersController::class, 'edit'])->name('registers.edit')->where('id','[0-9]+');
+    Route::put('/registers/{id}', [RegistersController::class, 'update'])->name('registers.update')->where('id','[0-9]+');
+    Route::get('/registers/{id}/delete', [RegistersController::class, 'confirmDelete'])->name('registers.delete.confirm')->where('id','[0-9]+');
+    Route::post('/registers/{id}/delete', [RegistersController::class, 'delete'])->name('registers.delete')->where('id','[0-9]+');
 
-    Route::get('/map', [App\Http\Controllers\PublicationsController::class, 'map'])->name('publications-map');
+    Route::get('/map', [RegistersController::class, 'map'])->name('registers.map');
 });
 
         // Removed duplicated public registers routes; all gated above.
@@ -55,7 +55,7 @@ require __DIR__.'/auth.php';
 | Legacy public routes restored
 |--------------------------------------------------------------------------
 | These routes were copied from the legacy app to keep public endpoints
-| such as publications working after installing
+| such as registers working after installing
 | the Breeze auth scaffold.
 */
 

@@ -224,7 +224,7 @@ body {
     margin-bottom: 0.75rem;
 }
 
-.news-title, .interior-title {
+.register-title, .interior-title {
     margin-top: 1.25rem;
     margin-bottom: 1rem;
 }
@@ -263,8 +263,8 @@ body {
     padding: 0.45rem 0.9rem;
 }
 
-/* Make news card titles more prominent */
-.card-news .title-research, .news-title {
+/* Make card titles more prominent */
+.card-register .title-research, .register-title {
     font-size: 1.4rem;
 }
 
