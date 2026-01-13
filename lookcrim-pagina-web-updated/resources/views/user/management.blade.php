@@ -1,9 +1,10 @@
 @extends('layouts.legacy')
 
 @section('conteudo')
-    <div class="container">
-        <h1>{{ __('User Management') }}</h1>
-        <p>{{ __('Basic users list (paged).') }}</p>
+    <div class="main-website-interior user-management-panel">
+        <h1 class="font-title-for-customization register-title" style="margin-bottom:0;">{{ __('pages.management_title') }}</h1>
+        <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
+        <p class="user-management-subtitle">{{ __('pages.management_subtitle') }}</p>
 
         @if (session('success'))
             <div class="alert-success">{{ session('success') }}</div>
@@ -26,7 +27,7 @@
         </form>
         @endcan
 
-        <table class="table">
+        <table class="table table-wrapper">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -47,20 +48,20 @@
                         <td>{{ $user->created_at ? $user->created_at->format('Y-m-d') : '-' }}</td>
                         <td>
                             @can('edit_user')
-                                <a href="{{ route('users.edit', $user->id) }}" class="btn">{{ __('Edit') }}</a>
+                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-lookcrim-white btn-sm">{{ __('Edit') }}</a>
                             @endcan
 
                             @can('ban_user')
                                 <form id="ban-form-{{ $user->id }}" action="{{ route('users.ban', $user->id) }}" method="POST" style="display:inline">
                                     @csrf
-                                    <button type="button" class="btn lc-confirm-trigger" data-form-id="ban-form-{{ $user->id }}" data-title="{{ $user->banned ? __('Unban user') : __('Ban user') }}" data-message="{{ $user->banned ? __('Are you sure you want to unban this user?') : __('Are you sure you want to ban this user?') }}">{{ $user->banned ? __('Unban') : __('Ban') }}</button>
+                                    <button type="button" class="btn btn-lookcrim-white btn-sm lc-confirm-trigger" data-form-id="ban-form-{{ $user->id }}" data-title="{{ $user->banned ? __('Unban user') : __('Ban user') }}" data-message="{{ $user->banned ? __('Are you sure you want to unban this user?') : __('Are you sure you want to ban this user?') }}">{{ $user->banned ? __('Unban') : __('Ban') }}</button>
                                 </form>
                             @endcan
 
                             @can('admin')
                                 <form id="pwd-form-{{ $user->id }}" action="{{ route('users.password.create', $user->id) }}" method="POST" style="display:inline;margin-left:6px;">
                                     @csrf
-                                    <button type="button" class="btn lc-confirm-trigger" data-form-id="pwd-form-{{ $user->id }}" data-title="{{ __('Send Password Setup E-mail') }}" data-message="{{ __('Send password setup link to this user?') }}">{{ __('Send Password Setup E-mail') }}</button>
+                                    <button type="button" class="btn btn-lookcrim btn-sm lc-confirm-trigger" data-form-id="pwd-form-{{ $user->id }}" data-title="{{ __('Send Password Setup E-mail') }}" data-message="{{ __('Send password setup link to this user?') }}">{{ __('Send Password Setup E-mail') }}</button>
                                 </form>
                             @endcan
                         </td>

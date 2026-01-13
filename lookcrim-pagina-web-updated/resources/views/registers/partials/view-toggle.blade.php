@@ -8,14 +8,14 @@
     <div class="btn-group" role="group" aria-label="{{ __('pages.view_toggle_aria') }}">
         <a
             href="{{ $listUrl }}"
-            class="btn btn-sm {{ $isMap ? 'btn-secondary' : 'btn-lookcrim' }}"
+            class="btn btn-sm {{ $isMap ? 'btn-lookcrim-white' : 'btn-lookcrim' }}"
             aria-current="{{ $isMap ? 'false' : 'page' }}"
         >
             {{ __('pages.view_list') }}
         </a>
         <a
             href="{{ $mapUrl }}"
-            class="btn btn-sm {{ $isMap ? 'btn-lookcrim' : 'btn-secondary' }}"
+            class="btn btn-sm {{ $isMap ? 'btn-lookcrim' : 'btn-lookcrim-white' }}"
             aria-current="{{ $isMap ? 'page' : 'false' }}"
         >
             {{ __('pages.view_map') }}

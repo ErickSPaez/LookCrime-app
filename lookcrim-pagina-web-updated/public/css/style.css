@@ -1,3 +1,56 @@
+/* Panel de gestión de usuarios */
+.user-management-panel {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 820px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    padding: 24px 24px 16px 24px;
+}
+.user-management-panel h1.font-title-for-customization.register-title {
+    text-align: center;
+    font-size: 1.9rem;
+    color: rgb(123,30,33);
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    margin-bottom: 0;
+}
+.user-management-panel .interior-title-line.register-line-title {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 18px;
+    border-color: rgb(123,30,33);
+    max-width: 420px;
+}
+.user-management-subtitle {
+    text-align: center;
+    font-size: 0.98rem;
+    color: #444;
+    margin-bottom: 22px;
+    font-family: "Trebuchet MS", Arial, sans-serif;
+}
+.user-management-panel .table-wrapper {
+    margin: 0 auto 18px auto;
+    box-shadow: none;
+    border-radius: 6px;
+    padding: 0;
+    background: #fff;
+}
+.user-management-panel .table th, .user-management-panel .table td {
+    font-family: "Trebuchet MS", Arial, sans-serif;
+    font-size: 0.92rem;
+}
+.user-management-panel .btn-lookcrim, .user-management-panel .btn-lookcrim-white {
+    font-size: 0.86rem;
+    padding: 3px 10px;
+    margin-bottom: 2px;
+}
+.user-management-panel .btn-lookcrim-white {
+    border-width: 2px;
+}
+.user-management-panel form, .user-management-panel .table {
+    margin-bottom: 18px;
+}
 .bg-lcred2 {
     background-color: rgb(123,30,33) !important;
     height: 100%;
@@ -36,15 +89,15 @@
     color: #000000;
     display: block;
     margin: 0 13px;
-    font-size: 18px;
-    line-height: 90px;
+    font-size: 16px;
+    line-height: 82px;
 }
 
 .logo-head-bar{
     font-weight: 500 !important;
     font-family: "Trebuchet MS" !important;
     color: #000000 !important;
-    font-size: 150%;
+    font-size: 140%;
     display: block;
     padding-bottom: 1px;
     padding-top: 1px;
@@ -107,7 +160,7 @@
 }
 
 .line-menubar {
-    height: 90px;
+    height: 82px;
     width: 3px;
     background-color: rgb(123,30,33);
     margin: 0 1rem 0 2rem;
@@ -298,14 +351,14 @@ img{
 
 .font-top-menu {
     color: white;
-    font-size: 14px;
+    font-size: 13px;
     padding: 10px;
     display: inline-block;
     vertical-align: middle;
 }
 
 .font-top-menu.lang {
-    font-size: 11px;
+    font-size: 10px;
     display: inline-block;
     vertical-align: middle;
 }
@@ -955,7 +1008,7 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
 }
 
 .font-title-for-customization.register-title {
-    color: black !important;
+    color: rgb(123,30,33) !important;
     padding-top: 10px;
 }
 
@@ -965,7 +1018,7 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
 }
 
 .interior-title-line.register-line-title {
-    border-color: black;
+    border-color: rgb(123,30,33) !important;
     margin-bottom: 10px;
 }
 
@@ -1097,4 +1150,30 @@ li.active .font-head-bar-black .font-head-bar-black-effect {
 
 .register-unsubscribe a:hover {
     text-decoration: none;
+}
+
+/* Ensure LookCrime button variants win over generic .btn styles (e.g. Vite app.css) */
+.btn.btn-lookcrim {
+    color: #fff;
+    background-color: rgb(123,30,33);
+    border-color: rgb(123,30,33);
+}
+
+.btn.btn-lookcrim:hover {
+    background-color: white;
+    border-color: rgb(123,30,33);
+    color: rgb(123,30,33);
+    box-shadow: 0 6px 8px 0 rgba(123,30,33,0.24), 0 2px 10px 0 rgba(123,30,33,0.19);
+}
+
+.btn.btn-lookcrim-white {
+    color: rgb(123,30,33);
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(123,30,33);
+}
+
+.btn.btn-lookcrim-white:hover {
+    color: #fff;
+    background-color: rgb(123,30,33);
+    border-color: rgb(123,30,33);
 }

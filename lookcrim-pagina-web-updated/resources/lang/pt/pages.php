@@ -54,6 +54,7 @@ return [
      */
 
     'management_title' => 'Gestão de Utilizadores',
+    'management_subtitle' => '',
     'name' => 'Nome',
     'verified_account' => 'Conta Verificada',
     'yes' => 'Sim',
@@ -123,7 +124,8 @@ return [
     'construccion' => 'Construção',
     'otro' => 'Outro'
     , 'categories' => 'Categorias'
-    , 'map_title' => 'Mapa de publicações'
+    , 'category' => 'Categoria'
+    , 'map_title' => 'Mapa de registos'
     , 'radius_km' => 'Raio (km)'
     , 'types' => 'Tipos'
     , 'select_all' => 'Seleccionar tudo'

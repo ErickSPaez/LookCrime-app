@@ -56,6 +56,7 @@ return [
      */
 
     'management_title' => 'Users Management',
+    'management_subtitle' => '',
     'name' => 'Name',
     'verified_account' => 'Verified Account',
     'yes' => 'Yes',
@@ -103,7 +104,8 @@ return [
     'construccion' => 'Construction',
     'otro' => 'Other',
     'categories' => 'Categories',
-    'map_title' => 'Map of publications',
+    'category' => 'Category',
+    'map_title' => 'Map of Registers',
     'radius_km' => 'Radius (km)',
     'types' => 'Types',
     'select_all' => 'Select all',

@@ -9,6 +9,100 @@
         .map-legend { background: #fff; padding: 8px 10px; border-radius:4px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
         .map-legend .item { display:flex; align-items:center; margin-bottom:6px; font-size:0.9rem; }
         .map-legend .swatch { width:14px; height:14px; border-radius:3px; display:inline-block; margin-right:8px; border:1px solid #3333; }
+
+        /* Filters panel (visual only) */
+        .lc-map-panel {
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 12px;
+            margin-bottom: 14px;
+        }
+        .lc-map-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .lc-map-panel-head .view-toggle-wrap { margin-left: auto; }
+
+        #map-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .lc-map-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 14px;
+            align-items: center;
+        }
+        .lc-map-row .lc-field {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .lc-types-field { align-items: flex-start; }
+        .lc-label { font-size: 0.9rem; font-weight: 600; color: #333; }
+        .lc-small { font-size: 0.9rem; }
+
+        .lc-map-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .lc-map-info { margin-left: auto; font-size: 0.9rem; color: #666; }
+
+        /* Hide select-location button while in select mode (keep spacing) */
+        .lc-btn-invisible {
+            visibility: hidden;
+        }
+
+        /* Make type checkboxes wrap nicely */
+        .lc-types-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        #filter-types-container {
+            display: grid;
+            grid-template-columns: repeat(3, max-content);
+            column-gap: 14px;
+            row-gap: 6px;
+            align-items: center;
+            min-width: 180px;
+        }
+        #filter-types-container label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        /* Secondary button fallback (since markup uses class="btn-secondary" without bootstrap "btn") */
+        .btn-secondary {
+            display: inline-block;
+            padding: 6px 10px;
+            min-height: 34px;
+            background: #6c757d;
+            color: #fff;
+            border: 1px solid #5a6268;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        .btn-secondary:hover {
+            background: rgb(123,30,33);
+            border-color: rgb(123,30,33);
+            color: #fff;
+        }
+        .btn-secondary:focus { outline: none; box-shadow: 0 0 0 0.2rem rgba(108,117,125,0.25); }
+
+        @media (max-width: 768px) {
+            .lc-map-actions, .lc-map-info { margin-left: 0; }
+            #filter-types-container { grid-template-columns: repeat(2, max-content); }
+        }
     </style>
 @endsection
 
@@ -17,47 +111,74 @@
     <h1 class="font-title-for-customization interior-title">{{ __('pages.map_title') }}</h1>
     <hr class="interior-title-line">
 
-    @include('registers.partials.view-toggle')
 
-    <div style="margin-bottom:0.75rem">
-        <div id="map-filters" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <label style="font-size:0.9rem">{{ __('pages.radius_km') }}:
-                <input id="filter-radius" type="number" step="0.5" min="0" value="5" style="width:80px;margin-left:6px"> 
-            </label>
-            <label style="font-size:0.9rem">{{ __('pages.types') }}:</label>
-                <div id="filter-types-container" style="display:inline-block;min-width:180px;max-width:420px;margin-left:6px;vertical-align:middle">
-                    @foreach($categoryLabels as $k => $v)
-                        <label style="display:inline-block;margin-right:8px;white-space:nowrap"><input class="filter-type" type="checkbox" value="{{ $k }}"> {{ $v }}</label>
-                    @endforeach
+    <div class="lc-map-panel">
+        <div class="lc-map-panel-head">
+            <div class="view-toggle-wrap">
+                @include('registers.partials.view-toggle')
+            </div>
+        </div>
+
+        <div id="map-filters">
+            <div class="lc-map-row">
+                <div class="lc-field">
+                    <span class="lc-label">{{ __('pages.radius_km') }}:</span>
+                    <input id="filter-radius" type="number" step="0.5" min="0" value="5" style="width:90px">
                 </div>
-                <button id="select-all-types" type="button" class="btn-secondary" style="margin-left:6px;padding:6px 8px;min-width:90px">{{ __('pages.select_all') }}</button>
-                <button id="btn-select-location" type="button" class="btn-secondary" style="margin-left:6px;padding:6px 8px;min-width:120px;background:#6c757d;color:#fff;border:1px solid #5a6268;border-radius:4px;overflow:visible;" aria-label="{{ __('pages.select_location') }}">
-                    <span class="btn-label" style="color:#fff;font-weight:600;display:inline-block;visibility:visible!important;opacity:1!important;text-indent:0!important;text-shadow:none!important;-webkit-text-fill-color:#fff!important">{{ __('pages.select_location') }}</span>
-                </button>
-            <label style="font-size:0.9rem">
-                <input type="checkbox" id="use-bbox"> {{ __('pages.search_in_map_view') }}
-            </label>
-            <!-- User filter (minimal) -->
-            <label style="font-size:0.9rem">{{ __('pages.users') }}:
-                <select id="filter-user" style="margin-left:6px;min-width:180px">
-                    <option value="">{{ __('pages.all_users') }}</option>
-                    @if(isset($users) && count($users))
-                        @foreach($users as $u)
-                            <option value="{{ $u->id }}">{{ $u->name ?? $u->email ?? ('User '+$u->id) }}</option>
-                        @endforeach
-                    @endif
-                </select>
-            </label>
-            <!-- Time range filter (minimal) -->
-            <label style="font-size:0.9rem">{{ __('pages.filter_by_time') }}:
-                <input id="filter-from" type="date" style="margin-left:6px"> — <input id="filter-to" type="date">
-            </label>
-            <label style="font-size:0.9rem">
-                <input type="checkbox" id="use-my-location"> {{ __('pages.use_my_location') }}
-            </label>
-            <button id="apply-filters" class="btn-lookcrim">{{ __('pages.apply') }}</button>
-            <button id="clear-filters" class="btn-secondary">{{ __('pages.clear') }}</button>
-            <div id="map-info" style="margin-left:auto;font-size:0.9rem;color:#666"></div>
+
+                <div class="lc-field">
+                    <span class="lc-label">{{ __('pages.users') }}:</span>
+                    <select id="filter-user" style="min-width:180px">
+                        <option value="">{{ __('pages.all_users') }}</option>
+                        @if(isset($users) && count($users))
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}">{{ $u->name ?? $u->email ?? ('User '+$u->id) }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                </div>
+
+                <div class="lc-field">
+                    <span class="lc-label">{{ __('pages.filter_by_time') }}:</span>
+                    <input id="filter-from" type="date">
+                    <span class="lc-small">—</span>
+                    <input id="filter-to" type="date">
+                </div>
+            </div>
+
+            <div class="lc-map-row">
+                <div class="lc-field lc-types-field">
+                    <span class="lc-label">{{ __('pages.types') }}:</span>
+                    <div class="lc-types-wrap">
+                        <div id="filter-types-container">
+                            @foreach($categoryLabels as $k => $v)
+                                <label><input class="filter-type" type="checkbox" value="{{ $k }}"> {{ $v }}</label>
+                            @endforeach
+                        </div>
+                        <button id="select-all-types" type="button" class="btn-secondary">{{ __('pages.select_all') }}</button>
+                    </div>
+                </div>
+                <div class="lc-map-actions">
+                    <button id="btn-select-location" type="button" class="btn-secondary" aria-label="{{ __('pages.select_location') }}">
+                        {{ __('pages.select_location') }}
+                    </button>
+                    <button id="apply-filters" class="btn-lookcrim">{{ __('pages.apply') }}</button>
+                    <button id="clear-filters" class="btn-secondary">{{ __('pages.clear') }}</button>
+                </div>
+            </div>
+
+            <div class="lc-map-row">
+                <div class="lc-field">
+                    <label class="lc-small" style="margin:0">
+                        <input type="checkbox" id="use-bbox"> {{ __('pages.search_in_map_view') }}
+                    </label>
+                    <label class="lc-small" style="margin:0">
+                        <input type="checkbox" id="use-my-location"> {{ __('pages.use_my_location') }}
+                    </label>
+                </div>
+
+                <div class="lc-map-info" id="map-info"></div>
+            </div>
         </div>
     </div>
 
@@ -281,39 +402,31 @@ document.addEventListener('DOMContentLoaded', function(){
     // allow user to pick a center by clicking the map
     let selectMode = false; // when true, clicks set center; when false, clicks interact with markers
     const selectBtn = document.getElementById('btn-select-location');
+    const mapInfoEl = document.getElementById('map-info');
+    let previousMapInfoText = '';
     function setSelectMode(enabled){
         selectMode = !!enabled;
-        // ensure the button and label remain visible regardless of other CSS
-        try{
-            selectBtn.style.color = '#fff';
-            const lblEl = selectBtn.querySelector('.btn-label');
-            if(lblEl){
-                lblEl.style.color = '#fff';
-                lblEl.style.visibility = 'visible';
-                lblEl.style.opacity = '1';
-                lblEl.style.textIndent = '0';
-                lblEl.style.textShadow = 'none';
-                lblEl.style.webkitTextFillColor = '#fff';
-            }
-        }catch(e){}
         if(selectMode){
-            const lbl = selectBtn.querySelector('.btn-label'); if(lbl) lbl.textContent = TRANSLATIONS.select_location + ' — ' + TRANSLATIONS.select_location_mode; else selectBtn.textContent = TRANSLATIONS.select_location + ' — ' + TRANSLATIONS.select_location_mode;
+            // Keep original button text; hide button while user selects on the map
+            const lbl = selectBtn.querySelector('.btn-label');
+            if(lbl) lbl.textContent = TRANSLATIONS.select_location; else selectBtn.textContent = TRANSLATIONS.select_location;
+            selectBtn.classList.add('lc-btn-invisible');
             selectBtn.classList.add('active');
-            document.getElementById('map-info').textContent = TRANSLATIONS.select_location_mode;
+
+            // Show the hint on the right side (bottom) of the panel
+            previousMapInfoText = mapInfoEl ? (mapInfoEl.textContent || '') : '';
+            if(mapInfoEl) mapInfoEl.textContent = TRANSLATIONS.select_location_mode;
             map.getContainer().style.cursor = 'crosshair';
         } else {
-            const lbl2 = selectBtn.querySelector('.btn-label'); if(lbl2) lbl2.textContent = TRANSLATIONS.select_location; else selectBtn.textContent = TRANSLATIONS.select_location;
-            // re-apply visibility styles after toggling off
-            try{
-                selectBtn.style.color = '#fff';
-                if(lbl2){
-                    lbl2.style.color = '#fff';
-                    lbl2.style.visibility = 'visible';
-                    lbl2.style.opacity = '1';
-                }
-            }catch(e){}
+            const lbl2 = selectBtn.querySelector('.btn-label');
+            if(lbl2) lbl2.textContent = TRANSLATIONS.select_location; else selectBtn.textContent = TRANSLATIONS.select_location;
+            selectBtn.classList.remove('lc-btn-invisible');
             selectBtn.classList.remove('active');
-            document.getElementById('map-info').textContent = '';
+
+            // Restore previous info text if we were showing the select hint
+            if(mapInfoEl && mapInfoEl.textContent === TRANSLATIONS.select_location_mode){
+                mapInfoEl.textContent = previousMapInfoText;
+            }
             map.getContainer().style.cursor = '';
         }
     }
