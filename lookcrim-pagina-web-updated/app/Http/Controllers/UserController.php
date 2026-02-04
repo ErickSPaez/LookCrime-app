@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
+use App\Notifications\SetPasswordNotification;
 
 class UserController extends Controller
 {
@@ -53,12 +54,8 @@ class UserController extends Controller
         }
 
         try {
-            $status = Password::sendResetLink(['email' => $user->email]);
-            if ($status !== Password::RESET_LINK_SENT) {
-                return Redirect::back()
-                    ->withInput()
-                    ->withErrors(['email' => __($status)]);
-            }
+            $token = Password::broker()->createToken($user);
+            $user->notify(new SetPasswordNotification($token));
         } catch (\Throwable $e) {
             return Redirect::route('users-list')
                 ->with('error', __('Email send failed: :message', ['message' => $e->getMessage()]));
@@ -82,10 +79,8 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
         try {
-            $status = Password::sendResetLink(['email' => $user->email]);
-            if ($status !== Password::RESET_LINK_SENT) {
-                return Redirect::back()->with('error', __($status));
-            }
+            $token = Password::broker()->createToken($user);
+            $user->notify(new SetPasswordNotification($token));
         } catch (\Throwable $e) {
             return Redirect::back()->with('error', __('Email send failed: :message', ['message' => $e->getMessage()]));
         }

@@ -60,15 +60,11 @@ Documentar todo. (Tarea 9)
 DEV LOCAL (en tu PC, con HMR):
 Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated"; php artisan optimize:clear; Start-Process php -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow; npm run dev
 
-DEMO PUBLICO (Cloudflare Tunnel, que se vea igual desde afuera):
-# Importante: NO usar npm run dev, porque crea public/hot y el CSS/JS apunta a localhost:5173 (desde afuera se rompe y se ve “sin estilos”).
-Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated"; .\scripts\public-demo-start.ps1
-
-PARAR DEMO PUBLICO:
-Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated"; .\scripts\public-demo-stop.ps1
+DEMO PUBLICO:
+Pendiente: deploy a un hosting real (ej. Google Cloud) cuando el proyecto esté listo.
 
 DEV LOCAL (ruta alternativa):
 Set-Location "C:\proyectofinal2025\LookCrime-app\lookcrim-pagina-web-updated"; php artisan optimize:clear; Start-Process php -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow; npm run dev
 
 DEMO PUBLICO (ruta alternativa):
-Set-Location "C:\proyectofinal2025\LookCrime-app\lookcrim-pagina-web-updated"; .\scripts\public-demo-start.ps1
+Pendiente: deploy a un hosting real (ej. Google Cloud) cuando el proyecto esté listo.

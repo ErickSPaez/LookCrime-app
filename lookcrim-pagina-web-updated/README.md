@@ -37,12 +37,9 @@ php artisan serve
 - Para desarrollo con hot reload: `npm install` y `npm run dev`.
 - Para producción/demos (sin `public/hot`): `npm run build`.
 
-### Demo público (Cloudflare Tunnel)
+### Demo público
 
-- Iniciar (build + Laravel + tunnel y muestra URL): `./scripts/public-demo-start.ps1`
-- Detener: `./scripts/public-demo-stop.ps1`
-
-Nota: el link `trycloudflare.com` es temporal y cambia en cada inicio.
+Este repo ya no incluye scripts de túnel (Cloudflare Tunnel/LocalTunnel). Para una demo pública, la idea es desplegarlo en un hosting real (por ejemplo Google Cloud) cuando el proyecto esté listo.
 
 ## About Laravel
 
