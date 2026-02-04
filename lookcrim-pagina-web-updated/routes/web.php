@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RegistersController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,14 +16,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return redirect('/login');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Removed legacy /register alias to avoid shadowing Breeze's registration route
 
 // Gate all registers and map routes behind auth
 Route::middleware('auth')->group(function () {
+    Route::get('/no-access', function () {
+        return view('no-access');
+    })->name('no-access');
+
     Route::get('/registers', [RegistersController::class, 'index'])->name('registers.index');
     Route::get('/registers/{id}', [RegistersController::class, 'show'])->name('registers.show')->where('id','[0-9]+');
 
@@ -34,6 +37,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/registers/{id}/delete', [RegistersController::class, 'delete'])->name('registers.delete')->where('id','[0-9]+');
 
     Route::get('/map', [RegistersController::class, 'map'])->name('registers.map');
+
+    // Map search endpoint used by /map (fetch without CSRF token)
+    Route::post('/api/registers/search-radius', [\App\Http\Controllers\Api\RegistersSearchController::class, 'search']);
 });
 
         // Removed duplicated public registers routes; all gated above.
@@ -75,6 +81,11 @@ Route::namespace('App\\Http\\Controllers')->group(function () {
         ->name('users.store')
         ->middleware(['auth','permission:create_user','can:admin']);
 
+    Route::post('/user/password/{id}', [\App\Http\Controllers\UserController::class, 'resendPasswordSetupEmail'])
+        ->name('users.password.resend')
+        ->where('id','[0-9]+')
+        ->middleware(['auth','permission:create_user','can:admin']);
+
     Route::get('/user/{id}/edit', [\App\Http\Controllers\UserController::class, 'edit'])
         ->name('users.edit')
         ->middleware(['auth','permission:edit_user']);
@@ -90,25 +101,50 @@ Route::namespace('App\\Http\\Controllers')->group(function () {
     // Page Settings - Roles management
     Route::get('/settings/roles', [\App\Http\Controllers\Settings\RolesController::class, 'index'])
         ->name('settings.roles.index')
-        ->middleware(['auth','permission:view_page_settings_roles']);
+        ->middleware(['auth']);
 
     Route::get('/settings/roles/{slug}/edit', [\App\Http\Controllers\Settings\RolesController::class, 'edit'])
         ->name('settings.roles.edit')
-        ->middleware(['auth','permission:edit_role']);
+        ->middleware(['auth']);
 
     Route::put('/settings/roles/{slug}', [\App\Http\Controllers\Settings\RolesController::class, 'update'])
         ->name('settings.roles.update')
-        ->middleware(['auth','permission:edit_role']);
+        ->middleware(['auth']);
 
     Route::get('/settings/roles/create', [\App\Http\Controllers\Settings\RolesController::class, 'create'])
         ->name('settings.roles.create')
-        ->middleware(['auth','permission:create_role']);
+        ->middleware(['auth']);
 
     Route::post('/settings/roles', [\App\Http\Controllers\Settings\RolesController::class, 'store'])
         ->name('settings.roles.store')
-        ->middleware(['auth','permission:create_role']);
+        ->middleware(['auth']);
 
     Route::delete('/settings/roles/{slug}', [\App\Http\Controllers\Settings\RolesController::class, 'destroy'])
         ->name('settings.roles.destroy')
-        ->middleware(['auth','permission:delete_role']);
+        ->middleware(['auth']);
+
+    // Page Settings - City management
+    Route::get('/settings/city', [\App\Http\Controllers\Settings\CitiesController::class, 'index'])
+        ->name('settings.city.index')
+        ->middleware(['auth']);
+
+    Route::get('/settings/city/create', [\App\Http\Controllers\Settings\CitiesController::class, 'create'])
+        ->name('settings.city.create')
+        ->middleware(['auth']);
+
+    Route::post('/settings/city', [\App\Http\Controllers\Settings\CitiesController::class, 'store'])
+        ->name('settings.city.store')
+        ->middleware(['auth']);
+
+    Route::get('/settings/city/{slug}/edit', [\App\Http\Controllers\Settings\CitiesController::class, 'edit'])
+        ->name('settings.city.edit')
+        ->middleware(['auth']);
+
+    Route::put('/settings/city/{slug}', [\App\Http\Controllers\Settings\CitiesController::class, 'update'])
+        ->name('settings.city.update')
+        ->middleware(['auth']);
+
+    Route::delete('/settings/city/{slug}', [\App\Http\Controllers\Settings\CitiesController::class, 'destroy'])
+        ->name('settings.city.destroy')
+        ->middleware(['auth']);
 });

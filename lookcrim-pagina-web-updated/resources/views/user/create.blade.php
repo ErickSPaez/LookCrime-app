@@ -63,6 +63,25 @@
                     </div>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group" style="width:100%">
+                        <label class="form-label">{{ __('pages.city_name') }}</label>
+                        @if(isset($cities) && $cities->count())
+                            <select class="form-input" name="city_id" required>
+                                <option value="" disabled {{ old('city_id') ? '' : 'selected' }}>—</option>
+                                @foreach($cities as $city)
+                                    <option value="{{ $city->id }}" {{ (string)old('city_id') === (string)$city->id ? 'selected' : '' }}>{{ $city->name }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <div class="alert alert-warning" style="margin:0;">{{ __('pages.no_cities_defined') }}. <a href="{{ route('settings.city.create') }}">{{ __('pages.create_city') }}</a></div>
+                            <select class="form-input" name="city_id" required disabled>
+                                <option value="" selected>—</option>
+                            </select>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button class="btn-lookcrim" type="submit">{{ __('Create') }}</button>
                     <a href="{{ route('users-list') }}" class="btn-secondary">{{ __('Cancel') }}</a>

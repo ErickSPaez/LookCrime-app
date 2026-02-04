@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Register;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -16,6 +17,11 @@ class RegistersSearchController extends Controller
      */
     public function search(Request $req)
     {
+        $authUser = Auth::user();
+        if (!$authUser) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $lat = $req->input('lat');
         $lng = $req->input('lng');
         $radius = (int) $req->input('radius_m', 0);
@@ -41,14 +47,40 @@ class RegistersSearchController extends Controller
         $bindings = [];
         $whereClauses = [];
 
+        // Support legacy rows where `location` is NULL but `latitude`/`longitude` exist.
+        $pointExpr = "COALESCE(location, CASE WHEN longitude IS NOT NULL AND latitude IS NOT NULL THEN ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) END)";
+
+        // City restriction (always applied unless admin or city-bypass permission)
+        if (
+            !(bool) ($authUser->admin ?? false) &&
+            !$authUser->can('view_any_city_registers') &&
+            !$authUser->can('view_any_city')
+        ) {
+            $city = null;
+            try {
+                $city = $authUser->city()->first();
+            } catch (\Throwable $e) {
+                $city = null;
+            }
+
+            if (!$city) {
+                return response()->json(['error' => 'City not assigned'], 403);
+            }
+
+            $whereClauses[] = "ST_DWithin(($pointExpr)::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ? )";
+            $bindings[] = (float) $city->center_lng;
+            $bindings[] = (float) $city->center_lat;
+            $bindings[] = (int) $city->radius_m;
+        }
+
         if ($radius > 0 && is_numeric($lat) && is_numeric($lng)) {
-            $whereClauses[] = "ST_DWithin(location::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ? )";
+            $whereClauses[] = "ST_DWithin(($pointExpr)::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ? )";
             $bindings[] = $lng;
             $bindings[] = $lat;
             $bindings[] = $radius;
         } elseif (is_array($bbox) && count($bbox) === 4) {
             // bbox: [lngMin, latMin, lngMax, latMax]
-            $whereClauses[] = "location && ST_MakeEnvelope(?, ?, ?, ?, 4326)";
+            $whereClauses[] = "($pointExpr) && ST_MakeEnvelope(?, ?, ?, ?, 4326)";
             $bindings[] = $bbox[0];
             $bindings[] = $bbox[1];
             $bindings[] = $bbox[2];
@@ -107,10 +139,10 @@ class RegistersSearchController extends Controller
         // choose localized title column (model stores title_en/title_pt)
         $locale = app()->getLocale();
         $titleCol = $locale === 'en' ? 'title_en' : 'title_pt';
-        $sql = "SELECT id, {$titleCol} AS title, category, ST_AsGeoJSON(location) AS geo, created_at FROM registers $whereSql ";
+        $sql = "SELECT id, {$titleCol} AS title, category, ST_AsGeoJSON($pointExpr) AS geo, created_at FROM registers $whereSql ";
 
         if ($radius > 0 && is_numeric($lat) && is_numeric($lng)) {
-            $sql .= " ORDER BY ST_Distance(location::geography, ST_SetSRID(ST_MakePoint(?, ?),4326)::geography) ";
+            $sql .= " ORDER BY ST_Distance(($pointExpr)::geography, ST_SetSRID(ST_MakePoint(?, ?),4326)::geography) ";
             $bindings[] = $lng;
             $bindings[] = $lat;
         } else {

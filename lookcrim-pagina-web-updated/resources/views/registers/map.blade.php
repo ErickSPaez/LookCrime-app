@@ -99,6 +99,32 @@
         }
         .btn-secondary:focus { outline: none; box-shadow: 0 0 0 0.2rem rgba(108,117,125,0.25); }
 
+        /* Crosshair center marker for radius mode */
+        .lc-center-icon {
+            background: transparent;
+            border: 0;
+        }
+        .lc-crosshair {
+            width: 18px;
+            height: 18px;
+            position: relative;
+            pointer-events: none;
+            opacity: 0.95;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));
+        }
+        .lc-crosshair::before,
+        .lc-crosshair::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            background: rgb(123,30,33);
+            transform: translate(-50%, -50%);
+            border-radius: 1px;
+        }
+        .lc-crosshair::before { width: 18px; height: 2px; }
+        .lc-crosshair::after { width: 2px; height: 18px; }
+
         @media (max-width: 768px) {
             .lc-map-actions, .lc-map-info { margin-left: 0; }
             #filter-types-container { grid-template-columns: repeat(2, max-content); }
@@ -121,7 +147,7 @@
 
         <div id="map-filters">
             <div class="lc-map-row">
-                <div class="lc-field">
+                <div class="lc-field" id="radius-field">
                     <span class="lc-label">{{ __('pages.radius_km') }}:</span>
                     <input id="filter-radius" type="number" step="0.5" min="0" value="5" style="width:90px">
                 </div>
@@ -162,16 +188,13 @@
                     <button id="btn-select-location" type="button" class="btn-secondary" aria-label="{{ __('pages.select_location') }}">
                         {{ __('pages.select_location') }}
                     </button>
-                    <button id="apply-filters" class="btn-lookcrim">{{ __('pages.apply') }}</button>
                     <button id="clear-filters" class="btn-secondary">{{ __('pages.clear') }}</button>
                 </div>
             </div>
 
             <div class="lc-map-row">
                 <div class="lc-field">
-                    <label class="lc-small" style="margin:0">
-                        <input type="checkbox" id="use-bbox"> {{ __('pages.search_in_map_view') }}
-                    </label>
+                    <button id="toggle-search-mode" type="button" class="btn-secondary"></button>
                     <label class="lc-small" style="margin:0">
                         <input type="checkbox" id="use-my-location"> {{ __('pages.use_my_location') }}
                     </label>
@@ -197,6 +220,7 @@
             'select_location' => __('pages.select_location'),
             'select_location_mode' => __('pages.select_location_mode'),
             'search_in_map_view' => __('pages.search_in_map_view'),
+            'search_by_radius' => __('pages.search_by_radius'),
             'use_my_location' => __('pages.use_my_location'),
             'apply' => __('pages.apply'),
             'clear' => __('pages.clear'),
@@ -224,7 +248,19 @@ document.addEventListener('DOMContentLoaded', function(){
     // publications data prepared in controller (initial set)
     const publications = @json($mapData);
 
-    const defaultCenter = (publications.length && publications[0].lat) ? [publications[0].lat, publications[0].lng] : [40.4168, -3.7038];
+    @php
+        $__userCity = (isset($city) && $city) ? [
+            'name' => (string) ($city->name ?? ''),
+            'lat' => (float) $city->center_lat,
+            'lng' => (float) $city->center_lng,
+            'radius_m' => (int) $city->radius_m,
+        ] : null;
+    @endphp
+    const userCity = @json($__userCity);
+
+    const defaultCenter = userCity
+        ? [userCity.lat, userCity.lng]
+        : ((publications.length && publications[0].lat) ? [publications[0].lat, publications[0].lng] : [40.4168, -3.7038]);
     const map = L.map('publications-map').setView(defaultCenter, publications.length ? 12 : 5);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -248,9 +284,73 @@ document.addEventListener('DOMContentLoaded', function(){
     // we will manage markers in a layer group so we can replace them on searches
     const markersLayer = L.layerGroup().addTo(map);
     let searchCircle = null;
+    let cityBoundaryCircle = null;
     let userLocationMarker = null;
     let centerMarker = null;
     let currentCenter = null; // store actual center (could be user location)
+
+    // Search mode: bbox (current map view) or radius.
+    let searchMode = 'bbox';
+    const radiusFieldEl = document.getElementById('radius-field');
+    const searchModeBtn = document.getElementById('toggle-search-mode');
+    const selectBtn = document.getElementById('btn-select-location');
+    let searchTimer = null;
+    let activeSearchController = null;
+
+    const centerIcon = L.divIcon({
+        className: 'lc-center-icon',
+        html: '<div class="lc-crosshair" aria-hidden="true"></div>',
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+    });
+
+    if (userCity && userCity.radius_m && userCity.radius_m > 0) {
+        try {
+            cityBoundaryCircle = L.circle([userCity.lat, userCity.lng], {
+                radius: userCity.radius_m,
+                color: 'rgba(123,30,33,0.55)',
+                weight: 1,
+                dashArray: '4,6',
+                fillOpacity: 0.02,
+                interactive: false,
+            }).addTo(map);
+            map.fitBounds(cityBoundaryCircle.getBounds(), { padding: [20, 20] });
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    function isRadiusMode(){
+        return searchMode === 'radius';
+    }
+
+    function setSearchMode(mode){
+        searchMode = (mode === 'radius') ? 'radius' : 'bbox';
+
+        if(radiusFieldEl){
+            radiusFieldEl.style.display = isRadiusMode() ? '' : 'none';
+        }
+
+        if(selectBtn){
+            selectBtn.style.display = isRadiusMode() ? '' : 'none';
+        }
+
+        if(searchModeBtn){
+            // Button shows the action to switch to the other mode.
+            searchModeBtn.textContent = isRadiusMode() ? TRANSLATIONS.search_in_map_view : TRANSLATIONS.search_by_radius;
+        }
+
+        if(!isRadiusMode()){
+            try{ setSelectMode(false); }catch(e){/* ignore */}
+            if(searchCircle){ map.removeLayer(searchCircle); searchCircle = null; }
+            if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
+        }
+    }
+
+    function scheduleSearch(){
+        if(searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(function(){ performSearch(); }, 300);
+    }
     function addPublicationMarker(pub){
         if(!pub.lat || !pub.lng) return null;
         const cat = pub.category || (pub.properties && pub.properties.category) || '';
@@ -352,6 +452,10 @@ document.addEventListener('DOMContentLoaded', function(){
     function updateSearchCircle(){
         const radiusKm = parseFloat(document.getElementById('filter-radius').value) || 0;
         const meters = Math.round(radiusKm * 1000);
+        if(!isRadiusMode()){
+            if(searchCircle){ map.removeLayer(searchCircle); searchCircle = null; }
+            return;
+        }
         // Only draw a circle if the user explicitly selected a center (currentCenter)
         if(!currentCenter){
             if(searchCircle){ map.removeLayer(searchCircle); searchCircle = null; }
@@ -362,15 +466,32 @@ document.addEventListener('DOMContentLoaded', function(){
         if(meters > 0){
             searchCircle = L.circle([center.lat, center.lng], { radius: meters, color: '#d9534f', weight: 1, fillOpacity: 0.08, interactive: false }).addTo(map);
         }
-        // update or add center marker visual
-        if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
-        centerMarker = L.marker([center.lat, center.lng], { opacity: 0.0, interactive: false }).addTo(map);
+        // update or add center marker visual (crosshair)
+        if(centerMarker){
+            try{ centerMarker.setLatLng([center.lat, center.lng]); }
+            catch(e){ map.removeLayer(centerMarker); centerMarker = null; }
+        }
+        if(!centerMarker){
+            centerMarker = L.marker([center.lat, center.lng], { icon: centerIcon, interactive: false, keyboard: false }).addTo(map);
+        }
     }
 
-    // update circle when radius input changes or map moved (if using center)
-    document.getElementById('filter-radius').addEventListener('input', function(){ if(currentCenter) updateSearchCircle(); });
-    // do not clear currentCenter on simple map move; only update circle when a center exists
-    map.on('move', function(){ if(currentCenter) updateSearchCircle(); });
+    // update circle and search when radius input changes
+    document.getElementById('filter-radius').addEventListener('input', function(){
+        if(isRadiusMode()){
+            if(!currentCenter){
+                const c = map.getCenter();
+                currentCenter = { lat: c.lat, lng: c.lng };
+            }
+            updateSearchCircle();
+            scheduleSearch();
+        }
+    });
+    // do not clear currentCenter on simple map move; only update circle when a center exists and in radius mode
+    map.on('move', function(){ if(isRadiusMode() && currentCenter) updateSearchCircle(); });
+    // auto-search on map view changes when in bbox mode
+    map.on('moveend', function(){ if(!isRadiusMode()) scheduleSearch(); });
+    map.on('zoomend', function(){ if(!isRadiusMode()) scheduleSearch(); });
 
     // select-all types (checkboxes)
     document.getElementById('select-all-types').addEventListener('click', function(){
@@ -406,7 +527,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // allow user to pick a center by clicking the map
     let selectMode = false; // when true, clicks set center; when false, clicks interact with markers
-    const selectBtn = document.getElementById('btn-select-location');
     const mapInfoEl = document.getElementById('map-info');
     let previousMapInfoText = '';
     function setSelectMode(enabled){
@@ -445,16 +565,21 @@ document.addEventListener('DOMContentLoaded', function(){
         currentCenter = { lat: e.latlng.lat, lng: e.latlng.lng };
         if(userLocationMarker){ map.removeLayer(userLocationMarker); userLocationMarker = null; }
         if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
-        centerMarker = L.marker([currentCenter.lat, currentCenter.lng]).addTo(map);
+        centerMarker = L.marker([currentCenter.lat, currentCenter.lng], { icon: centerIcon, interactive: false, keyboard: false }).addTo(map);
         // draw circle if radius > 0
         updateSearchCircle();
         // once a center is selected, exit select mode so marker clicks behave normally
         setSelectMode(false);
+
+        // If we're searching by radius, update immediately.
+        if(isRadiusMode()){
+            scheduleSearch();
+        }
     });
 
     // Search helper: call API and render GeoJSON results
     async function performSearch(){
-        const useBbox = document.getElementById('use-bbox').checked;
+        const useBbox = !isRadiusMode();
         const radiusKm = parseFloat(document.getElementById('filter-radius').value) || 0;
         const checked = Array.from(document.querySelectorAll('#filter-types-container input.filter-type:checked'));
         const selected = checked.map(c=>c.value);
@@ -472,9 +597,12 @@ document.addEventListener('DOMContentLoaded', function(){
             // remove circle if any
             if(searchCircle) { map.removeLayer(searchCircle); searchCircle = null; }
         } else if(radiusKm > 0){
-            const c = currentCenter || map.getCenter();
-            payload.lat = c.lat;
-            payload.lng = c.lng;
+            if(!currentCenter){
+                const c0 = map.getCenter();
+                currentCenter = { lat: c0.lat, lng: c0.lng };
+            }
+            payload.lat = currentCenter.lat;
+            payload.lng = currentCenter.lng;
             payload.radius_m = Math.round(radiusKm * 1000);
             // update visual circle to reflect center/radius
             updateSearchCircle();
@@ -491,13 +619,19 @@ document.addEventListener('DOMContentLoaded', function(){
         payload.limit = 500;
 
         document.getElementById('map-info').textContent = TRANSLATIONS.searching;
-        // draw circle before query
-        updateSearchCircle();
+        // draw circle before query (radius mode only)
+        if(isRadiusMode()) updateSearchCircle();
         try{
+            if(activeSearchController){
+                try{ activeSearchController.abort(); }catch(e){/* ignore */}
+            }
+            activeSearchController = new AbortController();
+
             const res = await fetch('/api/registers/search-radius', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                signal: activeSearchController.signal,
             });
             const json = await res.json();
             // clear existing markers
@@ -530,34 +664,69 @@ document.addEventListener('DOMContentLoaded', function(){
                 document.getElementById('map-info').textContent = count + ' ' + TRANSLATIONS.results_suffix;
             }
         }catch(err){
+            // Abort is expected when user changes filters quickly.
+            if(err && err.name === 'AbortError') return;
             console.error(err);
             document.getElementById('map-info').textContent = TRANSLATIONS.error_network;
         }
     }
 
-    document.getElementById('apply-filters').addEventListener('click', function(){
-        performSearch();
+    // Toggle search mode (bbox vs radius)
+    if(searchModeBtn){
+        searchModeBtn.addEventListener('click', function(){
+            if(isRadiusMode()){
+                setSearchMode('bbox');
+            } else {
+                setSearchMode('radius');
+                // ensure we have a center for radius searches
+                if(!currentCenter){
+                    const c1 = map.getCenter();
+                    currentCenter = { lat: c1.lat, lng: c1.lng };
+                }
+                updateSearchCircle();
+            }
+            scheduleSearch();
+        });
+    }
+
+    // Auto-search when filters change
+    document.querySelectorAll('#filter-types-container input.filter-type').forEach(function(el){
+        el.addEventListener('change', scheduleSearch);
     });
+    try{ document.getElementById('filter-user').addEventListener('change', scheduleSearch); }catch(e){}
+    try{ document.getElementById('filter-from').addEventListener('change', scheduleSearch); }catch(e){}
+    try{ document.getElementById('filter-to').addEventListener('change', scheduleSearch); }catch(e){}
 
     document.getElementById('clear-filters').addEventListener('click', function(){
-        // clear selection and restore initial markers
+        const wasRadiusMode = isRadiusMode();
+        // clear selection and restore defaults
         document.getElementById('filter-radius').value = 5;
         const checks = document.querySelectorAll('#filter-types-container input.filter-type');
-        checks.forEach(c=>c.checked = false);
-        document.getElementById('use-bbox').checked = false;
+        checks.forEach(c=>c.checked = true);
         // clear user/time filters
         try{ document.getElementById('filter-user').value = ''; }catch(e){}
         try{ document.getElementById('filter-from').value = ''; document.getElementById('filter-to').value = ''; }catch(e){}
         markersLayer.clearLayers();
         if(searchCircle) { map.removeLayer(searchCircle); searchCircle = null; }
         if(centerMarker) { map.removeLayer(centerMarker); centerMarker = null; }
-        currentCenter = null;
+
+        if(wasRadiusMode){
+            // Keep radius mode; reset radius to 5km but keep/set a reasonable center.
+            if(!currentCenter){
+                const c0 = map.getCenter();
+                currentCenter = { lat: c0.lat, lng: c0.lng };
+            }
+            updateSearchCircle();
+        } else {
+            // Keep bbox mode; remove radius visuals.
+            currentCenter = null;
+        }
         // ensure select mode is off and button remains visible after clear
         try{ setSelectMode(false); }catch(e){/* ignore if not initialized */}
         const selectBtnElem = document.getElementById('btn-select-location');
-        if(selectBtnElem) selectBtnElem.style.display = '';
-        publications.forEach(function(pub){ if(pub.lat && pub.lng) addPublicationMarker(pub); });
+        if(selectBtnElem) selectBtnElem.style.display = wasRadiusMode ? '' : 'none';
         document.getElementById('map-info').textContent = '';
+        scheduleSearch();
     });
 
     // when user enables the 'use my location' checkbox, request location and set marker (no circle/search)
@@ -571,18 +740,32 @@ document.addEventListener('DOMContentLoaded', function(){
                     currentCenter = {lat: lat, lng: lng};
                     if(userLocationMarker) map.removeLayer(userLocationMarker);
                     userLocationMarker = L.marker([lat,lng]).addTo(map).bindPopup(TRANSLATIONS.you_are_here).openPopup();
-                    // also add a center marker so updateSearchCircle will draw when radius set
+                    // also set the radius center (crosshair) to this position
                     if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
-                    centerMarker = L.marker([lat,lng]).addTo(map);
+                    if(isRadiusMode()){
+                        centerMarker = L.marker([lat,lng], { icon: centerIcon, interactive: false, keyboard: false }).addTo(map);
+                        updateSearchCircle();
+                    }
                     // DO NOT draw a circle or run a search automatically
+                    // (but do refresh results, since the map center likely changed)
+                    scheduleSearch();
                 }, function(err){ console.warn('Geolocation denied or unavailable', err); });
             }
         } else {
             if(userLocationMarker) { map.removeLayer(userLocationMarker); userLocationMarker = null; }
             if(centerMarker){ map.removeLayer(centerMarker); centerMarker = null; }
             currentCenter = null;
+            if(searchCircle){ map.removeLayer(searchCircle); searchCircle = null; }
+            scheduleSearch();
         }
     });
+
+    // Defaults on load: bbox mode + all types selected + auto-search.
+    try{
+        document.querySelectorAll('#filter-types-container input.filter-type').forEach(function(c){ c.checked = true; });
+    }catch(e){}
+    setSearchMode('bbox');
+    scheduleSearch();
 });
 </script>
 @endsection

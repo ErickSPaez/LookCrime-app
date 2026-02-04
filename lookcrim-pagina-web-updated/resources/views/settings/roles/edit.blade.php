@@ -88,6 +88,12 @@
                                         $renderPerm('edit_any_registers', ['data-lc-parent' => 'view_any_registers']);
                                         $renderPerm('delete_any_registers', ['data-lc-parent' => 'view_any_registers']);
 
+                                        // Cross-city permissions (city restriction bypass)
+                                        $renderPerm('view_any_city_registers', ['data-lc-parent' => 'view_page_registers']);
+                                        $renderPerm('create_any_city_registers', ['data-lc-parent' => 'view_any_city_registers']);
+                                        $renderPerm('edit_any_city_registers', ['data-lc-parent' => 'view_any_city_registers']);
+                                        $renderPerm('delete_any_city_registers', ['data-lc-parent' => 'view_any_city_registers']);
+
                                         foreach ($legacyPerms as $legacyName) {
                                             $renderPerm($legacyName, ['style' => 'display:none;']);
                                         }
@@ -161,7 +167,8 @@
 #perm-view_page_management + label,
 #perm-view_page_settings_roles + label,
 #perm-view_own_registers + label,
-#perm-view_any_registers + label{
+#perm-view_any_registers + label,
+#perm-view_any_city_registers + label{
     font-weight:600;
 }
 </style>
@@ -193,13 +200,14 @@ function lcRefreshPermUI(){
     const viewPageRegisters = lcIsChecked('view_page_registers');
     lcSetChildrenEnabled('view_page_registers', viewPageRegisters);
     if (!viewPageRegisters){
-        ['view_own_registers','view_any_registers'].forEach(n => {
+        ['view_own_registers','view_any_registers','view_any_city_registers'].forEach(n => {
             const el = document.getElementById('perm-'+n);
             if (el) el.checked = false;
         });
     }
     lcSetChildrenEnabled('view_own_registers', viewPageRegisters && lcIsChecked('view_own_registers'));
     lcSetChildrenEnabled('view_any_registers', viewPageRegisters && lcIsChecked('view_any_registers'));
+    lcSetChildrenEnabled('view_any_city_registers', viewPageRegisters && lcIsChecked('view_any_city_registers'));
 
     // Management
     const viewPageManagement = lcIsChecked('view_page_management');

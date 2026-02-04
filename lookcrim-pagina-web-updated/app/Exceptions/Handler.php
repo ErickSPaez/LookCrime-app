@@ -2,8 +2,11 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class Handler extends ExceptionHandler
 {
@@ -43,6 +46,48 @@ class Handler extends ExceptionHandler
     {
         $this->reportable(function (Throwable $e) {
             //
+        });
+
+        $this->renderable(function (Throwable $e, $request) {
+            if (!$request->isMethod('GET')) {
+                return null;
+            }
+
+            if ($request->expectsJson() || $request->is('api/*') || $request->ajax()) {
+                return null;
+            }
+
+            if (!Auth::check()) {
+                return null;
+            }
+
+            $statusCode = null;
+            if ($e instanceof AuthorizationException) {
+                $statusCode = $e->status() ?? 403;
+            } elseif ($e instanceof HttpExceptionInterface) {
+                $statusCode = $e->getStatusCode();
+            }
+
+            if ($statusCode !== 403) {
+                return null;
+            }
+
+            $routeName = $request->route()?->getName();
+            $shouldRedirect =
+                $request->is('registers') ||
+                $request->is('map') ||
+                $request->is('settings/roles*') ||
+                $request->is('settings/city*') ||
+                ($routeName === 'registers.index') ||
+                ($routeName === 'registers.map') ||
+                (is_string($routeName) && str_starts_with($routeName, 'settings.roles.')) ||
+                (is_string($routeName) && str_starts_with($routeName, 'settings.city.'));
+
+            if (!$shouldRedirect) {
+                return null;
+            }
+
+            return redirect()->route('no-access');
         });
     }
 }

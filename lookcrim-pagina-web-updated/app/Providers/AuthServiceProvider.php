@@ -62,13 +62,40 @@ class AuthServiceProvider extends ServiceProvider
 
         // Admin bypass as super-user shortcut.
         Gate::before(function (?User $user) {
-            if ($user && ($user->admin ?? false)) {
+            if (!$user) {
+                return null;
+            }
+
+            if ((bool) ($user->admin ?? false)) {
                 return true;
             }
+
+            try {
+                if (method_exists($user, 'hasRole') && $user->hasRole('admin')) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+
             return null;
         });
 
         // Legacy: simple admin ability based on the `admin` column on users table.
-        Gate::define('admin', fn (?User $user) => (bool) ($user?->admin ?? false));
+        Gate::define('admin', function (?User $user) {
+            if (!$user) {
+                return false;
+            }
+
+            if ((bool) ($user->admin ?? false)) {
+                return true;
+            }
+
+            try {
+                return method_exists($user, 'hasRole') && $user->hasRole('admin');
+            } catch (\Throwable $e) {
+                return false;
+            }
+        });
     }
 }

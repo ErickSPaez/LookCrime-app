@@ -129,7 +129,8 @@ return [
     , 'radius_km' => 'Raio (km)'
     , 'types' => 'Tipos'
     , 'select_all' => 'Seleccionar tudo'
-    , 'search_in_map_view' => 'Pesquisar na vista atual do mapa (em vez do raio)'
+    , 'search_in_map_view' => 'Pesquisar na vista atual do mapa'
+    , 'search_by_radius' => 'Pesquisar por raio'
     , 'use_my_location' => 'Usar minha localização ao abrir'
     , 'apply' => 'Aplicar'
     , 'clear' => 'Limpar'
@@ -174,4 +175,39 @@ return [
      , 'create' => 'Criar'
      , 'role_name' => 'Nome do perfil'
      , 'permissions_from_role' => 'As permissões são definidas pelo perfil selecionado e não podem ser editadas por utilizador.'
+
+    // Definições / Cidades
+    , 'city_settings' => 'DEFINIÇÕES DE CIDADES'
+    , 'city_settings_title' => 'DEFINIÇÕES DE CIDADES'
+    , 'no_cities_defined' => 'Sem cidades definidas'
+    , 'create_city' => 'Criar Cidade'
+    , 'edit_city' => 'Editar Cidade'
+    , 'confirm_delete_city' => 'Tem a certeza que pretende remover esta cidade?'
+    , 'cannot_delete_city_in_use' => 'Não é possível remover a cidade: existem utilizadores atribuídos'
+    , 'city_created' => 'Cidade criada com sucesso'
+    , 'city_updated' => 'Cidade atualizada com sucesso'
+    , 'city_deleted' => 'Cidade removida com sucesso'
+    , 'city_name' => 'Nome da cidade'
+    , 'city_center' => 'Centro'
+    , 'city_center_help' => 'Clique no mapa para definir o centro.'
+    , 'city_radius_km' => 'Raio (km)'
+    , 'city_radius_help' => 'A área da cidade é um círculo com este raio.'
+    , 'cancel' => 'Cancelar'
+
+    // Sem permissões (autenticado mas sem acesso a qualquer secção)
+    , 'no_permissions_title' => 'Sem acesso'
+    , 'no_permissions_message' => 'A sua conta está ativa, mas ainda não tem permissões para aceder a nenhuma secção.'
+    , 'no_permissions_contact' => 'Por favor contacte um administrador para solicitar acesso.'
+    , 'no_permissions_hint' => 'Pode abrir o seu perfil no menu (canto superior direito) ou terminar sessão.'
+
+    // Sem acesso (tentou aceder a uma secção específica)
+    , 'no_access_title' => 'Sem acesso'
+    , 'no_access_message' => 'A sua conta está ativa, mas não tem permissões para aceder a esta secção.'
+    , 'no_access_contact' => 'Por favor contacte um administrador para solicitar acesso.'
+    , 'no_access_hint' => 'Pode abrir o seu perfil no menu (canto superior direito) ou terminar sessão.'
+    , 'no_access_denied_page' => 'Não tem permissão para aceder a esta página.'
+
+    // Registos: restrição do ponto no mapa
+    , 'register_point_outside_city_blocked' => 'O ponto selecionado está fora da área da sua cidade. Por favor escolha um ponto dentro da área permitida.'
+    , 'register_point_outside_city_allowed' => 'O ponto selecionado está fora da área da sua cidade, mas é permitido pelas suas permissões.'
 ];

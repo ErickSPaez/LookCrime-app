@@ -23,6 +23,7 @@ class Register extends Model
         'longitude',
         'category',
         'user_id',
+        'city_id',
     ];
 
     public function user()

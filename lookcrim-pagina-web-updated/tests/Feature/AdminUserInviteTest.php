@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\City;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,10 +18,12 @@ class AdminUserInviteTest extends TestCase
         Notification::fake();
 
         $admin = User::factory()->create(['admin' => 1]);
+        $city = City::factory()->create();
 
         $response = $this->actingAs($admin)->post('/users', [
             'name' => 'Invited User',
             'email' => 'invited@example.com',
+            'city_id' => $city->id,
         ]);
 
         $response->assertRedirect(route('users-list'));

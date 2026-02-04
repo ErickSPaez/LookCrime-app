@@ -1,18 +1,51 @@
 <div id="register-map" style="height: 400px; width: 100%; margin-bottom:1rem;"></div>
 
+@php
+    $userCity = (isset($city) && $city) ? [
+        'center_lat' => (float) $city->center_lat,
+        'center_lng' => (float) $city->center_lng,
+        'radius_m' => (int) $city->radius_m,
+        'name' => (string) ($city->name ?? ''),
+    ] : null;
+@endphp
+
 <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', isset($register) ? $register->latitude : '') }}">
 <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', isset($register) ? $register->longitude : '') }}">
+
+<div id="lc-city-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;border-radius:8px;max-width:520px;width:100%;padding:18px 16px;box-shadow:0 10px 30px rgba(0,0,0,0.25);text-align:center;">
+        <div id="lc-city-popup-msg" style="font-size:1rem;color:#222;margin-bottom:14px;"></div>
+        <button type="button" id="lc-city-popup-ok" class="btn btn-lookcrim btn-sm">OK</button>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
+    if (!latInput || !lngInput) return;
+
+    const popupEl = document.getElementById('lc-city-popup');
+    const popupMsgEl = document.getElementById('lc-city-popup-msg');
+    const popupOkEl = document.getElementById('lc-city-popup-ok');
+
+    const userCity = @json($userCity);
+    const allowOutsideCity = @json($allowOutsideCity ?? false);
+
+    const msgOutsideBlocked = @json(__('pages.register_point_outside_city_blocked'));
+    const msgOutsideAllowed = @json(__('pages.register_point_outside_city_allowed'));
 
     const initialLat = parseFloat(latInput.value) || null;
     const initialLng = parseFloat(lngInput.value) || null;
 
     const defaultCenter = [40.4168, -3.7038];
-    const map = L.map('register-map').setView(initialLat && initialLng ? [initialLat, initialLng] : defaultCenter, initialLat && initialLng ? 13 : 5);
+    const cityCenter = userCity ? [userCity.center_lat, userCity.center_lng] : null;
+    const startCenter = (initialLat && initialLng)
+        ? [initialLat, initialLng]
+        : (cityCenter || defaultCenter);
+    const startZoom = (initialLat && initialLng) ? 13 : (userCity ? 12 : 5);
+
+    const map = L.map('register-map').setView(startCenter, startZoom);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -24,16 +57,72 @@ document.addEventListener('DOMContentLoaded', function () {
         marker = L.marker([initialLat, initialLng]).addTo(map);
     }
 
+    if (userCity && cityCenter) {
+        const cityCircle = L.circle(cityCenter, {
+            radius: userCity.radius_m,
+            color: '#0d6efd',
+            weight: 2,
+            fillOpacity: 0.05,
+            dashArray: '6,6',
+        }).addTo(map);
+
+        if (!(initialLat && initialLng)) {
+            try {
+                map.fitBounds(cityCircle.getBounds(), { padding: [20, 20] });
+            } catch (e) {
+                // ignore
+            }
+        }
+    }
+
+    function showPopup(message) {
+        if (!popupEl || !popupMsgEl) return;
+        popupMsgEl.textContent = message || '';
+        popupEl.style.display = 'flex';
+    }
+
+    function hidePopup() {
+        if (!popupEl) return;
+        popupEl.style.display = 'none';
+    }
+
+    if (popupOkEl) {
+        popupOkEl.addEventListener('click', hidePopup);
+    }
+    if (popupEl) {
+        popupEl.addEventListener('click', function (e) {
+            if (e.target === popupEl) hidePopup();
+        });
+    }
+
+    function isInsideCity(lat, lng) {
+        if (!userCity) return true;
+        const p = L.latLng(lat, lng);
+        const c = L.latLng(userCity.center_lat, userCity.center_lng);
+        return p.distanceTo(c) <= userCity.radius_m;
+    }
+
     map.on('click', function(e) {
         const { lat, lng } = e.latlng;
+
+        if (userCity && !isInsideCity(lat, lng)) {
+            if (!allowOutsideCity) {
+                showPopup(msgOutsideBlocked);
+                return;
+            }
+
+            // Allowed by permission: show info but continue.
+            showPopup(msgOutsideAllowed);
+        }
+
         if (marker) {
             marker.setLatLng(e.latlng);
         } else {
             marker = L.marker(e.latlng).addTo(map);
         }
+
         latInput.value = lat;
         lngInput.value = lng;
     });
-
 });
 </script>

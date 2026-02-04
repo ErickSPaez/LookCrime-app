@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
+use Illuminate\Support\Facades\Auth;
 
 class RolesController extends Controller
 {
@@ -26,6 +27,11 @@ class RolesController extends Controller
 
     public function index()
     {
+        $user = Auth::user();
+        if (!$user || !$user->can('view_page_settings_roles')) {
+            abort(403);
+        }
+
         $roles = Role::with('permissions')
             ->orderByRaw("CASE WHEN name = ? THEN 1 ELSE 0 END", ['admin'])
             ->orderBy('name')
@@ -35,6 +41,11 @@ class RolesController extends Controller
 
     public function edit(string $slug)
     {
+        $user = Auth::user();
+        if (!$user || !$user->can('edit_role')) {
+            abort(403);
+        }
+
         if ($this->isProtectedRoleSlug($slug)) {
             return redirect()->route('settings.roles.index')->with('error', __('pages.cannot_modify_protected_role'));
         }
@@ -53,6 +64,11 @@ class RolesController extends Controller
 
     public function update(Request $request, string $slug)
     {
+        $user = Auth::user();
+        if (!$user || !$user->can('edit_role')) {
+            abort(403);
+        }
+
         if ($this->isProtectedRoleSlug($slug)) {
             return redirect()->route('settings.roles.index')->with('error', __('pages.cannot_modify_protected_role'));
         }
@@ -79,12 +95,22 @@ class RolesController extends Controller
 
     public function create()
     {
+        $user = Auth::user();
+        if (!$user || !$user->can('create_role')) {
+            abort(403);
+        }
+
         $permissionGroups = Permission::orderBy('category')->orderBy('name')->get()->groupBy('category');
         return view('settings.roles.create', compact('permissionGroups'));
     }
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (!$user || !$user->can('create_role')) {
+            abort(403);
+        }
+
         $data = $request->validate([
             'slug' => 'required|alpha_dash|unique:roles,name',
             'name' => 'required|string|max:255',
@@ -110,6 +136,11 @@ class RolesController extends Controller
 
     public function destroy(string $slug)
     {
+        $user = Auth::user();
+        if (!$user || !$user->can('delete_role')) {
+            abort(403);
+        }
+
         if ($this->isProtectedRoleSlug($slug)) {
             return redirect()->route('settings.roles.index')->with('error', __('pages.cannot_modify_protected_role'));
         }

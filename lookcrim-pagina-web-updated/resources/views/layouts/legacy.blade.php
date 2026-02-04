@@ -141,6 +141,14 @@
                     </li>
                 @endcan
 
+                @if((auth()->user()?->can('view_page_settings_city') ?? false) || (auth()->user()?->can('admin') ?? false))
+                    <li class="nav-item {{ request()->is('settings/city*') ? 'active' : 'default' }}">
+                        <a class="font-head-bar-black" href="{{ route('settings.city.index') }}">
+                            <span class="font-head-bar-black-effect">{{ __('pages.city_settings') }}</span>
+                        </a>
+                    </li>
+                @endif
+
                 
             </ul>
         </div>

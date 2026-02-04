@@ -109,7 +109,8 @@ return [
     'radius_km' => 'Radius (km)',
     'types' => 'Types',
     'select_all' => 'Select all',
-    'search_in_map_view' => 'Search in current map view (instead of radius)',
+    'search_in_map_view' => 'Search in current map view',
+    'search_by_radius' => 'Search by radius',
     'use_my_location' => 'Use my current location on open',
     'apply' => 'Apply',
     'clear' => 'Clear',
@@ -161,4 +162,36 @@ return [
     'create' => 'Create',
     'role_name' => 'Role name',
     'permissions_from_role' => 'Permissions are defined by the selected role and cannot be edited per user.',
+
+    // Settings / Cities
+    'city_settings' => 'CITY SETTINGS',
+    'city_settings_title' => 'CITY SETTINGS',
+    'no_cities_defined' => 'No cities defined',
+    'create_city' => 'Create City',
+    'edit_city' => 'Edit City',
+    'confirm_delete_city' => 'Are you sure you want to delete this city?',
+    'cannot_delete_city_in_use' => 'Cannot delete city: users are assigned to it',
+    'city_created' => 'City created successfully',
+    'city_updated' => 'City updated successfully',
+    'city_deleted' => 'City deleted successfully',
+    'city_name' => 'City name',
+    'city_center' => 'Center',
+    'city_center_help' => 'Click on the map to set the center.',
+    'city_radius_km' => 'Radius (km)',
+    'city_radius_help' => 'The city area is a circle with this radius.',
+    'cancel' => 'Cancel',
+
+    // No access (authenticated but no permissions)
+    'no_permissions_title' => 'No access',
+    'no_permissions_message' => 'Your account is active, but you do not have permissions to access any sections yet.',
+    'no_permissions_contact' => 'Please contact an administrator to request access.',
+    'no_permissions_hint' => 'You can open your profile from the menu (top right), or log out.',
+
+    'no_access_title' => 'No access',
+    'no_access_message' => 'Your account is active, but you do not have permission to access this section.',
+    'no_access_contact' => 'Please contact an administrator to request access.',
+
+    // Registers: map point restriction
+    'register_point_outside_city_blocked' => 'The selected point is outside your city area. Please choose a point inside the allowed area.',
+    'register_point_outside_city_allowed' => 'The selected point is outside your city area, but it is allowed by your permissions.',
 ];

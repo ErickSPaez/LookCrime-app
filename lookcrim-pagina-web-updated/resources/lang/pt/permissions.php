@@ -5,6 +5,7 @@ return [
         'registers' => 'Registros',
         'management' => 'Gestão',
         'roles' => 'Funções',
+        'cities' => 'Cidades',
     ],
 
     // Registros
@@ -16,6 +17,12 @@ return [
     'edit_any_registers' => 'Editar quaisquer registros',
     'delete_own_registers' => 'Excluir próprios registros',
     'delete_any_registers' => 'Excluir quaisquer registros',
+
+        // Registros (cross-city)
+        'view_any_city_registers' => 'Ver registros de qualquer cidade (sem restrição de cidade)',
+        'create_any_city_registers' => 'Criar registros em qualquer cidade',
+        'edit_any_city_registers' => 'Editar registros em qualquer cidade',
+        'delete_any_city_registers' => 'Excluir registros em qualquer cidade',
 
     // Legado (compat)
     'create_registers' => 'Criar registros (legado)',
@@ -34,4 +41,11 @@ return [
     'create_role' => 'Criar função',
     'edit_role' => 'Editar função',
     'delete_role' => 'Excluir função',
+
+    // Cidades
+    'view_page_settings_city' => 'Visualizar definições de cidades',
+    'view_any_city' => 'Ver qualquer cidade (sem restrição por cidade)',
+    'create_city' => 'Criar cidade',
+    'edit_city' => 'Editar cidade',
+    'delete_city' => 'Excluir cidade',
 ];

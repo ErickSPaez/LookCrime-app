@@ -59,6 +59,19 @@
                     </div>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group" style="width:100%">
+                        <label class="form-label">{{ __('pages.city_name') }}</label>
+                        <select class="form-input" name="city_id" required>
+                            <option value="" disabled {{ old('city_id', $user->city_id) ? '' : 'selected' }}>—</option>
+                            @foreach($cities as $city)
+                                @php $selectedCityId = old('city_id', $user->city_id); @endphp
+                                <option value="{{ $city->id }}" {{ (string)$selectedCityId === (string)$city->id ? 'selected' : '' }}>{{ $city->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button class="btn-lookcrim" type="submit">{{ __('Save') }}</button>
                     <a href="{{ route('users-list') }}" class="btn-secondary">{{ __('Cancel') }}</a>
