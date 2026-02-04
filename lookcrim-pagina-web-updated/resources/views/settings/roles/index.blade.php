@@ -38,17 +38,21 @@
                         @endforelse
                     </td>
                     <td>
-                        @can('edit_role')
-                            <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.roles.edit', $role->name) }}">{{ __('pages.edit') }}</a>
-                        @endcan
+                        @if($role->name !== 'admin')
+                            @can('edit_role')
+                                <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.roles.edit', $role->name) }}">{{ __('pages.edit') }}</a>
+                            @endcan
 
-                        @can('delete_role')
-                            <form id="delete-role-form-{{ $role->name }}" action="{{ route('settings.roles.destroy', $role->name) }}" method="POST" style="display:inline-block;margin-left:6px;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" class="btn btn-lookcrim btn-sm lc-confirm-trigger" data-form-id="delete-role-form-{{ $role->name }}" data-title="{{ __('Confirm Action') }}" data-message="{{ __('pages.confirm_delete_role') }}">{{ __('pages.delete') }}</button>
-                            </form>
-                        @endcan
+                            @can('delete_role')
+                                <form id="delete-role-form-{{ $role->name }}" action="{{ route('settings.roles.destroy', $role->name) }}" method="POST" style="display:inline-block;margin-left:6px;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-lookcrim btn-sm lc-confirm-trigger" data-form-id="delete-role-form-{{ $role->name }}" data-title="{{ __('Confirm Action') }}" data-message="{{ __('pages.confirm_delete_role') }}">{{ __('pages.delete') }}</button>
+                                </form>
+                            @endcan
+                        @else
+                            <span style="color:#6b7280; font-size: 12px;">{{ __('pages.protected_role') }}</span>
+                        @endif
                     </td>
                 </tr>
             @empty

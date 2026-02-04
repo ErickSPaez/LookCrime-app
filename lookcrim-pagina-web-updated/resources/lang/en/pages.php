@@ -155,6 +155,8 @@ return [
     'delete' => 'Delete',
     'confirm_delete_role' => 'Are you sure you want to delete this role?',
     'cannot_delete_role_in_use' => 'Cannot delete role: users are assigned to it',
+    'cannot_modify_protected_role' => 'This role is protected and cannot be edited or deleted.',
+    'protected_role' => 'Protected',
     'slug' => 'Slug',
     'create' => 'Create',
     'role_name' => 'Role name',

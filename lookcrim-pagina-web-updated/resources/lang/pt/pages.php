@@ -168,6 +168,8 @@ return [
      , 'delete' => 'Remover'
      , 'confirm_delete_role' => 'Tem a certeza que pretende remover este perfil?'
      , 'cannot_delete_role_in_use' => 'Não é possível remover o perfil: existem utilizadores atribuídos'
+    , 'cannot_modify_protected_role' => 'Este perfil está protegido e não pode ser editado ou removido.'
+    , 'protected_role' => 'Protegido'
      , 'slug' => 'Slug'
      , 'create' => 'Criar'
      , 'role_name' => 'Nome do perfil'

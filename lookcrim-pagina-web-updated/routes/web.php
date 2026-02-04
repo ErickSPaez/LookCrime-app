@@ -21,11 +21,6 @@ Route::get('/', function () {
 
 // Removed legacy /register alias to avoid shadowing Breeze's registration route
 
-// Banned notice page (still requires login)
-Route::get('/banned', function () {
-    return view('auth.banned');
-})->name('banned')->middleware('auth');
-
 // Gate all registers and map routes behind auth
 Route::middleware('auth')->group(function () {
     Route::get('/registers', [RegistersController::class, 'index'])->name('registers.index');
@@ -67,10 +62,6 @@ Route::namespace('App\\Http\\Controllers')->group(function () {
     Route::get('/user/management', [\App\Http\Controllers\UserController::class, 'index'])
         ->name('users-list')
         ->middleware(['auth', 'permission:view_page_management']);
-
-    Route::post('/user/password/{id}', [\App\Http\Controllers\UserController::class, 'password_replacement'])
-        ->name('users.password.create')
-        ->middleware(['auth','permission:send_password_reset','can:admin']);
 
     Route::post('/users/mail/test', [\App\Http\Controllers\UserController::class, 'sendTestEmail'])
         ->name('users.mail.test')

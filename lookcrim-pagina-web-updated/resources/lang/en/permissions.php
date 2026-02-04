@@ -8,6 +8,17 @@ return [
     ],
 
     // Registers
+    'view_page_registers' => 'View page registers',
+    'create_own_registers' => 'Create own registers',
+    'view_own_registers' => 'View own registers',
+    'view_any_registers' => 'View any registers',
+    'edit_own_registers' => 'Edit own registers',
+    'edit_any_registers' => 'Edit any registers',
+    'delete_own_registers' => 'Delete own registers',
+    'delete_any_registers' => 'Delete any registers',
+
+    // Legacy (compat)
+    'create_registers' => 'Create registers (legacy)',
     'view_all_registers' => 'View all registers',
     'edit_all_registers' => 'Edit all registers',
     'delete_registers' => 'Delete registers',
@@ -17,7 +28,6 @@ return [
     'create_user' => 'Create user',
     'edit_user' => 'Edit user',
     'ban_user' => 'Ban user',
-    'send_password_reset' => 'Send password reset',
 
     // Roles
     'view_page_settings_roles' => 'View page settings roles',

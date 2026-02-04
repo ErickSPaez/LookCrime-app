@@ -30,7 +30,9 @@ class AuthenticatedSessionController extends Controller
         $email = $request->input('email');
         $user = User::where('email', $email)->first();
         if ($user && $user->banned) {
-            return redirect()->route('banned');
+            return redirect()
+                ->route('login')
+                ->with('lc_banned', true);
         }
 
         $request->authenticate();

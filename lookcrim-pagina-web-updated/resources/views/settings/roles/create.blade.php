@@ -47,18 +47,85 @@
                                         : ucwords(str_replace('_',' ', $category));
                                 @endphp
                                 <h5 style="font-weight:600;margin-bottom:8px;">{{ $groupLabel }}</h5>
-                                @foreach($group as $perm)
-                                    @php
-                                        $name = $perm->name;
+                                @php
+                                    $permMap = collect($group)->keyBy('name');
+                                    $isChecked = function (string $name) {
+                                        return (bool) old('permissions.'.$name);
+                                    };
+                                    $renderPerm = function (string $name, array $attrs = []) use ($permMap, $isChecked) {
+                                        if (!$permMap->has($name)) {
+                                            return;
+                                        }
                                         $label = \Illuminate\Support\Facades\Lang::has('permissions.'.$name)
                                             ? __('permissions.'.$name)
                                             : ucwords(str_replace('_',' ', $name));
+                                        $checked = $isChecked($name);
+                                        $attrHtml = '';
+                                        foreach ($attrs as $k => $v) {
+                                            $attrHtml .= ' ' . e($k) . '="' . e($v) . '"';
+                                        }
+                                        echo '<div class="form-check lc-perm-item"'.$attrHtml.'>';
+                                        echo '<input class="form-check-input lc-perm" id="perm-'.e($name).'" type="checkbox" name="permissions['.e($name).']" value="1" '.($checked ? 'checked' : '').'>';
+                                        echo '<label class="form-check-label" for="perm-'.e($name).'">'.e($label).'</label>';
+                                        echo '</div>';
+                                    };
+
+                                    $legacyPerms = [];
+                                    if ($category === 'registers') {
+                                        $legacyPerms = ['create_registers', 'view_all_registers', 'edit_all_registers', 'delete_registers'];
+                                    }
+                                    if ($category === 'management') {
+                                        $legacyPerms = [];
+                                    }
+                                @endphp
+
+                                @if($category === 'registers')
+                                    @php
+                                        $renderPerm('view_page_registers');
+                                        $renderPerm('create_own_registers', ['data-lc-parent' => 'view_page_registers']);
+                                        $renderPerm('view_own_registers', ['data-lc-parent' => 'view_page_registers']);
+                                        $renderPerm('edit_own_registers', ['data-lc-parent' => 'view_own_registers']);
+                                        $renderPerm('delete_own_registers', ['data-lc-parent' => 'view_own_registers']);
+                                        $renderPerm('view_any_registers', ['data-lc-parent' => 'view_page_registers']);
+                                        $renderPerm('edit_any_registers', ['data-lc-parent' => 'view_any_registers']);
+                                        $renderPerm('delete_any_registers', ['data-lc-parent' => 'view_any_registers']);
+
+                                        // Keep legacy permissions (if any) without cluttering the UI
+                                        foreach ($legacyPerms as $legacyName) {
+                                            $renderPerm($legacyName, ['style' => 'display:none;']);
+                                        }
                                     @endphp
-                                    <div class="form-check lc-perm-item">
-                                        <input class="form-check-input lc-perm" id="perm-{{ $name }}" type="checkbox" name="permissions[{{ $name }}]" value="1" {{ old('permissions.'.$name) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="perm-{{ $name }}">{{ $label }}</label>
-                                    </div>
-                                @endforeach
+                                @elseif($category === 'management')
+                                    @php
+                                        $renderPerm('view_page_management');
+                                        $renderPerm('create_user', ['data-lc-parent' => 'view_page_management']);
+                                        $renderPerm('edit_user', ['data-lc-parent' => 'view_page_management']);
+                                        $renderPerm('ban_user', ['data-lc-parent' => 'view_page_management']);
+                                        foreach ($legacyPerms as $legacyName) {
+                                            $renderPerm($legacyName, ['style' => 'display:none;']);
+                                        }
+                                    @endphp
+                                @elseif($category === 'roles')
+                                    @php
+                                        $renderPerm('view_page_settings_roles');
+                                        $renderPerm('create_role', ['data-lc-parent' => 'view_page_settings_roles']);
+                                        $renderPerm('edit_role', ['data-lc-parent' => 'view_page_settings_roles']);
+                                        $renderPerm('delete_role', ['data-lc-parent' => 'view_page_settings_roles']);
+                                    @endphp
+                                @else
+                                    @foreach($group as $perm)
+                                        @php
+                                            $name = $perm->name;
+                                            $label = \Illuminate\Support\Facades\Lang::has('permissions.'.$name)
+                                                ? __('permissions.'.$name)
+                                                : ucwords(str_replace('_',' ', $name));
+                                        @endphp
+                                        <div class="form-check lc-perm-item">
+                                            <input class="form-check-input lc-perm" id="perm-{{ $name }}" type="checkbox" name="permissions[{{ $name }}]" value="1" {{ old('permissions.'.$name) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="perm-{{ $name }}">{{ $label }}</label>
+                                        </div>
+                                    @endforeach
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -80,6 +147,18 @@
 .lc-perm-item{display:flex;align-items:flex-start;gap:8px;}
 .lc-perm-item .form-check-input{margin-top:2px;}
 .lc-perm-actions{margin-bottom:10px;}
+.lc-perm-item[data-lc-parent]{
+    margin-left:18px;
+    padding-left:10px;
+    border-left:2px solid rgba(0,0,0,0.08);
+}
+#perm-view_page_registers + label,
+#perm-view_page_management + label,
+#perm-view_page_settings_roles + label,
+#perm-view_own_registers + label,
+#perm-view_any_registers + label{
+    font-weight:600;
+}
 </style>
 @endsection
 
@@ -87,6 +166,53 @@
 <script>
 function lcSelectAll(val){
     document.querySelectorAll('.lc-perm').forEach(cb => { cb.checked = !!val; });
+    lcRefreshPermUI();
 }
+
+function lcSetChildrenEnabled(parentName, enabled){
+    document.querySelectorAll('[data-lc-parent="'+parentName+'"] input.lc-perm').forEach(cb => {
+        if (!enabled) cb.checked = false;
+    });
+    document.querySelectorAll('[data-lc-parent="'+parentName+'"]').forEach(el => {
+        el.style.display = enabled ? '' : 'none';
+    });
+}
+
+function lcIsChecked(name){
+    const el = document.getElementById('perm-'+name);
+    return !!(el && el.checked);
+}
+
+function lcRefreshPermUI(){
+    // Registers
+    const viewPageRegisters = lcIsChecked('view_page_registers');
+    lcSetChildrenEnabled('view_page_registers', viewPageRegisters);
+    if (!viewPageRegisters){
+        ['view_own_registers','view_any_registers'].forEach(n => {
+            const el = document.getElementById('perm-'+n);
+            if (el) el.checked = false;
+        });
+    }
+    lcSetChildrenEnabled('view_own_registers', viewPageRegisters && lcIsChecked('view_own_registers'));
+    lcSetChildrenEnabled('view_any_registers', viewPageRegisters && lcIsChecked('view_any_registers'));
+
+    // Management
+    const viewPageManagement = lcIsChecked('view_page_management');
+    lcSetChildrenEnabled('view_page_management', viewPageManagement);
+
+    // Roles
+    const viewPageRoles = lcIsChecked('view_page_settings_roles');
+    lcSetChildrenEnabled('view_page_settings_roles', viewPageRoles);
+}
+
+document.addEventListener('change', function(e){
+    if (e.target && e.target.classList && e.target.classList.contains('lc-perm')) {
+        lcRefreshPermUI();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+    lcRefreshPermUI();
+});
 </script>
 @endsection

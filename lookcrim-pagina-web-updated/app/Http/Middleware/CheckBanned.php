@@ -18,7 +18,9 @@ class CheckBanned
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('banned');
+            return redirect()
+                ->route('login')
+                ->with('lc_banned', true);
         }
 
         return $next($request);

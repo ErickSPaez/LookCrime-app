@@ -18,18 +18,40 @@ class RegistersController extends Controller
 
     public function index()
     {
-        if (Auth::check()) {
-            if (Auth::user()->can('view_all_registers')) {
-                $registers = Register::with('images')->orderBy('created_at', 'DESC')->paginate(15);
-            } else {
-                $registers = Register::with('images')->where('user_id', Auth::id())
-                    ->orderBy('created_at', 'DESC')
-                    ->paginate(15);
-            }
-        } else {
-            $registers = Register::with('images')->where('private', '=', 0)
+        if (!Auth::check()) {
+            abort(401);
+        }
+
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('view_any_registers') ||
+            $user->can('view_all_registers') ||
+            $user->can('view_own_registers') ||
+            $user->can('create_own_registers') ||
+            $user->can('create_registers') ||
+            $user->can('edit_any_registers') ||
+            $user->can('edit_all_registers') ||
+            $user->can('edit_own_registers') ||
+            $user->can('delete_any_registers') ||
+            $user->can('delete_own_registers') ||
+            $user->can('delete_registers');
+
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
+
+        if ($canViewAny) {
+            $registers = Register::with('images')->orderBy('created_at', 'DESC')->paginate(15);
+        } elseif ($canViewOwn) {
+            $registers = Register::with('images')->where('user_id', Auth::id())
                 ->orderBy('created_at', 'DESC')
                 ->paginate(15);
+        } else {
+            abort(403);
         }
 
         return view('registers.list', ['registers' => $registers]);
@@ -37,35 +59,70 @@ class RegistersController extends Controller
 
     public function show($id)
     {
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('view_any_registers') ||
+            $user->can('view_all_registers') ||
+            $user->can('view_own_registers');
+
+        if (!$canViewPage) {
+            abort(403);
+        }
+
         $register = Register::with(['user', 'images'])
             ->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
             ->findOrFail($id);
 
         $isOwner = Auth::check() && (Auth::id() === ($register->user_id ?? null));
-        $canViewAll = Auth::check() && Auth::user()->can('view_all_registers');
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
 
-        if ($register->private != 0) {
-            if ($isOwner || $canViewAll) {
-                return view('registers.show', ['register' => $register]);
-            }
-            return redirect()->route('registers.index');
+        if ($canViewAny) {
+            return view('registers.show', ['register' => $register]);
         }
 
-        if (Auth::check() && !$isOwner && !$canViewAll) {
-            return redirect()->route('registers.index');
+        if ($isOwner && $canViewOwn) {
+            return view('registers.show', ['register' => $register]);
         }
 
-        return view('registers.show', ['register' => $register]);
+        abort(403);
     }
 
     public function create()
     {
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('create_own_registers') ||
+            $user->can('create_registers');
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $canCreate = $user->can('create_own_registers') || $user->can('create_registers');
+        if (!$canCreate) {
+            abort(403);
+        }
         $register = new Register();
         return view('registers.create', ['register' => $register]);
     }
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('create_own_registers') ||
+            $user->can('create_registers');
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $canCreate = $user->can('create_own_registers') || $user->can('create_registers');
+        if (!$canCreate) {
+            abort(403);
+        }
         $request->validate([
             'title' => 'required',
             'content' => 'required',
@@ -112,13 +169,39 @@ class RegistersController extends Controller
         $register->private = $request->has('private') ? $request->input('private') : 0;
         $register->save();
 
-        return redirect()->route('registers.index');
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
+        if ($canViewAny || $canViewOwn) {
+            return redirect()->route('registers.index');
+        }
+
+        return redirect()->route('registers.create');
     }
 
     public function edit($id)
     {
         $register = Register::findOrFail($id);
-        if (!(Auth::id() === ($register->user_id ?? null) || Auth::user()->can('edit_all_registers'))) {
+
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('view_any_registers') ||
+            $user->can('view_all_registers') ||
+            $user->can('view_own_registers') ||
+            $user->can('edit_any_registers') ||
+            $user->can('edit_all_registers') ||
+            $user->can('edit_own_registers');
+
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $isOwner = Auth::id() === ($register->user_id ?? null);
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
+        $canEditAny = $user->can('edit_any_registers') || $user->can('edit_all_registers');
+        $canEditOwn = $user->can('edit_own_registers');
+        if (!(($canViewAny && $canEditAny) || ($isOwner && $canViewOwn && $canEditOwn))) {
             abort(403);
         }
 
@@ -139,7 +222,27 @@ class RegistersController extends Controller
         ]);
 
         $register = Register::findOrFail($id);
-        if (!(Auth::id() === ($register->user_id ?? null) || Auth::user()->can('edit_all_registers'))) {
+
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('view_any_registers') ||
+            $user->can('view_all_registers') ||
+            $user->can('view_own_registers') ||
+            $user->can('edit_any_registers') ||
+            $user->can('edit_all_registers') ||
+            $user->can('edit_own_registers');
+
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $isOwner = Auth::id() === ($register->user_id ?? null);
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
+        $canEditAny = $user->can('edit_any_registers') || $user->can('edit_all_registers');
+        $canEditOwn = $user->can('edit_own_registers');
+        if (!(($canViewAny && $canEditAny) || ($isOwner && $canViewOwn && $canEditOwn))) {
             abort(403);
         }
 
@@ -182,13 +285,37 @@ class RegistersController extends Controller
 
         $register->save();
 
-        return redirect()->route('registers.index');
+        if ($canViewAny || $canViewOwn) {
+            return redirect()->route('registers.index');
+        }
+
+        return redirect()->route('registers.edit', ['id' => $register->id]);
     }
 
     public function confirmDelete($id)
     {
         $register = Register::findOrFail($id);
-        if (!Auth::user()->can('delete_registers')) {
+
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('view_any_registers') ||
+            $user->can('view_all_registers') ||
+            $user->can('view_own_registers') ||
+            $user->can('delete_any_registers') ||
+            $user->can('delete_own_registers') ||
+            $user->can('delete_registers');
+
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $isOwner = Auth::id() === ($register->user_id ?? null);
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
+        $canDeleteAny = $user->can('delete_any_registers') || $user->can('delete_registers');
+        $canDeleteOwn = $user->can('delete_own_registers');
+        if (!(($canViewAny && $canDeleteAny) || ($isOwner && $canViewOwn && $canDeleteOwn))) {
             abort(403);
         }
 
@@ -197,32 +324,73 @@ class RegistersController extends Controller
 
     public function delete($id, Request $request)
     {
-        if (!Auth::user()->can('delete_registers')) {
+        $user = Auth::user();
+        $register = Register::findOrFail($id);
+
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('view_any_registers') ||
+            $user->can('view_all_registers') ||
+            $user->can('view_own_registers') ||
+            $user->can('delete_any_registers') ||
+            $user->can('delete_own_registers') ||
+            $user->can('delete_registers');
+
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $isOwner = Auth::id() === ($register->user_id ?? null);
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
+        $canDeleteAny = $user->can('delete_any_registers') || $user->can('delete_registers');
+        $canDeleteOwn = $user->can('delete_own_registers');
+        if (!(($canViewAny && $canDeleteAny) || ($isOwner && $canViewOwn && $canDeleteOwn))) {
             abort(403);
         }
 
         if ($request->input('confirm') === 'yes') {
-            Register::findOrFail($id)->delete();
+            $register->delete();
         }
 
-        return redirect()->route('registers.index');
+        $canViewAnyAfter = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwnAfter = $user->can('view_own_registers');
+        if ($canViewAnyAfter || $canViewOwnAfter) {
+            return redirect()->route('registers.index');
+        }
+
+        return redirect('/');
     }
 
     public function map()
     {
-        if (Auth::check()) {
-            if (Auth::user()->can('view_all_registers')) {
-                $registers = Register::with('images')->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
-                    ->orderBy('created_at', 'DESC')->get();
-            } else {
-                $registers = Register::with('images')->where('user_id', Auth::id())
-                    ->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
-                    ->orderBy('created_at', 'DESC')->get();
-            }
-        } else {
-            $registers = Register::with('images')->where('private', '=', 0)
+        if (!Auth::check()) {
+            abort(401);
+        }
+
+        $user = Auth::user();
+        $canViewPage =
+            $user->can('view_page_registers') ||
+            $user->can('view_any_registers') ||
+            $user->can('view_all_registers') ||
+            $user->can('view_own_registers');
+
+        if (!$canViewPage) {
+            abort(403);
+        }
+
+        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+        $canViewOwn = $user->can('view_own_registers');
+
+        if ($canViewAny) {
+            $registers = Register::with('images')->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
+                ->orderBy('created_at', 'DESC')->get();
+        } elseif ($canViewOwn) {
+            $registers = Register::with('images')->where('user_id', Auth::id())
                 ->select('*', DB::raw('ST_Y(location) as lat_from_location'), DB::raw('ST_X(location) as lng_from_location'))
                 ->orderBy('created_at', 'DESC')->get();
+        } else {
+            abort(403);
         }
 
         $mapData = $registers->map(function ($p) {

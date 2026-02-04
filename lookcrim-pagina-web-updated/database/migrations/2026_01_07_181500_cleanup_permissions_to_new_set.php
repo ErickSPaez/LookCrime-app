@@ -8,7 +8,7 @@ return new class extends Migration {
     {
         $keep = [
             'view_all_registers', 'edit_all_registers', 'delete_registers',
-            'view_page_management', 'create_user', 'edit_user', 'ban_user', 'send_password_reset',
+            'view_page_management', 'create_user', 'edit_user', 'ban_user',
             'view_page_settings_roles', 'create_role', 'edit_role', 'delete_role',
         ];
 

@@ -26,7 +26,7 @@
         </div>
     @endif
 
-    @auth
+    @canany(['create_own_registers','create_registers'])
         <div class="row research flex-align-center">
             <div class="col-xs-10 image">
                 <a class="btn btn-lookcrim btn-sm edit-text" href="{{ route('registers.create') }}">
@@ -34,7 +34,7 @@
                 </a>
         </div>
     </div>
-    @endauth
+    @endcanany
 </div>
 
 {{ $registers->links()}}

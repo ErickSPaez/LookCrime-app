@@ -44,7 +44,13 @@
                         <td>{{ $user->id }}</td>
                         <td>{{ $user->name ?? $user->nome ?? '-' }}</td>
                         <td>{{ $user->email ?? '-' }}</td>
-                        <td>{{ $user->roles->pluck('name')->join(', ') ?: 'user' }}</td>
+                        <td>
+                            @php
+                                $roleNames = $user->roles->pluck('name');
+                                $displayRole = $roleNames->contains('admin') ? 'admin' : ($roleNames->first() ?: 'user');
+                            @endphp
+                            {{ $displayRole }}
+                        </td>
                         <td>{{ $user->created_at ? $user->created_at->format('Y-m-d') : '-' }}</td>
                         <td>
                             @can('edit_user')
@@ -52,17 +58,12 @@
                             @endcan
 
                             @can('ban_user')
-                                <form id="ban-form-{{ $user->id }}" action="{{ route('users.ban', $user->id) }}" method="POST" style="display:inline">
-                                    @csrf
-                                    <button type="button" class="btn btn-lookcrim-white btn-sm lc-confirm-trigger" data-form-id="ban-form-{{ $user->id }}" data-title="{{ $user->banned ? __('Unban user') : __('Ban user') }}" data-message="{{ $user->banned ? __('Are you sure you want to unban this user?') : __('Are you sure you want to ban this user?') }}">{{ $user->banned ? __('Unban') : __('Ban') }}</button>
-                                </form>
-                            @endcan
-
-                            @can('admin')
-                                <form id="pwd-form-{{ $user->id }}" action="{{ route('users.password.create', $user->id) }}" method="POST" style="display:inline;margin-left:6px;">
-                                    @csrf
-                                    <button type="button" class="btn btn-lookcrim btn-sm lc-confirm-trigger" data-form-id="pwd-form-{{ $user->id }}" data-title="{{ __('Send Password Setup E-mail') }}" data-message="{{ __('Send password setup link to this user?') }}">{{ __('Send Password Setup E-mail') }}</button>
-                                </form>
+                                @if($user->id !== auth()->id())
+                                    <form id="ban-form-{{ $user->id }}" action="{{ route('users.ban', $user->id) }}" method="POST" style="display:inline">
+                                        @csrf
+                                        <button type="button" class="btn {{ $user->banned ? 'btn-secondary' : 'btn-lookcrim' }} btn-sm lc-confirm-trigger" data-form-id="ban-form-{{ $user->id }}" data-title="{{ $user->banned ? __('Unban user') : __('Ban user') }}" data-message="{{ $user->banned ? __('Are you sure you want to unban this user?') : __('Are you sure you want to ban this user?') }}">{{ $user->banned ? __('Unban') : __('Ban') }}</button>
+                                    </form>
+                                @endif
                             @endcan
                         </td>
                     </tr>

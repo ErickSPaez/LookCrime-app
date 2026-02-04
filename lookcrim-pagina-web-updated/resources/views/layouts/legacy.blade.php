@@ -100,11 +100,30 @@
             <ul class="navbar-nav">
                 <div class="line-menubar"></div>
 
-                <li class="nav-item {{ request()->is('registers*') || request()->is('map') ? 'active' : 'default' }}">
-                    <a class="font-head-bar-black" href="{{ url('/registers') }}">
-                        <span class="font-head-bar-black-effect">@lang('layout.registers')</span>
-                    </a>
-                </li>
+                @php
+                    $lcUser = auth()->user();
+                    $lcCanViewPageRegisters = $lcUser && (
+                        $lcUser->can('view_page_registers') ||
+                        $lcUser->can('view_any_registers') || $lcUser->can('view_all_registers') ||
+                        $lcUser->can('view_own_registers') ||
+                        $lcUser->can('create_own_registers') || $lcUser->can('create_registers')
+                    );
+                    $lcCanViewRegisters = $lcUser && (
+                        $lcUser->can('view_any_registers') || $lcUser->can('view_all_registers') ||
+                        $lcUser->can('view_own_registers')
+                    );
+                    $lcCanCreateRegisters = $lcUser && ($lcUser->can('create_own_registers') || $lcUser->can('create_registers'));
+                    $lcRegistersHref = ($lcCanViewPageRegisters && ($lcCanViewRegisters || $lcCanCreateRegisters))
+                        ? ($lcCanViewRegisters ? url('/registers') : route('registers.create'))
+                        : null;
+                @endphp
+                @if ($lcRegistersHref)
+                    <li class="nav-item {{ request()->is('registers*') || request()->is('map') ? 'active' : 'default' }}">
+                        <a class="font-head-bar-black" href="{{ $lcRegistersHref }}">
+                            <span class="font-head-bar-black-effect">@lang('layout.registers')</span>
+                        </a>
+                    </li>
+                @endif
 
                 @can('view_page_management')
                     <li class="nav-item {{ request()->is('user/management') ? 'active' : 'default' }}">

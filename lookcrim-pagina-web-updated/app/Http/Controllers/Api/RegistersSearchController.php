@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Register;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -131,7 +132,30 @@ class RegistersSearchController extends Controller
             return response()->json(['error' => 'Internal query error'], 500);
         }
 
-        $features = array_map(function($r){
+        // Hydrate image/url for popup rendering (map searches need the same fields as initial load).
+        $registersById = collect();
+        try {
+            $ids = array_values(array_unique(array_map(function ($r) {
+                return (int) ($r->id ?? 0);
+            }, $rows)));
+            $ids = array_values(array_filter($ids));
+
+            if (count($ids) > 0) {
+                $registersById = Register::with('images')->whereIn('id', $ids)->get()->keyBy('id');
+            }
+        } catch (\Throwable $e) {
+            // best-effort only
+            $registersById = collect();
+        }
+
+        $features = array_map(function ($r) use ($registersById) {
+            $reg = null;
+            try {
+                $reg = $registersById->get($r->id);
+            } catch (\Throwable $e) {
+                $reg = null;
+            }
+
             return [
                 'type' => 'Feature',
                 'geometry' => json_decode($r->geo, true),
@@ -140,6 +164,8 @@ class RegistersSearchController extends Controller
                     'title' => $r->title,
                     'category' => $r->category,
                     'created_at' => $r->created_at,
+                    'image' => $reg ? $reg->image_url() : null,
+                    'url' => url('/registers/' . $r->id),
                 ]
             ];
         }, $rows);

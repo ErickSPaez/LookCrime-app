@@ -262,9 +262,14 @@ document.addEventListener('DOMContentLoaded', function(){
             fillColor: color,
             fillOpacity: 1
         });
+
+        const title = pub.title || (pub.properties && pub.properties.title) || TRANSLATIONS.publication;
+        const detailUrl = pub.url || (pub.properties && pub.properties.url) || '#';
+        const imageUrl = pub.image || (pub.properties && pub.properties.image) || null;
+
         let popupHtml = '<div style="min-width:180px">';
-        if(pub.image) popupHtml += '<a href="'+pub.url+'"><img src="'+pub.image+'" alt="'+pub.title+'"></a>';
-        popupHtml += '<div><a href="'+(pub.url||'#')+'"><strong>'+ (pub.title || (pub.properties && pub.properties.title) || TRANSLATIONS.publication) +'</strong></a></div>';
+        if(imageUrl) popupHtml += '<a href="'+detailUrl+'"><img src="'+imageUrl+'" alt="'+title+'"></a>';
+        popupHtml += '<div><a href="'+detailUrl+'"><strong>'+ title +'</strong></a></div>';
         if(cat) popupHtml += '<div style="margin-top:6px;font-size:0.9rem;color:#444"><em>'+ (categoryLabels[cat] || cat) +'</em></div>';
         popupHtml += '</div>';
         marker.bindPopup(popupHtml);
@@ -508,7 +513,14 @@ document.addEventListener('DOMContentLoaded', function(){
                     const coords = f.geometry && f.geometry.coordinates;
                     if(!coords) return;
                     const lon = coords[0], lat = coords[1];
-                    addPublicationMarker({lat: lat, lng: lon, title: f.properties.title, category: f.properties.category});
+                    addPublicationMarker({
+                        lat: lat,
+                        lng: lon,
+                        title: f.properties.title,
+                        category: f.properties.category,
+                        image: f.properties.image,
+                        url: f.properties.url,
+                    });
                     count++;
                 });
             }

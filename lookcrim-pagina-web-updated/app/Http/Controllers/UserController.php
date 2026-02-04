@@ -10,10 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Str;
-use App\Notifications\SetPasswordNotification;
 
 class UserController extends Controller
 {
@@ -53,38 +51,18 @@ class UserController extends Controller
             $user->syncRoles([$data['role']]);
         }
 
-        try {
-            $token = Password::broker()->createToken($user);
-            $user->notify(new SetPasswordNotification($token));
-        } catch (\Throwable $e) {
-            return Redirect::route('users-list')
-                ->with('error', __('Email send failed: :message', ['message' => $e->getMessage()]));
-        }
-
-        return Redirect::route('users-list')->with('success', __('User created. Password setup email sent.'));
+        return Redirect::route('users-list')->with('success', __('User created.'));
     }
 
     public function edit($id)
     {
         $user = User::findOrFail($id);
-        if ($id == Auth::id()) {
+        if ($id == Auth::id() && !Auth::user()?->can('admin')) {
             abort(403, 'Unauthorized action.');
         }
         $user->loadMissing('roles');
         $roles = Role::orderBy('name')->pluck('name')->all();
         return view('user.edit', compact('user','roles'));
-    }
-
-    public function password_replacement($id)
-    {
-        $user = User::findOrFail($id);
-        try {
-            $token = Password::broker()->createToken($user);
-            $user->notify(new SetPasswordNotification($token));
-        } catch (\Throwable $e) {
-            return Redirect::back()->with('error', __('Email send failed: :message', ['message' => $e->getMessage()]));
-        }
-        return Redirect::route('users-list')->with('success', __('Password setup email sent.'));
     }
 
     public function update(Request $request, $id)
@@ -105,7 +83,10 @@ class UserController extends Controller
         $user->institution = $data['institution'] ?? $user->institution;
         $user->save();
 
-        if (array_key_exists('role', $data)) {
+        // Keep admin accounts pinned to the 'admin' role.
+        if ($user->admin) {
+            $user->syncRoles(['admin']);
+        } elseif (array_key_exists('role', $data)) {
             $user->syncRoles($data['role'] ? [$data['role']] : []);
         }
 
@@ -115,6 +96,11 @@ class UserController extends Controller
     public function ban($id)
     {
         $user = User::findOrFail($id);
+
+        if ((int) $user->id === (int) Auth::id()) {
+            return Redirect::back()->with('error', __('You cannot ban your own account.'));
+        }
+
         $user->banned = !(bool) $user->banned;
         $user->save();
         return Redirect::back()->with('success', __('User status updated.'));
