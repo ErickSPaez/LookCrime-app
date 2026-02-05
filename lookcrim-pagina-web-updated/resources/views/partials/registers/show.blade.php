@@ -1,7 +1,37 @@
 <div class="main-website-interior">
 
-    <h4 class="font-title-for-customization register-title">{{ $register->title() }}</h4>
-    <hr class="interior-title-line register-line-title">
+    @php
+        $user = Auth::user();
+        $isOwner = Auth::id() === ($register->user_id ?? null);
+        $canEdit = Auth::check() && ($isOwner || ($user && $user->can('edit_all_registers')));
+        $canDeleteAny = Auth::check() && $user && ($user->can('delete_any_registers') || $user->can('delete_registers'));
+        $canDeleteOwn = Auth::check() && $user && $user->can('delete_own_registers');
+        $canDelete = $canDeleteAny || ($isOwner && $canDeleteOwn);
+    @endphp
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;">
+        <a class="btn btn-lookcrim-white btn-sm" href="{{ route('registers.index') }}">{{ __('pages.back') }}</a>
+
+        @if($canEdit)
+            <a class="btn btn-lookcrim btn-sm edit-text" href="{{ route('registers.edit', $register->id) }}">
+                @lang('buttons.edit')
+            </a>
+        @endif
+
+        @if($canDelete)
+            <button
+                type="button"
+                class="btn btn-lookcrim-white btn-sm edit-text js-open-register-delete-modal"
+                data-register-id="{{ $register->id }}"
+                data-register-title="{{ $register->title() }}"
+            >
+                @lang('buttons.delete')
+            </button>
+        @endif
+    </div>
+
+    <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ $register->title() }}</h1>
+    <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
 
     @php
         $lat = $register->lat_from_location ?? $register->latitude ?? null;
@@ -50,19 +80,6 @@
         @endif
     </div>
 
-    @if(Auth::check() && (Auth::id() === ($register->user_id ?? null) || Auth::user()->can('edit_all_registers')))
-        <div class="row" style="margin-top:14px;">
-            <div class="col-12 submit-text">
-                <a class="btn btn-lookcrim btn-sm edit-text" href="{{ route('registers.edit', $register->id) }}">
-                    @lang('buttons.edit')
-                </a>
-
-                @can('delete_registers')
-                    <a class="btn btn-lookcrim-white btn-sm edit-text" href="{{ route('registers.delete.confirm', $register->id) }}">
-                        @lang('buttons.delete')
-                    </a>
-                @endcan
-            </div>
-        </div>
-    @endif
 </div>
+
+@include('partials.registers.delete-modal')

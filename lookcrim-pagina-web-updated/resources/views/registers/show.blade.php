@@ -18,7 +18,7 @@
 			--register-media-width: 680px;
 		}
 
-		.main-website-interior h4.font-title-for-customization.register-title {
+		.main-website-interior .font-title-for-customization.register-title {
 			font-size: 1.6rem;
 			margin-top: 6px;
 			margin-bottom: 0;

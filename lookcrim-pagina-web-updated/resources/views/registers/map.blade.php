@@ -134,8 +134,16 @@
 
 @section('conteudo')
 <div class="main-website-interior">
-    <h1 class="font-title-for-customization interior-title">{{ __('pages.map_title') }}</h1>
-    <hr class="interior-title-line">
+    <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.map_title') }}</h1>
+    <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
+
+    <div style="display:flex;justify-content:flex-start;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+        @canany(['create_own_registers','create_registers'])
+            <a class="btn btn-lookcrim btn-sm edit-text" href="{{ route('registers.create') }}">
+                @lang('buttons.add-register')
+            </a>
+        @endcanany
+    </div>
 
 
     <div class="lc-map-panel">
@@ -251,6 +259,7 @@ document.addEventListener('DOMContentLoaded', function(){
     @php
         $__userCity = (isset($city) && $city) ? [
             'name' => (string) ($city->name ?? ''),
+            'slug' => (string) ($city->slug ?? ''),
             'lat' => (float) $city->center_lat,
             'lng' => (float) $city->center_lng,
             'radius_m' => (int) $city->radius_m,
@@ -499,31 +508,45 @@ document.addEventListener('DOMContentLoaded', function(){
         checks.forEach(c=>c.checked = true);
     });
 
-    // Predefined city buttons (Porto, Braga)
-    const portoBtn = L.control({position: 'topleft'});
-    portoBtn.onAdd = function(){
-        const div = L.DomUtil.create('div', 'leaflet-bar');
-        div.style.padding = '6px';
-        div.innerHTML = '<button id="btn-porto" class="btn-lookcrim" style="font-size:0.85rem">'+TRANSLATIONS.porto+'</button> <button id="btn-braga" class="btn-lookcrim" style="font-size:0.85rem">'+TRANSLATIONS.braga+'</button>';
-        return div;
-    };
-    portoBtn.addTo(map);
-    document.getElementById('btn-porto').addEventListener('click', function(){
-        // Porto center
-        currentCenter = { lat: 41.1579, lng: -8.6291 };
-        document.getElementById('filter-radius').value = 25;
-        map.setView([currentCenter.lat, currentCenter.lng], 12);
-        updateSearchCircle();
-        performSearch();
-    });
-    document.getElementById('btn-braga').addEventListener('click', function(){
-        // Braga center
-        currentCenter = { lat: 41.5454, lng: -8.4265 };
-        document.getElementById('filter-radius').value = 25;
-        map.setView([currentCenter.lat, currentCenter.lng], 12);
-        updateSearchCircle();
-        performSearch();
-    });
+    // City quick-center button (assigned city)
+    if (userCity && (userCity.slug || userCity.name) && (userCity.lat != null) && (userCity.lng != null)) {
+        const cityBtn = L.control({position: 'topleft'});
+        cityBtn.onAdd = function(){
+            const div = L.DomUtil.create('div', 'leaflet-bar');
+            div.style.padding = '6px';
+            const labelRaw = (userCity.slug || userCity.name || '').toString();
+            const label = labelRaw ? labelRaw.toUpperCase() : 'CITY';
+            div.innerHTML = '<button id="btn-user-city" class="btn-lookcrim" style="font-size:0.85rem">'+label+'</button>';
+            L.DomEvent.disableClickPropagation(div);
+            L.DomEvent.disableScrollPropagation(div);
+            return div;
+        };
+        cityBtn.addTo(map);
+
+        const btn = document.getElementById('btn-user-city');
+        if (btn) {
+            btn.addEventListener('click', function(){
+                currentCenter = { lat: userCity.lat, lng: userCity.lng };
+
+                if (cityBoundaryCircle) {
+                    try {
+                        map.fitBounds(cityBoundaryCircle.getBounds(), { padding: [20, 20] });
+                    } catch (e) {
+                        map.setView([currentCenter.lat, currentCenter.lng], 12);
+                    }
+                } else {
+                    map.setView([currentCenter.lat, currentCenter.lng], 12);
+                }
+
+                if (isRadiusMode()) {
+                    updateSearchCircle();
+                    performSearch();
+                } else {
+                    scheduleSearch();
+                }
+            });
+        }
+    }
 
     // allow user to pick a center by clicking the map
     let selectMode = false; // when true, clicks set center; when false, clicks interact with markers

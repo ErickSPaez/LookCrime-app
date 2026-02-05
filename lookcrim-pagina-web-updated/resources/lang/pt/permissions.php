@@ -25,10 +25,10 @@ return [
         'delete_any_city_registers' => 'Excluir registros em qualquer cidade',
 
     // Legado (compat)
-    'create_registers' => 'Criar registros (legado)',
-    'view_all_registers' => 'Visualizar todos os registros',
-    'edit_all_registers' => 'Editar todos os registros',
-    'delete_registers' => 'Excluir registros',
+    'create_registers' => 'Criar próprios registros',
+    'view_all_registers' => 'Visualizar quaisquer registros',
+    'edit_all_registers' => 'Editar quaisquer registros',
+    'delete_registers' => 'Excluir quaisquer registros',
 
     // Gestão
     'view_page_management' => 'Visualizar gerenciamento da página',

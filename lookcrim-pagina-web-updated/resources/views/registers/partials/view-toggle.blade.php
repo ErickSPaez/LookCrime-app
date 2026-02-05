@@ -4,7 +4,7 @@
     $mapUrl = route('registers.map');
 @endphp
 
-<div class="d-flex align-items-center justify-content-end" style="margin: -6px 0 12px 0;">
+<div class="d-flex align-items-center justify-content-end" style="margin: 0 0 12px 0;">
     <div class="btn-group" role="group" aria-label="{{ __('pages.view_toggle_aria') }}">
         <a
             href="{{ $listUrl }}"

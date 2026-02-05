@@ -341,38 +341,6 @@ class RegistersController extends Controller
         return redirect()->route('registers.edit', ['id' => $register->id]);
     }
 
-    public function confirmDelete($id)
-    {
-        $q = Register::query()->where('id', $id);
-        $q = $this->applyCityWriteRestriction($q, 'delete_any_city_registers');
-        $register = $q->firstOrFail();
-
-        $user = Auth::user();
-        $canViewPage =
-            $user->can('view_page_registers') ||
-            $user->can('view_any_registers') ||
-            $user->can('view_all_registers') ||
-            $user->can('view_own_registers') ||
-            $user->can('delete_any_registers') ||
-            $user->can('delete_own_registers') ||
-            $user->can('delete_registers');
-
-        if (!$canViewPage) {
-            abort(403);
-        }
-
-        $isOwner = Auth::id() === ($register->user_id ?? null);
-        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
-        $canViewOwn = $user->can('view_own_registers');
-        $canDeleteAny = $user->can('delete_any_registers') || $user->can('delete_registers');
-        $canDeleteOwn = $user->can('delete_own_registers');
-        if (!(($canViewAny && $canDeleteAny) || ($isOwner && $canViewOwn && $canDeleteOwn))) {
-            abort(403);
-        }
-
-        return view('registers.delete', ['register' => $register]);
-    }
-
     public function delete($id, Request $request)
     {
         $user = Auth::user();

@@ -1,8 +1,12 @@
 @extends('layouts.legacy')
 
 @section('conteudo')
-    <div class="container">
-        <h1 class="mb-3-form-title">{{ __('Edit User') }} #{{ $user->id }}</h1>
+    <div class="main-website-interior user-management-panel">
+        <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('Edit User') }} #{{ $user->id }}</h1>
+        <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
+            <a class="btn btn-lookcrim-white btn-sm" href="{{ route('users-list') }}">{{ __('pages.back') }}</a>
+        </div>
 
         @if (session('success'))
             <div class="alert-success">{{ session('success') }}</div>

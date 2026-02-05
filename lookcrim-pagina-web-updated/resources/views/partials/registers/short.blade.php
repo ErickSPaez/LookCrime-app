@@ -14,6 +14,15 @@
 						<h2 class="title-research title-publications">
 							{{ $register->title() }}
 						</h2>
+
+						@php
+							$user = Auth::user();
+							$isOwner = Auth::id() === ($register->user_id ?? null);
+							$canEdit = Auth::check() && ($isOwner || ($user && $user->can('edit_all_registers')));
+							$canDeleteAny = Auth::check() && $user && ($user->can('delete_any_registers') || $user->can('delete_registers'));
+							$canDeleteOwn = Auth::check() && $user && $user->can('delete_own_registers');
+							$canDelete = $canDeleteAny || ($isOwner && $canDeleteOwn);
+						@endphp
 							<div class="card-summary-content content-publications">
 								@if(strlen($register->content()) < 300)
 									{!! strip_tags($register->content()) !!}
@@ -25,17 +34,24 @@
 
 							<a class="card-view-more" href="{{ route('registers.show', $register->id) }}" title="{{ $register->title() }}">@lang('buttons.readmore')</a>
 
-							@if(Auth::check() && (Auth::id() === ($register->user_id ?? null) || Auth::user()->can('edit_all_registers')))
+							@if($canEdit || $canDelete)
 							<div class="row card-buttons">
-								<a class="card-edit-buttons" href="{{ route('registers.edit', $register->id) }}">
-									@lang('buttons.edit')
-								</a>
+								@if($canEdit)
+									<a class="card-edit-buttons" href="{{ route('registers.edit', $register->id) }}">
+										@lang('buttons.edit')
+									</a>
+								@endif
 
-								@can('delete_registers')
-								<a class="card-edit-buttons" href="{{ route('registers.delete.confirm', $register->id) }}">
-									@lang('buttons.delete')
-								</a>
-								@endcan
+								@if($canDelete)
+									<button
+										type="button"
+										class="card-edit-buttons js-open-register-delete-modal"
+										data-register-id="{{ $register->id }}"
+										data-register-title="{{ $register->title() }}"
+									>
+										@lang('buttons.delete')
+									</button>
+								@endif
 							</div>
 							@endif
 						</div>

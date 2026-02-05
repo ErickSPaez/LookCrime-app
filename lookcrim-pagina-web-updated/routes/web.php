@@ -33,7 +33,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/registers', [RegistersController::class, 'store'])->name('registers.store');
     Route::get('/registers/{id}/edit', [RegistersController::class, 'edit'])->name('registers.edit')->where('id','[0-9]+');
     Route::put('/registers/{id}', [RegistersController::class, 'update'])->name('registers.update')->where('id','[0-9]+');
-    Route::get('/registers/{id}/delete', [RegistersController::class, 'confirmDelete'])->name('registers.delete.confirm')->where('id','[0-9]+');
+
+    // Delete confirmation is handled via an in-page modal; GET endpoint should not exist.
+    Route::get('/registers/{id}/delete', function () {
+        abort(404);
+    })->where('id','[0-9]+');
+
     Route::post('/registers/{id}/delete', [RegistersController::class, 'delete'])->name('registers.delete')->where('id','[0-9]+');
 
     Route::get('/map', [RegistersController::class, 'map'])->name('registers.map');

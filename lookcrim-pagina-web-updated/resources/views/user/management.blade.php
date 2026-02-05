@@ -2,9 +2,9 @@
 
 @section('conteudo')
     <div class="main-website-interior user-management-panel">
-        <h1 class="font-title-for-customization register-title" style="margin-bottom:0;">{{ __('pages.management_title') }}</h1>
+        <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.management_title') }}</h1>
         <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
-        <p class="user-management-subtitle">{{ __('pages.management_subtitle') }}</p>
+        <p class="user-management-subtitle" style="text-align:center;">{{ __('pages.management_subtitle') }}</p>
 
         @if (session('success'))
             <div class="alert-success">{{ session('success') }}</div>
@@ -34,6 +34,7 @@
                     <th>{{ __('Name') }}</th>
                     <th>{{ __('Email') }}</th>
                     <th>{{ __('Role') }}</th>
+                    <th>{{ __('pages.city') }}</th>
                     <th>{{ __('buttons.created-at') }}</th>
                     <th>{{ __('Actions') }}</th>
                 </tr>
@@ -51,6 +52,7 @@
                             @endphp
                             {{ $displayRole }}
                         </td>
+                        <td>{{ $user->city?->name ?? '—' }}</td>
                         <td>{{ $user->created_at ? $user->created_at->format('Y-m-d') : '-' }}</td>
                         <td>
                             @can('edit_user')
@@ -69,7 +71,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">{{ __('No users registered.') }}</td>
+                        <td colspan="7">{{ __('No users registered.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

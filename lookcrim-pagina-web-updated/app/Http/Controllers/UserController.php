@@ -19,7 +19,7 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $users = User::with('roles')->orderBy('id', 'desc')->paginate(25);
+        $users = User::with(['roles', 'city'])->orderBy('id', 'desc')->paginate(25);
         return view('user.management', compact('users'));
     }
 

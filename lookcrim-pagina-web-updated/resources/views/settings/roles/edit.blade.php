@@ -1,8 +1,12 @@
 @extends('layouts.legacy')
 
 @section('conteudo')
-<div class="container">
-    <h1 class="mb-3-form-title">{{ __('pages.edit_role') }}: {{ $role->name }}</h1>
+<div class="main-website-interior user-management-panel">
+    <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.edit_role') }}: {{ $role->name }}</h1>
+    <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
+        <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.roles.index') }}">{{ __('pages.back') }}</a>
+    </div>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -36,8 +40,17 @@
                     </div>
 
                     <div class="row">
-                        @foreach($permissionGroups as $category => $group)
-                            <div class="col-lg-4 col-md-6 lc-perm-group" style="margin-bottom:16px;">
+                        @php
+                            $preferredOrder = ['registers','management','roles','cities'];
+                            $permissionGroupsArr = $permissionGroups instanceof \Illuminate\Support\Collection
+                                ? $permissionGroups->all()
+                                : (array) $permissionGroups;
+                            $categories = array_values(array_unique(array_merge($preferredOrder, array_keys($permissionGroupsArr))));
+                        @endphp
+                        @foreach($categories as $category)
+                            @continue(!isset($permissionGroupsArr[$category]))
+                            @php $group = $permissionGroupsArr[$category]; @endphp
+                            <div class="col-lg-6 col-md-6 lc-perm-group" style="margin-bottom:16px;">
                                 @php
                                     $groupLabel = \Illuminate\Support\Facades\Lang::has('permissions.group.'.$category)
                                         ? __('permissions.group.'.$category)
@@ -115,6 +128,16 @@
                                         $renderPerm('edit_role', ['data-lc-parent' => 'view_page_settings_roles']);
                                         $renderPerm('delete_role', ['data-lc-parent' => 'view_page_settings_roles']);
                                     @endphp
+                                @elseif($category === 'cities')
+                                    @php
+                                        $renderPerm('view_page_settings_city');
+                                        $renderPerm('create_city', ['data-lc-parent' => 'view_page_settings_city']);
+                                        $renderPerm('edit_city', ['data-lc-parent' => 'view_page_settings_city']);
+                                        $renderPerm('delete_city', ['data-lc-parent' => 'view_page_settings_city']);
+                                    @endphp
+                                    @if(($isChecked)('view_any_city'))
+                                        <input type="hidden" name="permissions[view_any_city]" value="1">
+                                    @endif
                                 @else
                                     @foreach($group as $perm)
                                         @php
@@ -138,7 +161,7 @@
 
             <div class="form-actions">
                 <button class="btn-lookcrim" type="submit">{{ __('pages.save') }}</button>
-                <a href="{{ route('settings.roles.index') }}" class="btn-secondary">{{ __('pages.back') }}</a>
+                <a href="{{ route('settings.roles.index') }}" class="btn-secondary">{{ __('pages.cancel') }}</a>
             </div>
         </form>
         @can('delete_role')
@@ -166,6 +189,7 @@
 #perm-view_page_registers + label,
 #perm-view_page_management + label,
 #perm-view_page_settings_roles + label,
+#perm-view_page_settings_city + label,
 #perm-view_own_registers + label,
 #perm-view_any_registers + label,
 #perm-view_any_city_registers + label{
@@ -216,6 +240,10 @@ function lcRefreshPermUI(){
     // Roles
     const viewPageRoles = lcIsChecked('view_page_settings_roles');
     lcSetChildrenEnabled('view_page_settings_roles', viewPageRoles);
+
+    // Cities
+    const viewPageCity = lcIsChecked('view_page_settings_city');
+    lcSetChildrenEnabled('view_page_settings_city', viewPageCity);
 }
 
 document.addEventListener('change', function(e){

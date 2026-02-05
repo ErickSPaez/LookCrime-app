@@ -25,10 +25,10 @@ return [
     'delete_any_city_registers' => 'Delete registers in any city',
 
     // Legacy (compat)
-    'create_registers' => 'Create registers (legacy)',
-    'view_all_registers' => 'View all registers',
-    'edit_all_registers' => 'Edit all registers',
-    'delete_registers' => 'Delete registers',
+    'create_registers' => 'Create own registers',
+    'view_all_registers' => 'View any registers',
+    'edit_all_registers' => 'Edit any registers',
+    'delete_registers' => 'Delete any registers',
 
     // Management
     'view_page_management' => 'View page management',

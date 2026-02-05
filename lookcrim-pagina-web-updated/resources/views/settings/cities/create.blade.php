@@ -14,11 +14,11 @@
 
 @section('conteudo')
 <div class="main-website-interior user-management-panel">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <h1 class="font-title-for-customization register-title" style="margin-bottom:0;">{{ __('pages.create_city') }}</h1>
+    <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.create_city') }}</h1>
+    <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
         <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.city.index') }}">{{ __('pages.back') }}</a>
     </div>
-    <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
 
     @if ($errors->any())
         <div class="alert alert-danger">

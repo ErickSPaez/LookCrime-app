@@ -2,16 +2,13 @@
 
 @section('conteudo')
     <div class="main-website-interior user-management-panel">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-            <h1 class="font-title-for-customization register-title" style="margin-bottom:0;">{{ __('pages.city_settings_title') }}</h1>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.roles.index') }}">{{ __('pages.page_settings') }}</a>
-                @can('create_city')
-                    <a class="btn btn-lookcrim btn-sm" href="{{ route('settings.city.create') }}">{{ __('pages.create_city') }}</a>
-                @endcan
-            </div>
-        </div>
+        <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.city_settings_title') }}</h1>
         <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
+        <div style="display:flex;justify-content:flex-start;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+            @can('create_city')
+                <a class="btn btn-lookcrim btn-sm" href="{{ route('settings.city.create') }}">{{ __('pages.create_city') }}</a>
+            @endcan
+        </div>
 
         @if (session('success'))
             <div class="alert-success">{{ session('success') }}</div>
@@ -56,8 +53,6 @@
             @endforelse
             </tbody>
         </table>
-
-        <a href="{{ route('users-list') }}" class="btn btn-lookcrim-white btn-sm">{{ __('pages.back') }}</a>
     </div>
 
     <!-- Confirmation modal (reused) -->

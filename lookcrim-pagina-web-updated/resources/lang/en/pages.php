@@ -136,7 +136,8 @@ return [
     'to_date' => 'To',
 
     // Settings / Roles
-    'page_settings' => 'ROLE SETTINGS',
+    'page_settings' => 'Role Settings',
+    'nav_page_settings' => 'ROLE SETTINGS',
     'roles' => 'Roles',
     'permissions' => 'Permissions',
     'name' => 'Name',
@@ -164,8 +165,12 @@ return [
     'permissions_from_role' => 'Permissions are defined by the selected role and cannot be edited per user.',
 
     // Settings / Cities
-    'city_settings' => 'CITY SETTINGS',
-    'city_settings_title' => 'CITY SETTINGS',
+    'city_settings' => 'City Settings',
+    'city_settings_title' => 'City Settings',
+    'nav_city_settings' => 'CITY SETTINGS',
+
+    // Admin - Users Management
+    'city' => 'City',
     'no_cities_defined' => 'No cities defined',
     'create_city' => 'Create City',
     'edit_city' => 'Edit City',

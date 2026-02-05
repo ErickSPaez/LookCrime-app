@@ -101,7 +101,7 @@ class RegistersCityRestrictionTest extends TestCase
             ->assertNotFound();
 
         $this->actingAs($actor)
-            ->get(route('registers.delete.confirm', $registerOutside->id))
+            ->get('/registers/' . $registerOutside->id . '/delete')
             ->assertNotFound();
 
         $this->actingAs($actor)
@@ -417,10 +417,6 @@ class RegistersCityRestrictionTest extends TestCase
         $this->assertSame((int) $cityA->id, (int) ($ownInA->city_id ?? 0));
 
         // Delete a register in City B (not in default city).
-        $this->actingAs($actor)
-            ->get(route('registers.delete.confirm', $created->id))
-            ->assertOk();
-
         $this->actingAs($actor)
             ->post(route('registers.delete', $created->id), ['confirm' => 'yes'])
             ->assertRedirect(route('registers.index'));

@@ -56,6 +56,7 @@ return [
     'management_title' => 'Gestão de Utilizadores',
     'management_subtitle' => '',
     'name' => 'Nome',
+    'city' => 'Cidade',
     'verified_account' => 'Conta Verificada',
     'yes' => 'Sim',
     'no' => 'Não',
@@ -149,7 +150,8 @@ return [
     , 'server_error' => 'Erro no servidor'
     , 'select_location' => 'Selecionar local'
     , 'select_location_mode' => 'Clique no mapa para escolher o centro'
-    , 'page_settings' => 'DEFINIÇÕES DE PAPÉIS'
+    , 'page_settings' => 'Definições de Papéis'
+    , 'nav_page_settings' => 'DEFINIÇÕES DE PAPÉIS'
     , 'roles' => 'Perfis'
     , 'permissions' => 'Permissões'
     , 'name' => 'Nome'
@@ -177,8 +179,9 @@ return [
      , 'permissions_from_role' => 'As permissões são definidas pelo perfil selecionado e não podem ser editadas por utilizador.'
 
     // Definições / Cidades
-    , 'city_settings' => 'DEFINIÇÕES DE CIDADES'
-    , 'city_settings_title' => 'DEFINIÇÕES DE CIDADES'
+    , 'city_settings' => 'Definições de Cidades'
+    , 'city_settings_title' => 'Definições de Cidades'
+    , 'nav_city_settings' => 'DEFINIÇÕES DE CIDADES'
     , 'no_cities_defined' => 'Sem cidades definidas'
     , 'create_city' => 'Criar Cidade'
     , 'edit_city' => 'Editar Cidade'

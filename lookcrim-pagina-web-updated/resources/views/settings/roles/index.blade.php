@@ -2,19 +2,18 @@
 
 @section('conteudo')
     <div class="main-website-interior user-management-panel">
-        <h1 class="font-title-for-customization register-title" style="margin-bottom:0;">{{ __('pages.page_settings') }}</h1>
+        <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.page_settings') }}</h1>
         <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
-        <p class="user-management-subtitle">&nbsp;</p>
+        <div style="display:flex;justify-content:flex-start;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+            @can('create_role')
+                <a class="btn btn-lookcrim btn-sm" href="{{ route('settings.roles.create') }}">{{ __('pages.create_role') }}</a>
+            @endcan
+        </div>
+        <p class="user-management-subtitle" style="text-align:center;">&nbsp;</p>
 
         @if (session('success'))
             <div class="alert-success">{{ session('success') }}</div>
         @endif
-
-        @can('create_role')
-            <div style="margin-bottom:1rem;">
-                <a class="btn btn-lookcrim" href="{{ route('settings.roles.create') }}">{{ __('pages.create_role') }}</a>
-            </div>
-        @endcan
 
         <table class="table table-wrapper">
             <thead>
@@ -32,7 +31,13 @@
                     <td>{{ $role->nameLocalized() }}</td>
                     <td>
                         @forelse($role->permissions as $permission)
-                            <span class="badge" style="margin-right:6px; background: #2e7d32; color:#fff;">{{ str_replace('_',' ', $permission->name) }}</span>
+                            @php
+                                $permName = $permission->name;
+                                $permLabel = \Illuminate\Support\Facades\Lang::has('permissions.'.$permName)
+                                    ? __('permissions.'.$permName)
+                                    : ucwords(str_replace('_',' ', (string) $permName));
+                            @endphp
+                            <span class="badge" style="margin-right:6px; background: #2e7d32; color:#fff;">{{ $permLabel }}</span>
                         @empty
                             <em>{{ __('pages.no_permissions') }}</em>
                         @endforelse
@@ -60,8 +65,6 @@
             @endforelse
             </tbody>
         </table>
-
-        <a href="{{ route('users-list') }}" class="btn btn-lookcrim-white btn-sm">{{ __('pages.back') }}</a>
     </div>
 
     <!-- Confirmation modal -->
