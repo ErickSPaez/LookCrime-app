@@ -21,7 +21,7 @@ class HomeController extends Controller
             $user->can('view_own_registers');
 
         if ($canViewRegisters) {
-            return redirect()->route('registers.map');
+            return redirect()->route('registers.index');
         }
 
         $canCreateRegisters =
