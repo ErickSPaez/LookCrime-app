@@ -12,7 +12,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/app.css": {
-    "file": "assets/app-fKOiAZnS.css",
+    "file": "assets/app-DQySuZF_.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -21,7 +21,7 @@
     ]
   },
   "resources/css/breeze.css": {
-    "file": "assets/breeze-CWrq7P7K.css",
+    "file": "assets/breeze-DR8VW_WE.css",
     "src": "resources/css/breeze.css",
     "isEntry": true,
     "name": "breeze",

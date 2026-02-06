@@ -1,9 +1,9 @@
 /* Full legacy stylesheet migrated from public/css/style.css */
-@import url('https://fonts.googleapis.com/css?family=Trebuchet+MS');
+
 
 .bg-lcred2 {
     background-color: rgb(123,30,33) !important;
-    height: 100%;
+    height: auto;
 }
 
 .footer {
@@ -202,20 +202,48 @@
 /* (full legacy stylesheet continues — file contains the full content from public/css/style.css) */
 
 /* ---- Visual polish overrides ---- */
+/* Tweakable layout variables */
+:root {
+    /* Increase/decrease this to control the width of the white management/settings panels
+       (Roles, City Settings, User Management, etc.). */
+    --lc-management-panel-max-width: 980px;
+}
+
+html,
+body {
+    height: 100%;
+}
+
 body {
     background-color: #ffffff;
     color: #222;
     font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+
+    /* Sticky footer: keep the bottom bar pinned to the viewport
+       when content is short, and let the main area absorb the extra space. */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-website {
     padding: 2.5rem 0 4rem 0;
+    flex: 1 0 auto;
+}
+
+.bg-lcred2 {
+    flex-shrink: 0;
 }
 
 .main-website-interior {
     max-width: 1100px;
     margin: 0 auto;
     padding: 0 1rem;
+}
+
+/* Make the management/settings panel a bit wider (legacy default is 820px in public/css/style.css) */
+.user-management-panel {
+    max-width: var(--lc-management-panel-max-width);
 }
 
 .font-title-for-customization {
@@ -270,8 +298,8 @@ body {
 
 /* Footer spacing */
 .bg-lcred2 .main-website-interior {
-    padding-top: 2.5rem;
-    padding-bottom: 2.5rem;
+    padding-top: 0.60rem;
+    padding-bottom: 0.60rem;
 }
 
 /* Small responsive tweaks */

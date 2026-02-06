@@ -49,6 +49,10 @@
                     <div class="lc-help">{{ __('pages.city_radius_help') }}</div>
                 </div>
                 <div class="form-group" style="flex:1">
+                    <label class="form-label">{{ __('buttons.created-at') }}</label>
+                    <input class="form-input" type="text" value="{{ $city->created_at?->format('Y-m-d') ?? '-' }}" readonly>
+                </div>
+                <div class="form-group" style="flex:1">
                     <label class="form-label">{{ __('pages.city_center') }}</label>
                     <div class="lc-help">{{ __('pages.city_center_help') }}</div>
                     <input type="hidden" name="center_lat" id="center-lat" value="{{ old('center_lat', $city->center_lat) }}">

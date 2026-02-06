@@ -24,6 +24,7 @@
                     <th>{{ __('pages.name') }}</th>
                     <th>{{ __('pages.city_center') }}</th>
                     <th>{{ __('pages.radius_km') }}</th>
+                    <th>{{ __('buttons.created-at') }}</th>
                     <th>{{ __('pages.actions') }}</th>
                 </tr>
             </thead>
@@ -34,6 +35,7 @@
                     <td>{{ $city->name }}</td>
                     <td>{{ number_format((float)$city->center_lat, 5) }}, {{ number_format((float)$city->center_lng, 5) }}</td>
                     <td>{{ number_format(((int)$city->radius_m)/1000, 2) }}</td>
+                    <td>{{ $city->created_at?->format('Y-m-d') ?? '-' }}</td>
                     <td>
                         @can('edit_city')
                             <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.city.edit', $city->slug) }}">{{ __('pages.edit') }}</a>

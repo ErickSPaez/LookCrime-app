@@ -90,7 +90,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light ">
     <div class="container d-flex flex-column flex-md-row justify-content-between">
-        <a class="logo-head-bar" href="{{ url('/') }}">
+        <a class="logo-head-bar" href="{{ url('/registers') }}">
             <img src="{{ asset('img/LookCrim-Logo1.png') }}" alt="LookCrim Logo 1" class="visible-xs-inline-lookcrimlogo" />
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
@@ -167,58 +167,7 @@
 
 <!-- Footer -->
 <div class="bg-lcred2">
-    <div class="main-website-interior">
-        <!-- Footer Links -->
-        <div class="container-fluid text-center text-md-left">
-
-            <!-- Grid row -->
-            <div class="row">
-
-                <!-- Grid column -->
-                <div class="col-md-5 mt-md-7 ">
-
-                    <!-- Content (removed — reserved for sponsors) -->
-                    <p class="font-weight-bold-white">&nbsp;</p>
-
-                </div>
-                <!-- Grid column -->
-
-                <hr class="clearfix w-100 d-md-none pb-3">
-
-                <!-- Grid column -->
-                <div class="col-md-3 mb-md-0 mb-3">
-                    <div class="row">
-                        <!-- Links (text removed) -->
-                        <h5 class="font-weight-bold-white-followus">&nbsp;</h5>
-
-                        <!-- Grid column -->
-                        <div class="col-md-12">
-                            <div class="mb-5 flex-center">
-                                <!-- Facebook icon removed -->
-                            </div>
-                        </div>
-                        <!-- Grid column -->
-
-                    </div>
-
-                </div>
-                <!-- Grid column -->
-
-                <!-- Grid column -->
-                <div class="col-md-4 mb-md-0 mb-3">
-
-                    <!-- Content (removed — reserved for sponsors) -->
-                    <p class="font-weight-bold-white">&nbsp;</p>
-
-                </div>
-                <!-- Grid column -->
-
-            </div>
-            <!-- Grid row -->
-
-        </div>
-        <!-- Footer Links-->
-    </div>
+    <div class="main-website-interior"></div>
 </div>
 
 
