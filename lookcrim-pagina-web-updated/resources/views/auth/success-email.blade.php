@@ -1,4 +1,4 @@
-@extends('layouts.layout')
+@extends('layouts.legacy')
 
 @section('titulo_browser',$aux=trans('auth.edit-profile'). ' - LookCrim')
 

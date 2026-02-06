@@ -9,27 +9,6 @@
         $canDelete = $canDeleteAny || ($isOwner && $canDeleteOwn);
     @endphp
 
-    <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;">
-        <a class="btn btn-lookcrim-white btn-sm" href="{{ route('registers.index') }}">{{ __('pages.back') }}</a>
-
-        @if($canEdit)
-            <a class="btn btn-lookcrim btn-sm edit-text" href="{{ route('registers.edit', $register->id) }}">
-                @lang('buttons.edit')
-            </a>
-        @endif
-
-        @if($canDelete)
-            <button
-                type="button"
-                class="btn btn-lookcrim-white btn-sm edit-text js-open-register-delete-modal"
-                data-register-id="{{ $register->id }}"
-                data-register-title="{{ $register->title() }}"
-            >
-                @lang('buttons.delete')
-            </button>
-        @endif
-    </div>
-
     <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ $register->title() }}</h1>
     <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
 
@@ -79,6 +58,27 @@
             <div class="text-muted" style="margin-top:8px;">{{ __('Location not available.') }}</div>
         @endif
     </div>
+
+    @if($canEdit || $canDelete)
+        <div style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px;">
+            @if($canEdit)
+                <a class="btn btn-lookcrim-white btn-sm edit-text" href="{{ route('registers.edit', $register->id) }}">
+                    @lang('buttons.edit')
+                </a>
+            @endif
+
+            @if($canDelete)
+                <button
+                    type="button"
+                    class="btn btn-lookcrim btn-sm edit-text js-open-register-delete-modal"
+                    data-register-id="{{ $register->id }}"
+                    data-register-title="{{ $register->title() }}"
+                >
+                    @lang('buttons.delete')
+                </button>
+            @endif
+        </div>
+    @endif
 
 </div>
 

@@ -237,5 +237,11 @@
    AOS.init();
  </script>
 
+{{-- Snow effect (optional): set LC_ENABLE_SNOW=true in .env to enable. --}}
+@php($lcEnableSnow = filter_var(env('LC_ENABLE_SNOW', false), FILTER_VALIDATE_BOOLEAN))
+@if($lcEnableSnow)
+    @include('partials.snow')
+@endif
+
 </body>
 </html>
