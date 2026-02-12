@@ -58,13 +58,18 @@ Documentar todo. (Tarea 9)
 
 
 DEV LOCAL (en tu PC, con HMR):
-Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated"; php artisan optimize:clear; Start-Process php -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow; npm run dev
+Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated";
+Set-Location .\server; php artisan optimize:clear; Start-Process php -WorkingDirectory $PWD -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow;
+Set-Location .\frontend; npm run dev
+
 
 DEMO PUBLICO:
 Pendiente: deploy a un hosting real (ej. Google Cloud) cuando el proyecto esté listo.
 
 DEV LOCAL (ruta alternativa):
-Set-Location "C:\proyectofinal2025\LookCrime-app\lookcrim-pagina-web-updated"; php artisan optimize:clear; Start-Process php -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow; npm run dev
+Set-Location "C:\proyectofinal2025\LookCrime-app\lookcrim-pagina-web-updated";
+Set-Location .\server; php artisan optimize:clear; Start-Process php -WorkingDirectory $PWD -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow;
+Set-Location ..\frontend; npm run dev
 
 DEMO PUBLICO (ruta alternativa):
 Pendiente: deploy a un hosting real (ej. Google Cloud) cuando el proyecto esté listo.

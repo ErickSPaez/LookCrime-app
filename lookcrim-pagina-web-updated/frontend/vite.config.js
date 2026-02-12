@@ -9,7 +9,12 @@ export default defineConfig({
                 'resources/css/breeze.css',
                 'resources/js/app.js',
             ],
-            refresh: true,
+            publicDirectory: '../server/public',
+            refresh: [
+                '../server/app/**',
+                '../server/resources/views/**',
+                '../server/routes/**',
+            ],
         }),
     ],
 });

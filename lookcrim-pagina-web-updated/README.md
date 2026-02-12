@@ -19,6 +19,8 @@
 ### Instalación (PowerShell)
 
 ```powershell
+cd server
+
 composer install
 Copy-Item .env.example .env
 php artisan key:generate
@@ -34,8 +36,22 @@ php artisan serve
 
 ### Assets (Vite)
 
-- Para desarrollo con hot reload: `npm install` y `npm run dev`.
-- Para producción/demos (sin `public/hot`): `npm run build`.
+En este repo el build de assets vive en `frontend/` y compila hacia `server/public/build`.
+
+- Para desarrollo con hot reload:
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+- Para producción/demos (sin `public/hot`):
+
+```powershell
+cd frontend
+npm run build
+```
 
 ### Demo público
 
