@@ -4,21 +4,21 @@
 
 @section('conteudo')
 
-<div class="main-website-interior">
-    <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">
+<div class="main-website-interior container">
+    <h1 class="font-title-for-customization register-title text-center mb-2">
         @lang('layout.registers')
     </h1>
-    <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
+    <hr class="interior-title-line register-line-title mb-3">
 
-    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-        <div>
+    <div class="row mb-3 align-items-center justify-content-between">
+        <div class="col-12 col-md-auto mb-2 mb-md-0">
             @canany(['create_own_registers','create_registers'])
                 <a class="btn btn-lookcrim btn-sm edit-text" href="{{ route('registers.create') }}">
                     @lang('buttons.add-register')
                 </a>
             @endcanany
         </div>
-        <div style="margin-left:auto;">
+        <div class="col-12 col-md-auto text-md-right">
             @include('registers.partials.view-toggle')
         </div>
     </div>
@@ -37,7 +37,7 @@
         </div>
     @endif
 
-    <div style="margin-top:14px;">
+    <div class="mt-3">
         {{ $registers->links() }}
     </div>
 </div>

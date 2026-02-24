@@ -27,6 +27,23 @@
 
     @yield('pagestyles')
 
+    <style>
+        /* Force navbar items to layout horizontally and center on small screens */
+        .line-menubar { display: none; }
+        .logo-head-bar img { max-width: 150px; height: auto; }
+        @media (max-width: 991px) {
+            .container.navbar-custom-flex, .container-fluid.navbar-custom-flex { flex-direction: row !important; align-items: center !important; }
+            .navbar-nav { display: flex !important; flex-direction: row !important; justify-content: center; width: 100%; flex-wrap:wrap; }
+            .navbar-nav .nav-item { margin: 0 .5rem; }
+            .top-menu { text-align: right; padding-right: 8px; }
+            .visible-xs-inline-lookcrimlogo { display:block; margin: 0 auto; }
+            /* Ensure collapse area uses full width and no right gap */
+            .navbar-collapse.collapse { width: 100%; }
+            .navbar-collapse { padding-left: 0.5rem; padding-right: 0.5rem; }
+            body { overflow-x: hidden; }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -34,10 +51,10 @@
 <!-- Navigation -->
 
 <div class="top-menu" id="ovoMenu">
-
+    <div class="main-website-interior d-flex justify-content-end align-items-center">
     @if(Auth::check())
 
-        <div class="dropdown" style="display:inline-block;">
+        <div class="dropdown" style="display:inline-block;margin-left:8px;margin-right:8px;">
             <a
                 href="#"
                 class="font-top-menu dropdown-toggle"
@@ -83,14 +100,14 @@
         <a href="{{ url('/login') }}" class="font-top-menu">@lang('auth.login')</a>
     @endif
 
-    <a  href="{{ url('/lang/en') }}" class="font-top-menu lang">EN</a>
+    <a  href="{{ url('/lang/en') }}" class="font-top-menu lang" style="margin-left:12px;">EN</a>
    <div class="line-lang"></div>
-    <a href="{{ url('/lang/pt') }}" class="font-top-menu lang">PT</a>
-
+    <a href="{{ url('/lang/pt') }}" class="font-top-menu lang" style="margin-left:8px;">PT</a>
+    </div>
 </div>
 
 <nav class="navbar navbar-expand-lg navbar-light ">
-    <div class="container d-flex flex-column flex-md-row justify-content-between">
+    <div class="main-website-interior navbar-custom-flex d-flex flex-column flex-md-row justify-content-between">
         <a class="logo-head-bar" href="{{ url('/registers') }}">
             <img src="{{ asset('img/LookCrim-Logo1.png') }}" alt="LookCrim Logo 1" class="visible-xs-inline-lookcrimlogo" />
         </a>
@@ -98,7 +115,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarResponsive">
-            <ul class="navbar-nav">
+            <ul class="navbar-nav d-flex flex-row align-items-center w-100 navbar-main-list">
                 <div class="line-menubar"></div>
 
                 @php
@@ -119,7 +136,7 @@
                         : null;
                 @endphp
                 @if ($lcRegistersHref)
-                    <li class="nav-item {{ request()->is('registers*') || request()->is('map') ? 'active' : 'default' }}">
+                    <li class="nav-item mx-1 {{ request()->is('registers*') || request()->is('map') ? 'active' : 'default' }}">
                         <a class="font-head-bar-black" href="{{ $lcRegistersHref }}">
                             <span class="font-head-bar-black-effect">@lang('layout.registers')</span>
                         </a>
@@ -127,7 +144,7 @@
                 @endif
 
                 @can('view_page_management')
-                    <li class="nav-item {{ request()->is('user/management') ? 'active' : 'default' }}">
+                    <li class="nav-item mx-1 {{ request()->is('user/management') ? 'active' : 'default' }}">
                         <a class="font-head-bar-black" href="{{ url('/user/management') }}">
                             <span class="font-head-bar-black-effect">{{ __('auth.management') }}</span>
                         </a>
@@ -135,7 +152,7 @@
                 @endcan
 
                 @can('view_page_settings_roles')
-                    <li class="nav-item {{ request()->is('settings/roles*') ? 'active' : 'default' }}">
+                    <li class="nav-item mx-1 {{ request()->is('settings/roles*') ? 'active' : 'default' }}">
                         <a class="font-head-bar-black" href="{{ route('settings.roles.index') }}">
                             <span class="font-head-bar-black-effect">{{ __('pages.nav_page_settings') }}</span>
                         </a>
@@ -143,7 +160,7 @@
                 @endcan
 
                 @if((auth()->user()?->can('view_page_settings_city') ?? false) || (auth()->user()?->can('admin') ?? false))
-                    <li class="nav-item {{ request()->is('settings/city*') ? 'active' : 'default' }}">
+                    <li class="nav-item mx-1 {{ request()->is('settings/city*') ? 'active' : 'default' }}">
                         <a class="font-head-bar-black" href="{{ route('settings.city.index') }}">
                             <span class="font-head-bar-black-effect">{{ __('pages.nav_city_settings') }}</span>
                         </a>

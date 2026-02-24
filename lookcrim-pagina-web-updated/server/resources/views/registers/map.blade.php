@@ -4,9 +4,9 @@
 
 @section('pagestyles')
     <style>
-        #publications-map { height: 600px; width: 100%; margin-bottom: 1rem; }
+        #publications-map { height: 60vh; min-height:360px; width: 100%; margin-bottom: 1rem; border-radius:4px; overflow:hidden }
         .leaflet-popup-content img { max-width: 200px; height: auto; display:block; margin-bottom:6px; }
-        .map-legend { background: #fff; padding: 8px 10px; border-radius:4px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+        .map-legend { background: #fff; padding: 8px 10px; border-radius:4px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); max-width:220px; }
         .map-legend .item { display:flex; align-items:center; margin-bottom:6px; font-size:0.9rem; }
         .map-legend .swatch { width:14px; height:14px; border-radius:3px; display:inline-block; margin-right:8px; border:1px solid #3333; }
 
@@ -22,7 +22,7 @@
         .lc-map-panel-head {
             display: flex;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 10px;
             margin-bottom: 10px;
         }
@@ -70,7 +70,7 @@
             column-gap: 14px;
             row-gap: 6px;
             align-items: center;
-            min-width: 180px;
+            min-width: 140px;
         }
         #filter-types-container label {
             display: inline-flex;
@@ -125,9 +125,19 @@
         .lc-crosshair::before { width: 18px; height: 2px; }
         .lc-crosshair::after { width: 2px; height: 18px; }
 
+        @media (max-width: 992px) {
+            #publications-map { height: 50vh; min-height:260px; }
+        }
+
         @media (max-width: 768px) {
             .lc-map-actions, .lc-map-info { margin-left: 0; }
             #filter-types-container { grid-template-columns: repeat(2, max-content); }
+            .lc-map-panel { padding: 8px; }
+            /* Stack filter rows vertically for small screens */
+            .lc-map-row { flex-direction: column; align-items: stretch; }
+            .lc-field { width: 100%; }
+            .lc-field .form-control, .lc-field .form-control-sm, .lc-field select { width: 100% !important; min-width:0; }
+            .map-legend { display: none; }
         }
     </style>
 @endsection
@@ -155,14 +165,14 @@
 
         <div id="map-filters">
             <div class="lc-map-row">
-                <div class="lc-field" id="radius-field">
-                    <span class="lc-label">{{ __('pages.radius_km') }}:</span>
-                    <input id="filter-radius" type="number" step="0.5" min="0" value="5" style="width:90px">
+                <div class="lc-field d-flex align-items-center" id="radius-field">
+                    <span class="lc-label mr-2">{{ __('pages.radius_km') }}:</span>
+                    <input id="filter-radius" type="number" step="0.5" min="0" value="5" class="form-control form-control-sm w-auto" style="display:inline-block; width:90px">
                 </div>
 
-                <div class="lc-field">
-                    <span class="lc-label">{{ __('pages.users') }}:</span>
-                    <select id="filter-user" style="min-width:180px">
+                <div class="lc-field d-flex align-items-center">
+                    <span class="lc-label mr-2">{{ __('pages.users') }}:</span>
+                    <select id="filter-user" class="form-control form-control-sm" style="min-width:160px; max-width:240px; display:inline-block">
                         <option value="">{{ __('pages.all_users') }}</option>
                         @if(isset($users) && count($users))
                             @foreach($users as $u)
@@ -172,11 +182,11 @@
                     </select>
                 </div>
 
-                <div class="lc-field">
-                    <span class="lc-label">{{ __('pages.filter_by_time') }}:</span>
-                    <input id="filter-from" type="date">
-                    <span class="lc-small">—</span>
-                    <input id="filter-to" type="date">
+                <div class="lc-field d-flex align-items-center">
+                    <span class="lc-label mr-2">{{ __('pages.filter_by_time') }}:</span>
+                    <input id="filter-from" type="date" class="form-control form-control-sm" style="display:inline-block; width:auto;">
+                    <span class="lc-small mx-2">—</span>
+                    <input id="filter-to" type="date" class="form-control form-control-sm" style="display:inline-block; width:auto;">
                 </div>
             </div>
 
@@ -189,21 +199,21 @@
                                 <label><input class="filter-type" type="checkbox" value="{{ $k }}"> {{ $v }}</label>
                             @endforeach
                         </div>
-                        <button id="select-all-types" type="button" class="btn-secondary">{{ __('pages.select_all') }}</button>
+                        <button id="select-all-types" type="button" class="btn btn-secondary btn-sm"> <span class="btn-label">{{ __('pages.select_all') }}</span></button>
                     </div>
                 </div>
                 <div class="lc-map-actions">
-                    <button id="btn-select-location" type="button" class="btn-secondary" aria-label="{{ __('pages.select_location') }}">
-                        {{ __('pages.select_location') }}
+                    <button id="btn-select-location" type="button" class="btn btn-secondary btn-sm" aria-label="{{ __('pages.select_location') }}">
+                        <span class="btn-label">{{ __('pages.select_location') }}</span>
                     </button>
-                    <button id="clear-filters" class="btn-secondary">{{ __('pages.clear') }}</button>
+                    <button id="clear-filters" class="btn btn-secondary btn-sm">{{ __('pages.clear') }}</button>
                 </div>
             </div>
 
             <div class="lc-map-row">
-                <div class="lc-field">
-                    <button id="toggle-search-mode" type="button" class="btn-secondary"></button>
-                    <label class="lc-small" style="margin:0">
+                <div class="lc-field d-flex align-items-center">
+                    <button id="toggle-search-mode" type="button" class="btn btn-secondary btn-sm mr-2"></button>
+                    <label class="lc-small mb-0">
                         <input type="checkbox" id="use-my-location"> {{ __('pages.use_my_location') }}
                     </label>
                 </div>

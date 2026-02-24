@@ -27,6 +27,7 @@
         </form>
         @endcan
 
+        <div class="table-responsive lc-table-responsive">
         <table class="table table-wrapper">
             <thead>
                 <tr>
@@ -76,6 +77,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
 
         {{ $users->links() }}
     </div>

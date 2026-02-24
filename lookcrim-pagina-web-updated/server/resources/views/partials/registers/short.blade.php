@@ -1,16 +1,16 @@
 <div class="col-md-12 list-item-publications"  data-aos="fade-up" data-aos-duration="1000">
 	<div class="card mb-4 card-publications-item">
 		<div class="card-body card-publications">
-			<div class="container space-2 space-md-3">
-				<div class="row align-items-center">
-					<div class="col-lg-4 mb-9 mb-lg-0 no-padding-left">
+			<div class="px-0">
+				<div class="row no-gutters align-items-center">
+					<div class="col-12 col-md-4 mb-3 mb-md-0 no-padding-left">
 						@if(!empty($register->image_url()))
-							<div class="publications-image">
+							<div class="publications-image text-center text-md-left">
 								@include('partials.registers.image', ['mode' => 'cover'])
 							</div>
 						@endif
 					</div>
-					<div class="col-lg-8 position-relative col-publications">
+					<div class="col-12 col-md-8 position-relative col-publications px-3 px-md-2">
 						<h2 class="title-research title-publications">
 							{{ $register->title() }}
 						</h2>
@@ -32,12 +32,12 @@
 								@endif
 							</div>
 
-							<a class="card-view-more" href="{{ route('registers.show', $register->id) }}" title="{{ $register->title() }}">@lang('buttons.readmore')</a>
+							<a class="card-view-more d-inline-block mt-2" href="{{ route('registers.show', $register->id) }}" title="{{ $register->title() }}">@lang('buttons.readmore')</a>
 
 							@if($canEdit || $canDelete)
-							<div class="row card-buttons">
+							<div class="d-flex mt-2 flex-wrap justify-content-start justify-content-md-end">
 								@if($canEdit)
-									<a class="card-edit-buttons" href="{{ route('registers.edit', $register->id) }}">
+									<a class="btn btn-sm btn-outline-secondary mr-2 mb-1" href="{{ route('registers.edit', $register->id) }}">
 										@lang('buttons.edit')
 									</a>
 								@endif
@@ -45,7 +45,7 @@
 								@if($canDelete)
 									<button
 										type="button"
-										class="card-edit-buttons js-open-register-delete-modal"
+										class="btn btn-sm btn-outline-danger mb-1 js-open-register-delete-modal"
 										data-register-id="{{ $register->id }}"
 										data-register-title="{{ $register->title() }}"
 									>

@@ -8,6 +8,34 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     padding: 24px 24px 16px 24px;
 }
+
+.lc-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.user-management-panel .table {
+    width: 100%;
+}
+
+.user-management-panel .table th,
+.user-management-panel .table td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 576px) {
+    .main-website-interior {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .user-management-panel {
+        padding: 16px 12px;
+    }
+}
+
 .user-management-panel h1.font-title-for-customization.register-title {
     text-align: center;
     font-size: 1.9rem;
@@ -354,15 +382,17 @@ img{
     font-size: 13px;
     padding: 10px;
     display: inline-block;
-    vertical-align: middle;
-}
-
-.font-top-menu.lang {
-    font-size: 10px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
+            .main-website-interior.navbar-custom-flex { flex-direction: row !important; align-items: center !important; }
+            .navbar-nav { display: flex !important; flex-direction: row !important; width: 100%; flex-wrap:wrap; }
+            .navbar-main-list { justify-content: space-between; }
+            .navbar-main-list .nav-item { margin: 0 .25rem; }
+            .top-menu { text-align: right; padding-right: 8px; }
+            .visible-xs-inline-lookcrimlogo { display:block; margin: 0; }
+            /* Ensure collapse area uses full width and no right gap */
+            .navbar-collapse.collapse { width: 100%; }
+            .navbar-collapse { padding-left: 0; padding-right: 0; }
+            /* removed forced overflow hidden so horizontal scrolling is possible when content wider than viewport */
+            .font-head-bar-black { line-height: 1.6 !important; padding-top: .25rem; padding-bottom: .25rem; }
 .line-lang {
     height: 13px;
     border-left: 1px solid;
@@ -420,6 +450,7 @@ img{
 .main-website {
     min-height: calc(100vh - 356px);
     margin: 0 auto;
+     /* allow horizontal scrolling when inner content is wider than viewport */
 }
 
 .row .with-padding {
@@ -468,6 +499,25 @@ img{
     margin-top: 20px;
     max-width: 920px;
 }
+
+/* Make table wrappers scrollable instead of forcing global horizontal scroll */
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-wrapper table { width: 100%; border-collapse: collapse; }
+
+/* Navbar behavior on small screens: wrap and center items */
+@media (max-width: 991px) {
+    .navbar-main-list { justify-content: center; flex-wrap: wrap; }
+    .navbar-main-list .nav-item { flex: 0 1 auto; margin: .35rem .5rem; }
+    .visible-xs-inline-lookcrimlogo { max-width: 120px; height: auto; margin-left: 0.5rem; }
+}
+
+/* Ensure horizontal scrollbar is available and not hidden */
+html, body {
+    overflow-x: scroll; /* always show horizontal scrollbar to allow panning */
+}
+
+/* Avoid inner elements hiding the scrollbar (ensure full-width behavior) */
+* { box-sizing: border-box; }
 
 .bg-lcred2 .main-website-interior {
     max-width: 94%;
