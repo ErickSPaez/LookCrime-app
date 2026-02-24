@@ -9,8 +9,10 @@
 /server/storage/*.key
 /server/vendor
 /server/.env
+/server/.env.*
 .env.backup
 .env.production
+/cloudrun*.yaml
 !/server/storage/app/public/registers/.gitignore
 Homestead.json
 Homestead.yaml

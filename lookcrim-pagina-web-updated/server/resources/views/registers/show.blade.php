@@ -175,8 +175,8 @@
 			if (!mapEl) return;
 			if (!window.L) return;
 
-			var lat = {{ json_encode($lat) }};
-			var lng = {{ json_encode($lng) }};
+			var lat = @json($lat);
+			var lng = @json($lng);
 
 			lat = (lat === null || lat === undefined) ? NaN : parseFloat(lat);
 			lng = (lng === null || lng === undefined) ? NaN : parseFloat(lng);

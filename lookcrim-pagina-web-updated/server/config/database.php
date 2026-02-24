@@ -74,8 +74,25 @@ return [
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            'search_path' => 'public',
-            'sslmode' => 'prefer',
+            // Supabase suele instalar extensiones (p.ej. postgis) en el schema `extensions`.
+            // Permitimos configurar el search_path por env para que ST_* funcione en staging.
+            'search_path' => env('DB_SEARCH_PATH', 'public'),
+            'sslmode' => env('DB_SSLMODE', 'prefer'),
+        ],
+
+        'staging' => [
+            'driver' => 'pgsql',
+            'url' => env('STAGING_DATABASE_URL'),
+            'host' => env('STAGING_DB_HOST', '127.0.0.1'),
+            'port' => env('STAGING_DB_PORT', '5432'),
+            'database' => env('STAGING_DB_DATABASE', 'forge'),
+            'username' => env('STAGING_DB_USERNAME', 'forge'),
+            'password' => env('STAGING_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => env('STAGING_DB_SEARCH_PATH', 'public'),
+            'sslmode' => env('STAGING_DB_SSLMODE', env('DB_SSLMODE', 'prefer')),
         ],
 
         'sqlsrv' => [

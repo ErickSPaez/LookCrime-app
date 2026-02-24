@@ -14,7 +14,30 @@ return new class extends Migration {
             return;
         }
 
-        DB::statement("ALTER TABLE {$tableName} ADD COLUMN IF NOT EXISTS location geometry(POINT,4326)");
+        $geometrySchema = DB::selectOne(
+            "select n.nspname as schema\n" .
+            "from pg_type t\n" .
+            "join pg_namespace n on n.oid = t.typnamespace\n" .
+            "where t.typname = 'geometry'\n" .
+            "limit 1"
+        );
+
+        if (!$geometrySchema) {
+            DB::statement('CREATE EXTENSION IF NOT EXISTS postgis');
+            $geometrySchema = DB::selectOne(
+                "select n.nspname as schema\n" .
+                "from pg_type t\n" .
+                "join pg_namespace n on n.oid = t.typnamespace\n" .
+                "where t.typname = 'geometry'\n" .
+                "limit 1"
+            );
+        }
+
+        $geometryType = $geometrySchema && isset($geometrySchema->schema)
+            ? $geometrySchema->schema . '.geometry'
+            : 'geometry';
+
+        DB::statement("ALTER TABLE {$tableName} ADD COLUMN IF NOT EXISTS location {$geometryType}(POINT,4326)");
         // Create GIST index for spatial queries
         DB::statement("CREATE INDEX IF NOT EXISTS {$tableName}_location_gist ON {$tableName} USING GIST (location)");
     }

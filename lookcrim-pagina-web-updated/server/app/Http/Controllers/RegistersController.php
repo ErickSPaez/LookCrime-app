@@ -158,11 +158,10 @@ class RegistersController extends Controller
 
         $register = new Register();
         $register->user_id = Auth::id();
-        if (!$user?->admin) {
-            $register->city_id = $cityIdForRegister ?? (int) $user->city_id;
-        } elseif ($cityIdForRegister) {
-            $register->city_id = $cityIdForRegister;
-        }
+        // City assignment is based on the creator account, not on the picked point.
+        // This avoids locking admin (city_id = null) into a city just because the
+        // clicked location happens to be inside one.
+        $register->city_id = $cityIdForRegister;
 
         $title = $request->input('title');
         $content = $request->input('content');
@@ -177,7 +176,10 @@ class RegistersController extends Controller
         $register->save();
 
         if (!is_null($lat) && !is_null($lng)) {
-            DB::update('UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?', [$lng, $lat, $register->id]);
+            DB::update(
+                'UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326) WHERE id = ?',
+                [$lng, $lat, $register->id]
+            );
         }
 
         $files = [];
@@ -546,13 +548,15 @@ class RegistersController extends Controller
     private function assertPointAllowedAndGetCityId(?float $lat, ?float $lng, string $anyCityPermission): ?int
     {
         $user = Auth::user();
-        if (!$user || (bool) ($user->admin ?? false)) {
-            // Admin: no enforcement; if point is provided, best-effort assign a city_id.
-            if ($lat === null || $lng === null || !is_finite($lat) || !is_finite($lng)) {
-                return null;
-            }
+        if (!$user) {
+            return null;
+        }
 
-            return $this->findCityIdForPoint($lat, $lng);
+        // City is determined by the user account. If user has no city assigned,
+        // allow placing the point anywhere and keep register.city_id = null.
+        $userCityId = $user->city_id !== null ? (int) $user->city_id : null;
+        if (!$userCityId) {
+            return null;
         }
 
         if ($lat === null || $lng === null || !is_finite($lat) || !is_finite($lng)) {
@@ -561,21 +565,17 @@ class RegistersController extends Controller
             ]);
         }
 
-        // If allowed, accept any city that contains the point.
-        if ($user->can($anyCityPermission)) {
-            $cityId = $this->findCityIdForPoint($lat, $lng);
-            if (!$cityId) {
-                throw ValidationException::withMessages([
-                    'latitude' => __('The selected point is outside any configured city area.'),
-                ]);
-            }
-            return $cityId;
+        $city = null;
+        try {
+            $city = City::query()->where('id', $userCityId)->first();
+        } catch (\Throwable $e) {
+            $city = null;
         }
 
-        // Default: must be inside user's city.
-        $city = $this->getCityForWriteRestriction();
         if (!$city) {
-            return null;
+            throw ValidationException::withMessages([
+                'latitude' => __('City not found.'),
+            ]);
         }
 
         $row = DB::selectOne(
@@ -729,7 +729,11 @@ class RegistersController extends Controller
 
         // Keep legacy column populated for compatibility
         if ($firstPath) {
-            $register->image = 'storage/' . $firstPath;
+            try {
+                $register->image = Storage::disk($disk)->url($firstPath);
+            } catch (\Throwable $e) {
+                $register->image = 'storage/' . $firstPath;
+            }
             $register->save();
         }
     }

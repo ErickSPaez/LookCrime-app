@@ -29,12 +29,55 @@ class RegisterImage extends Model
             return null;
         }
 
-        // For local "public" disk, return a relative URL so it works regardless
-        // of APP_URL host/port (e.g. artisan serve on 127.0.0.1:8000).
+        $path = (string) $path;
+
+        // If DB already contains a full URL, use it as-is.
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+
+        // If DB contains a gs:// URL, convert to public HTTPS URL.
+        if (preg_match('#^gs://([^/]+)/(.+)$#i', $path, $m)) {
+            $bucket = $m[1];
+            $objectPath = $m[2];
+            $objectPath = str_replace('\\', '/', $objectPath);
+            $objectPath = ltrim($objectPath, '/');
+            return 'https://storage.googleapis.com/' . $bucket . '/' . $objectPath;
+        }
+
         if ($disk === 'public') {
             $path = str_replace('\\', '/', $path);
             $path = ltrim($path, '/');
-            return '/storage/' . $path;
+
+            $publicDriver = (string) (config('filesystems.disks.public.driver') ?? 'local');
+            if ($publicDriver === 'local') {
+                // For local "public" disk, return a relative URL so it works regardless
+                // of APP_URL host/port (e.g. artisan serve on 127.0.0.1:8000).
+                return '/storage/' . $path;
+            }
+
+            // For GCS public disk, prefer Laravel's URL helper but fallback to a deterministic
+            // public URL in case the adapter/url config is missing in a given environment.
+            try {
+                $url = Storage::disk('public')->url($path);
+                if (is_string($url) && $url !== '') {
+                    return $url;
+                }
+            } catch (\Throwable $e) {
+                // continue to fallback
+            }
+
+            $baseUrl = (string) (config('filesystems.disks.public.url') ?? '');
+            if ($baseUrl !== '') {
+                return rtrim($baseUrl, '/') . '/' . $path;
+            }
+
+            $bucket = (string) (config('filesystems.disks.public.bucket') ?? '');
+            if ($bucket !== '') {
+                return 'https://storage.googleapis.com/' . $bucket . '/' . $path;
+            }
+
+            return null;
         }
 
         try {

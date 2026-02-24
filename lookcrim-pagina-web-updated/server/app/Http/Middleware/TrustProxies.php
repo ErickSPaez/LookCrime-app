@@ -12,7 +12,11 @@ class TrustProxies extends Middleware
      *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    // Cloud Run / load balancers sit in front of the container and set
+    // X-Forwarded-* headers (especially X-Forwarded-Proto=https). Trusting
+    // proxies is required so Laravel generates https URLs and avoids
+    // browser "connection not secure" warnings on form submits.
+    protected $proxies = '*';
 
     /**
      * The headers that should be used to detect proxies.

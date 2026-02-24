@@ -11,7 +11,6 @@
 
     <!-- Local custom styles (legacy) -->
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-    @yield('pagestyles')
 
     <title>@yield('titulo_browser','LookCrim')</title>
 
@@ -25,6 +24,8 @@
     @else
         @vite(['resources/css/app.css','resources/js/app.js'])
     @endif
+
+    @yield('pagestyles')
 
 </head>
 

@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -142,11 +143,8 @@ class RegistersController extends Controller
         $register = new Register();
         $register->user_id = $user->id;
 
-        if (!(bool) ($user->admin ?? false)) {
-            $register->city_id = $cityIdForRegister ?? (int) $user->city_id;
-        } elseif ($cityIdForRegister) {
-            $register->city_id = $cityIdForRegister;
-        }
+        // City assignment is based on the creator account, not on the picked point.
+        $register->city_id = $cityIdForRegister;
 
         $register->title_pt = $data['title'];
         $register->title_en = $data['title'];
@@ -158,7 +156,7 @@ class RegistersController extends Controller
         $register->save();
 
         DB::update(
-            'UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
+            'UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326) WHERE id = ?',
             [$lng, $lat, $register->id]
         );
 
@@ -247,7 +245,7 @@ class RegistersController extends Controller
             $register->longitude = $lng;
 
             DB::update(
-                'UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?, ?), 4326) WHERE id = ?',
+                'UPDATE registers SET location = ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326) WHERE id = ?',
                 [$lng, $lat, $register->id]
             );
         }
@@ -348,7 +346,7 @@ class RegistersController extends Controller
         $pointExpr = "COALESCE(location, CASE WHEN longitude IS NOT NULL AND latitude IS NOT NULL THEN ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) END)";
 
         return $query->whereRaw(
-            "ST_DWithin(($pointExpr)::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)",
+            "ST_DWithin(($pointExpr)::geography, ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography, ?)",
             [(float) $city->center_lng, (float) $city->center_lat, (int) $city->radius_m]
         );
     }
@@ -368,7 +366,7 @@ class RegistersController extends Controller
         $pointExpr = "COALESCE(location, CASE WHEN longitude IS NOT NULL AND latitude IS NOT NULL THEN ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) END)";
 
         return $query->whereRaw(
-            "ST_DWithin(($pointExpr)::geography, ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography, ?)",
+            "ST_DWithin(($pointExpr)::geography, ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography, ?)",
             [(float) $city->center_lng, (float) $city->center_lat, (int) $city->radius_m]
         );
     }
@@ -376,12 +374,13 @@ class RegistersController extends Controller
     private function assertPointAllowedAndGetCityId(?float $lat, ?float $lng, string $anyCityPermission): ?int
     {
         $user = Auth::user();
-        if (!$user || (bool) ($user->admin ?? false)) {
-            if ($lat === null || $lng === null || !is_finite($lat) || !is_finite($lng)) {
-                return null;
-            }
+        if (!$user) {
+            return null;
+        }
 
-            return $this->findCityIdForPoint($lat, $lng);
+        $userCityId = $user->city_id !== null ? (int) $user->city_id : null;
+        if (!$userCityId) {
+            return null;
         }
 
         if ($lat === null || $lng === null || !is_finite($lat) || !is_finite($lng)) {
@@ -390,25 +389,23 @@ class RegistersController extends Controller
             ]);
         }
 
-        if ($user->can($anyCityPermission)) {
-            $cityId = $this->findCityIdForPoint($lat, $lng);
-            if (!$cityId) {
-                throw ValidationException::withMessages([
-                    'latitude' => __('The selected point is outside any configured city area.'),
-                ]);
-            }
-            return $cityId;
+        $city = null;
+        try {
+            $city = City::query()->where('id', $userCityId)->first();
+        } catch (\Throwable $e) {
+            $city = null;
         }
 
-        $city = $this->getCityForWriteRestriction();
         if (!$city) {
-            return null;
+            throw ValidationException::withMessages([
+                'latitude' => __('City not found.'),
+            ]);
         }
 
         $row = DB::selectOne(
             'SELECT ST_DWithin(' .
-            'ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,' .
-            'ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,' .
+            'ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography,' .
+            'ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography,' .
             '?) AS ok',
             [(float) $lng, (float) $lat, (float) $city->center_lng, (float) $city->center_lat, (int) $city->radius_m]
         );
@@ -468,8 +465,8 @@ class RegistersController extends Controller
 
         $row = DB::selectOne(
             'SELECT ST_DWithin(' .
-            'ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,' .
-            'ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,' .
+            'ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography,' .
+            'ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography,' .
             '?) AS ok',
             [(float) $lng, (float) $lat, (float) $city->center_lng, (float) $city->center_lat, (int) $city->radius_m]
         );
@@ -488,12 +485,12 @@ class RegistersController extends Controller
             $row = DB::selectOne(
                 'SELECT id FROM cities ' .
                 'WHERE ST_DWithin(' .
-                'ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,' .
+                'ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography,' .
                 'ST_SetSRID(ST_MakePoint(center_lng, center_lat), 4326)::geography,' .
                 'radius_m' .
                 ') ' .
                 'ORDER BY ST_Distance(' .
-                'ST_SetSRID(ST_MakePoint(?, ?), 4326)::geography,' .
+                'ST_SetSRID(ST_MakePoint(?::double precision, ?::double precision), 4326)::geography,' .
                 'ST_SetSRID(ST_MakePoint(center_lng, center_lat), 4326)::geography' .
                 ') ASC ' .
                 'LIMIT 1',
@@ -550,7 +547,11 @@ class RegistersController extends Controller
         }
 
         if ($firstPath) {
-            $register->image = 'storage/' . $firstPath;
+            try {
+                $register->image = Storage::disk($disk)->url($firstPath);
+            } catch (\Throwable $e) {
+                $register->image = 'storage/' . $firstPath;
+            }
             $register->save();
         }
     }

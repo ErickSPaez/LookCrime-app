@@ -15,6 +15,37 @@ $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
 
+// Support per-environment .env files (e.g. .env.staging) for Artisan and HTTP.
+// Priority: APP_ENV env var, then Artisan CLI --env option.
+$environment = $_SERVER['APP_ENV'] ?? $_ENV['APP_ENV'] ?? getenv('APP_ENV') ?: null;
+
+if (!$environment && isset($_SERVER['argv']) && is_array($_SERVER['argv'])) {
+    $argv = $_SERVER['argv'];
+    foreach ($argv as $idx => $arg) {
+        if (!is_string($arg)) {
+            continue;
+        }
+
+        if (str_starts_with($arg, '--env=')) {
+            $environment = substr($arg, strlen('--env='));
+            break;
+        }
+
+        if ($arg === '--env' && isset($argv[$idx + 1]) && is_string($argv[$idx + 1])) {
+            $environment = $argv[$idx + 1];
+            break;
+        }
+    }
+}
+
+if (is_string($environment) && $environment !== '') {
+    $envFile = '.env.'.$environment;
+    $envPath = dirname(__DIR__).DIRECTORY_SEPARATOR.$envFile;
+    if (is_file($envPath)) {
+        $app->loadEnvironmentFrom($envFile);
+    }
+}
+
 /*
 |--------------------------------------------------------------------------
 | Bind Important Interfaces
