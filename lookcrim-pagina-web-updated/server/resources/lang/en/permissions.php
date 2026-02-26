@@ -19,7 +19,7 @@ return [
     'delete_any_registers' => 'Delete any registers',
 
     // Registers (cross-city)
-    'view_any_city_registers' => 'View any city registers (no city restriction)',
+    'view_any_city_registers' => 'View any city registers',
     'create_any_city_registers' => 'Create registers in any city',
     'edit_any_city_registers' => 'Edit registers in any city',
     'delete_any_city_registers' => 'Delete registers in any city',
@@ -44,7 +44,7 @@ return [
 
     // Cities
     'view_page_settings_city' => 'View page city settings',
-    'view_any_city' => 'View any city (no city restriction)',
+    'view_any_city' => 'View any city ',
     'create_city' => 'Create city',
     'edit_city' => 'Edit city',
     'delete_city' => 'Delete city',

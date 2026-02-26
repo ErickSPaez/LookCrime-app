@@ -62,7 +62,7 @@
     @if($canEdit || $canDelete)
         <div style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px;">
             @if($canEdit)
-                <a class="btn btn-lookcrim-white btn-sm edit-text" href="{{ route('registers.edit', $register->id) }}">
+                <a class="btn btn-outline-secondary lc-btn-edit btn-sm edit-text" href="{{ route('registers.edit', $register->id) }}">
                     @lang('buttons.edit')
                 </a>
             @endif
@@ -70,7 +70,7 @@
             @if($canDelete)
                 <button
                     type="button"
-                    class="btn btn-lookcrim btn-sm edit-text js-open-register-delete-modal"
+                    class="btn btn-delete btn-sm edit-text js-open-register-delete-modal"
                     data-register-id="{{ $register->id }}"
                     data-register-title="{{ $register->title() }}"
                 >

@@ -47,6 +47,7 @@ ENV APP_ENV=production \
 # System deps
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        ca-certificates \
         nginx \
         supervisor \
         netcat-openbsd \

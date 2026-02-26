@@ -22,4 +22,6 @@ return [
     'success-password' => "A senha foi alterada com sucesso!",
     'failure-password' => "Não foi possível alterar, a senha antiga que inseriu está incorreta!",
 
+    'send_failed' => 'Não foi possível enviar o e-mail de redefinição de palavra-passe. Por favor tenta novamente mais tarde.',
+
 ];

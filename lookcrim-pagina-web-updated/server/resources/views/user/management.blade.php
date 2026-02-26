@@ -57,14 +57,14 @@
                         <td>{{ $user->created_at ? $user->created_at->format('Y-m-d') : '-' }}</td>
                         <td>
                             @can('edit_user')
-                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-lookcrim-white btn-sm">{{ __('Edit') }}</a>
+                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-outline-secondary lc-btn-edit btn-sm edit-text" >{{ __('Edit') }}</a>
                             @endcan
 
                             @can('ban_user')
                                 @if($user->id !== auth()->id())
-                                    <form id="ban-form-{{ $user->id }}" action="{{ route('users.ban', $user->id) }}" method="POST" style="display:inline">
+                                    <form id="ban-form-{{ $user->id }}" action="{{ route('users.ban', $user->id) }}" method="POST" style="display:inline-block;margin-left:6px;">
                                         @csrf
-                                        <button type="button" class="btn {{ $user->banned ? 'btn-secondary' : 'btn-lookcrim' }} btn-sm lc-confirm-trigger" data-form-id="ban-form-{{ $user->id }}" data-title="{{ $user->banned ? __('Unban user') : __('Ban user') }}" data-message="{{ $user->banned ? __('Are you sure you want to unban this user?') : __('Are you sure you want to ban this user?') }}">{{ $user->banned ? __('Unban') : __('Ban') }}</button>
+                                        <button type="button" class="btn btn-delete btn-sm lc-confirm-trigger" data-form-id="ban-form-{{ $user->id }}" data-title="{{ $user->banned ? __('Unban user') : __('Ban user') }}" data-message="{{ $user->banned ? __('Are you sure you want to unban this user?') : __('Are you sure you want to ban this user?') }}">{{ $user->banned ? __('Unban') : __('Ban') }}</button>
                                     </form>
                                 @endif
                             @endcan
@@ -88,7 +88,7 @@
                 <h3 id="lc-modal-title">{{ __('Confirm Action') }}</h3>
                 <p id="lc-modal-message">{{ __('Are you sure?') }}</p>
                 <div class="lc-modal-actions">
-                    <button id="lc-modal-cancel" class="lc-btn-cancel" type="button">{{ __('Cancel') }}</button>
+                    <button id="lc-modal-cancel" class="btn-outline-secondary lc-btn-edit" type="button">{{ __('Cancel') }}</button>
                     <button id="lc-modal-confirm" class="lc-btn-primary" type="button">{{ __('Confirm') }}</button>
                 </div>
             </div>

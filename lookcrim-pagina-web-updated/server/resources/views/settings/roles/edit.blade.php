@@ -5,7 +5,7 @@
     <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.edit_role') }}: {{ $role->name }}</h1>
     <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
     <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
-        <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.roles.index') }}">{{ __('pages.back') }}</a>
+        <a class="btn btn-lookcrim btn-sm" href="{{ route('settings.roles.index') }}">{{ __('pages.back') }}</a>
     </div>
 
     @if ($errors->any())
@@ -161,14 +161,14 @@
 
             <div class="form-actions">
                 <button class="btn-lookcrim" type="submit">{{ __('pages.save') }}</button>
-                <a href="{{ route('settings.roles.index') }}" class="btn-secondary">{{ __('pages.cancel') }}</a>
+                <a href="{{ route('settings.roles.index') }}" class="btn-outline-secondary lc-btn-edit">{{ __('pages.cancel') }}</a>
             </div>
         </form>
         @can('delete_role')
         <form action="{{ route('settings.roles.destroy', $role->name) }}" method="POST" style="display:inline-block;margin-top:12px;" onsubmit="return confirm('{{ __('pages.confirm_delete_role') }}');">
             @csrf
             @method('DELETE')
-            <button class="btn-danger" type="submit">{{ __('pages.delete') }}</button>
+            <button class="btn btn-delete btn-sm" type="submit">{{ __('pages.delete') }}</button>
         </form>
         @endcan
     </div>

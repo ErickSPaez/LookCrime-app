@@ -3,7 +3,7 @@
 @section('titulo_browser',$aux=trans('layout.registers'). ' - LookCrim')
 
 @section('conteudo')
-<div class="main-website-interior">
+<div class="main-website-interior lc-register-form-page">
     @php
         $lcUser = auth()->user();
         $lcCanViewRegisters = $lcUser && (
@@ -17,7 +17,7 @@
     </h1>
     <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
     <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
-        <a class="btn btn-lookcrim-white btn-sm" href="{{ $lcBackUrl }}">{{ __('pages.back') }}</a>
+        <a class="btn btn-lookcrim btn-sm" href="{{ $lcBackUrl }}">{{ __('pages.back') }}</a>
     </div>
 
     <div class="row description">

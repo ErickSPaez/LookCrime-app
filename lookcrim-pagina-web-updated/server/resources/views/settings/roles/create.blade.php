@@ -5,7 +5,7 @@
     <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.create_role') }}</h1>
     <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
     <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
-        <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.roles.index') }}">{{ __('pages.back') }}</a>
+        <a class="btn btn-lookcrim btn-sm" href="{{ route('settings.roles.index') }}">{{ __('pages.back') }}</a>
     </div>
 
     @if ($errors->any())
@@ -160,7 +160,7 @@
 
             <div class="form-actions">
                 <button class="btn-lookcrim" type="submit">{{ __('pages.create') }}</button>
-                <a href="{{ route('settings.roles.index') }}" class="btn-secondary">{{ __('pages.cancel') }}</a>
+                <a href="{{ route('settings.roles.index') }}" class="btn-outline-secondary lc-btn-edit">{{ __('pages.cancel') }}</a>
             </div>
         </form>
     </div>

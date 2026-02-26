@@ -5,7 +5,7 @@
         <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('Edit User') }} #{{ $user->id }}</h1>
         <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
         <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
-            <a class="btn btn-lookcrim-white btn-sm" href="{{ route('users-list') }}">{{ __('pages.back') }}</a>
+            <a class="btn btn-lookcrim btn-sm" href="{{ route('users-list') }}">{{ __('pages.back') }}</a>
         </div>
 
         @if (session('success'))
@@ -78,7 +78,7 @@
 
                 <div class="form-actions">
                     <button class="btn-lookcrim" type="submit">{{ __('Save') }}</button>
-                    <a href="{{ route('users-list') }}" class="btn-secondary">{{ __('Cancel') }}</a>
+                    <a href="{{ route('users-list') }}" class="btn-outline-secondary lc-btn-edit">{{ __('Cancel') }}</a>
                 </div>
             </form>
         </div>

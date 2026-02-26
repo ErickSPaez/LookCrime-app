@@ -145,7 +145,7 @@
 
                 @can('view_page_management')
                     <li class="nav-item mx-1 {{ request()->is('user/management') ? 'active' : 'default' }}">
-                        <a class="font-head-bar-black" href="{{ url('/user/management') }}">
+                        <a class="font-head-bar-black lc-nav-hover-lookcrim" href="{{ url('/user/management') }}">
                             <span class="font-head-bar-black-effect">{{ __('auth.management') }}</span>
                         </a>
                     </li>
@@ -153,7 +153,7 @@
 
                 @can('view_page_settings_roles')
                     <li class="nav-item mx-1 {{ request()->is('settings/roles*') ? 'active' : 'default' }}">
-                        <a class="font-head-bar-black" href="{{ route('settings.roles.index') }}">
+                        <a class="font-head-bar-black lc-nav-hover-lookcrim" href="{{ route('settings.roles.index') }}">
                             <span class="font-head-bar-black-effect">{{ __('pages.nav_page_settings') }}</span>
                         </a>
                     </li>
@@ -161,7 +161,7 @@
 
                 @if((auth()->user()?->can('view_page_settings_city') ?? false) || (auth()->user()?->can('admin') ?? false))
                     <li class="nav-item mx-1 {{ request()->is('settings/city*') ? 'active' : 'default' }}">
-                        <a class="font-head-bar-black" href="{{ route('settings.city.index') }}">
+                        <a class="font-head-bar-black lc-nav-hover-lookcrim" href="{{ route('settings.city.index') }}">
                             <span class="font-head-bar-black-effect">{{ __('pages.nav_city_settings') }}</span>
                         </a>
                     </li>
@@ -189,11 +189,7 @@
 </div>
 
 
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-<script src="{{ asset('js/jquery.put-delete.js') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<!-- Bootstrap / jQuery are bundled via Vite (resources/js/app.js). Keep only non-bundled vendor scripts here. -->
 <script src="{{ asset('js/tinymce/tinymce.min.js') }}"></script>
 
 <script>

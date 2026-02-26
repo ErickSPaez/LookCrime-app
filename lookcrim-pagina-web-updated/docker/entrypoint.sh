@@ -5,6 +5,10 @@ set -euo pipefail
 
 cd /var/www/html
 
+echo "[LookCrime] container starting" >&1
+echo "[LookCrime] APP_ENV=${APP_ENV:-unset} APP_DEBUG=${APP_DEBUG:-unset} LOG_CHANNEL=${LOG_CHANNEL:-unset}" >&1
+echo "[LookCrime] time=$(date -Iseconds)" >&1
+
 # Permisos (Cloud Run usa FS efímero, pero igual necesitamos escribir cache/logs)
 mkdir -p \
 	bootstrap/cache \

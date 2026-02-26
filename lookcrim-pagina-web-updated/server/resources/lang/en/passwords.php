@@ -22,4 +22,6 @@ return [
     'success-password' => "Password has been successfully changed!",
     'failure-password' => "Unable to change, the old password you entered is incorrect!",
 
+    'send_failed' => 'We could not send the password reset email. Please try again later.',
+
 ];

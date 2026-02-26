@@ -15,7 +15,7 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-lookcrim-white btn-sm" data-dismiss="modal">@lang('buttons.cancel')</button>
+                <button type="button" class="btn btn-outline-secondary lc-btn-edit btn-sm" data-dismiss="modal">@lang('buttons.cancel')</button>
 
                 <form method="POST" class="js-register-delete-form" action="">
                     @csrf

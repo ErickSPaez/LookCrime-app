@@ -42,6 +42,13 @@ Opcional (staging): si querés que las imágenes sean públicas:
 
 ## 4) Variables de entorno (Cloud Run)
 
+Nota: Cloud Run **no usa** tu archivo `.env.staging` automáticamente. Las variables tienen que estar configuradas en Cloud Run → **Variables & Secrets**, o dentro del contenedor como env vars.
+
+Para poder ver errores reales en Cloud Run (incluido SMTP), usá logs a stderr:
+
+- `LOG_CHANNEL=stderr`
+- `LOG_LEVEL=debug`
+
 ### Laravel
 
 - `APP_ENV=staging`
@@ -49,6 +56,25 @@ Opcional (staging): si querés que las imágenes sean públicas:
 - `APP_KEY=base64:...` (copiar desde tu `.env` local)
 - `APP_URL=https://TU_URL_DE_CLOUD_RUN`
 - `LOG_CHANNEL=stderr`
+
+### Mail (recuperar contraseña / notificaciones)
+
+En Cloud Run necesitás configurar un proveedor de email (SMTP o API). Si esto no está seteado, el endpoint `/forgot-password` puede dar **500** al intentar enviar.
+
+Mínimo para SMTP:
+
+- `MAIL_MAILER=smtp`
+- `MAIL_HOST=...`
+- `MAIL_PORT=587` (recomendado) o `465`
+- `MAIL_ENCRYPTION=tls` (587) o `ssl` (465)
+- `MAIL_USERNAME=...`
+- `MAIL_PASSWORD=...`
+- `MAIL_FROM_ADDRESS=...`
+- `MAIL_FROM_NAME=LookCrim`
+
+Tip de debugging (para verificar sin enviar emails reales):
+
+- `MAIL_MAILER=log` (el contenido del email aparece en los logs)
 
 ### Supabase (Postgres)
 

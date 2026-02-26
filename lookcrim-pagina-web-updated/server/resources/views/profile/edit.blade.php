@@ -156,7 +156,7 @@
                         @endif
                     </div>
 
-                    <button type="submit" class="btn btn-danger">{{ __('Delete Account') }}</button>
+                    <button type="submit" class="btn btn-delete">{{ __('Delete Account') }}</button>
                 </form>
             </div>
         </div>

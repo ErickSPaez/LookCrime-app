@@ -38,14 +38,14 @@
                     <td>{{ $city->created_at?->format('Y-m-d') ?? '-' }}</td>
                     <td>
                         @can('edit_city')
-                            <a class="btn btn-lookcrim-white btn-sm" href="{{ route('settings.city.edit', $city->slug) }}">{{ __('pages.edit') }}</a>
+                            <a class="btn btn-outline-secondary lc-btn-edit btn-sm" href="{{ route('settings.city.edit', $city->slug) }}">{{ __('pages.edit') }}</a>
                         @endcan
 
                         @can('delete_city')
                             <form id="delete-city-form-{{ $city->slug }}" action="{{ route('settings.city.destroy', $city->slug) }}" method="POST" style="display:inline-block;margin-left:6px;">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" class="btn btn-lookcrim btn-sm lc-confirm-trigger" data-form-id="delete-city-form-{{ $city->slug }}" data-title="{{ __('Confirm Action') }}" data-message="{{ __('pages.confirm_delete_city') }}">{{ __('pages.delete') }}</button>
+                                <button type="button" class="btn btn-delete btn-sm lc-confirm-trigger" data-form-id="delete-city-form-{{ $city->slug }}" data-title="{{ __('Confirm Action') }}" data-message="{{ __('pages.confirm_delete_city') }}">{{ __('pages.delete') }}</button>
                             </form>
                         @endcan
                     </td>
@@ -63,7 +63,7 @@
             <h3 id="lc-modal-title">{{ __('Confirm Action') }}</h3>
             <p id="lc-modal-message">{{ __('Are you sure?') }}</p>
             <div class="lc-modal-actions">
-                <button id="lc-modal-cancel" class="lc-btn-cancel" type="button">{{ __('Cancel') }}</button>
+                <button id="lc-modal-cancel" class="btn-outline-secondary lc-btn-edit" type="button">{{ __('Cancel') }}</button>
                 <button id="lc-modal-confirm" class="lc-btn-primary" type="button">{{ __('Confirm') }}</button>
             </div>
         </div>
