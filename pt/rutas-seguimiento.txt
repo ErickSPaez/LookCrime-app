@@ -55,7 +55,12 @@ Documentar todo. (Tarea 9)
 
 
 .........
+construir el cambio: 
+gcloud builds submit --tag gcr.io/lookcrime-staging/lookcrime-staging:staging-debug-3
 
+Deploy:
+gcloud run deploy lookcrime-staging --image gcr.io/lookcrime-staging/lookcrime-staging:staging-debug-3 --region europe-southwest1 --platform managed --allow-unauthenticated --port 8080
+.........
 
 DEV LOCAL (en tu PC, con HMR):
 Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated";

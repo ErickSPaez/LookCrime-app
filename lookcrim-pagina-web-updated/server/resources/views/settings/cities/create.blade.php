@@ -14,11 +14,19 @@
 
 @section('conteudo')
 <div class="main-website-interior user-management-panel">
-    <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.create_city') }}</h1>
-    <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
-    <div style="display:flex;justify-content:flex-end;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 18px 0;">
-        <a class="btn btn-lookcrim btn-sm" href="{{ route('settings.city.index') }}">{{ __('pages.back') }}</a>
+    @php
+        $lcFallbackUrl = route('settings.city.index');
+        $lcPrevious = url()->previous();
+        $lcBackUrl = (is_string($lcPrevious) && str_starts_with($lcPrevious, url('/')))
+            ? $lcPrevious
+            : $lcFallbackUrl;
+    @endphp
+    <div class="lc-title-row">
+        <a class="lc-back-link" href="{{ $lcBackUrl }}">&larr; {{ __('pages.back') }}</a>
+        <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ __('pages.create_city') }}</h1>
+        <span class="lc-back-link lc-back-link--spacer" aria-hidden="true">&larr; {{ __('pages.back') }}</span>
     </div>
+    <hr class="interior-title-line register-line-title" style="margin-bottom:10px;">
 
     @if ($errors->any())
         <div class="alert alert-danger">

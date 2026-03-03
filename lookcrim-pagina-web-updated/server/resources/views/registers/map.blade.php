@@ -4,7 +4,8 @@
 
 @section('pagestyles')
     <style>
-        #publications-map { height: 60vh; min-height:360px; width: 100%; margin-bottom: 1rem; border-radius:4px; overflow:hidden }
+        /* Make map less panoramic / more square-ish (bigger height, bounded) */
+        #publications-map { height: clamp(440px, 90vh, 760px); width: 100%; margin-bottom: 1rem; border-radius:4px; overflow:hidden }
         .leaflet-popup-content img { max-width: 200px; height: auto; display:block; margin-bottom:6px; }
         .map-legend { background: #fff; padding: 8px 10px; border-radius:4px; box-shadow: 0 1px 4px rgba(0,0,0,0.3); max-width:220px; }
         .map-legend .item { display:flex; align-items:center; margin-bottom:6px; font-size:0.9rem; }
@@ -126,7 +127,7 @@
         .lc-crosshair::after { width: 2px; height: 18px; }
 
         @media (max-width: 992px) {
-            #publications-map { height: 50vh; min-height:260px; }
+            #publications-map { height: clamp(320px, 58vh, 560px); }
         }
 
         @media (max-width: 768px) {

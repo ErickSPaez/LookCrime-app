@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <!-- Local custom styles (legacy) -->
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}?v={{ file_exists(public_path('css/style.css')) ? filemtime(public_path('css/style.css')) : '1' }}">
 
     <title>@yield('titulo_browser','LookCrim')</title>
 
@@ -57,7 +57,7 @@
         <div class="dropdown" style="display:inline-block;margin-left:8px;margin-right:8px;">
             <a
                 href="#"
-                class="font-top-menu dropdown-toggle"
+                class="font-top-menu dropdown-toggle lc-user-menu-toggle"
                 id="userMenuDropdown"
                 data-bs-toggle="dropdown"
                 data-toggle="dropdown"

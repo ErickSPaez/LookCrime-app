@@ -7,9 +7,19 @@
         $canDeleteAny = Auth::check() && $user && ($user->can('delete_any_registers') || $user->can('delete_registers'));
         $canDeleteOwn = Auth::check() && $user && $user->can('delete_own_registers');
         $canDelete = $canDeleteAny || ($isOwner && $canDeleteOwn);
+
+        $lcFallbackUrl = route('registers.index');
+        $lcPrevious = url()->previous();
+        $lcBackUrl = (is_string($lcPrevious) && str_starts_with($lcPrevious, url('/')))
+            ? $lcPrevious
+            : $lcFallbackUrl;
     @endphp
 
-    <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ $register->title() }}</h1>
+    <div class="lc-title-row">
+        <a class="lc-back-link" href="{{ $lcBackUrl }}">&larr; {{ __('pages.back') }}</a>
+        <h1 class="font-title-for-customization register-title" style="margin:0;text-align:center;">{{ $register->title() }}</h1>
+        <span class="lc-back-link lc-back-link--spacer" aria-hidden="true">&larr; {{ __('pages.back') }}</span>
+    </div>
     <hr class="interior-title-line register-line-title" style="margin-bottom:18px;">
 
     @php
@@ -60,7 +70,7 @@
     </div>
 
     @if($canEdit || $canDelete)
-        <div style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px;">
+        <div class="lc-register-show-actions" style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;margin-top:18px;">
             @if($canEdit)
                 <a class="btn btn-outline-secondary lc-btn-edit btn-sm edit-text" href="{{ route('registers.edit', $register->id) }}">
                     @lang('buttons.edit')
