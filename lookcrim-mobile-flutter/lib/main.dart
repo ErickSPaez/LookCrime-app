@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'api/lookcrime_api.dart';
 import 'config/app_config.dart';
@@ -49,28 +50,32 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    final baseTheme = ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7A0E0E)),
+      useMaterial3: true,
+    );
+
     return MaterialApp(
       title: 'LookCrime Mobile',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
-        useMaterial3: true,
+      theme: baseTheme.copyWith(
+        textTheme: GoogleFonts.poppinsTextTheme(baseTheme.textTheme),
       ),
       home: _loading
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : (AppConfig.apiBaseUrl.trim().isEmpty
-              ? const _MissingConfigScreen()
-              : (_authorizationHeaderValue == null
-                  ? LoginScreen(
-                      api: _api,
-                      tokenStorage: _tokenStorage,
-                      onLoggedIn: _onLoggedIn,
-                    )
-                  : CreateRegisterScreen(
-                      api: _api,
-                      tokenStorage: _tokenStorage,
-                      authorizationHeaderValue: _authorizationHeaderValue!,
-                      onLogout: _onLoggedOut,
-                    ))),
+                ? const _MissingConfigScreen()
+                : (_authorizationHeaderValue == null
+                      ? LoginScreen(
+                          api: _api,
+                          tokenStorage: _tokenStorage,
+                          onLoggedIn: _onLoggedIn,
+                        )
+                      : CreateRegisterScreen(
+                          api: _api,
+                          tokenStorage: _tokenStorage,
+                          authorizationHeaderValue: _authorizationHeaderValue!,
+                          onLogout: _onLoggedOut,
+                        ))),
     );
   }
 }
