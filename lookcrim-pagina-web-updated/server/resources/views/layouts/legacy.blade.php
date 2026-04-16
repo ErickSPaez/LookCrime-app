@@ -167,6 +167,14 @@
                     </li>
                 @endif
 
+                @if((auth()->user()?->can('view_page_statistics') ?? false) || (auth()->user()?->can('admin') ?? false))
+                    <li class="nav-item mx-1 {{ request()->is('settings/statistics*') ? 'active' : 'default' }}">
+                        <a class="font-head-bar-black lc-nav-hover-lookcrim" href="{{ route('settings.statistics.index') }}">
+                            <span class="font-head-bar-black-effect">{{ __('pages.nav_statistics') }}</span>
+                        </a>
+                    </li>
+                @endif
+
                 
             </ul>
         </div>

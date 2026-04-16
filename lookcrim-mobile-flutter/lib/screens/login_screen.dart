@@ -68,8 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Color get _primaryRed => const Color(0xFF7A0E0E);
   Color get _linkRed => const Color(0xFFE0003A);
-  Color get _hintRed => const Color(0xFFB20000);
-  Color get _cardTint => const Color(0xFFFFF1E7);
+  Color get _cardTint => const Color(0xFFF2E7E7);
 
   InputDecoration _fieldDecoration({required String hint}) {
     return InputDecoration(
@@ -109,11 +108,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
+    final height = MediaQuery.sizeOf(context).height;
+    final isCompact = height <= 700;
     final contentMaxWidth = width >= 430 ? 390.0 : double.infinity;
     final topPadding = MediaQuery.paddingOf(context).top;
 
-    const logoTopSpacing = 18.0;
-    const logoHeight = 128.0;
+    final logoTopSpacing = isCompact ? 10.0 : 18.0;
+    final logoHeight = isCompact ? 108.0 : 128.0;
     final bgHeight = topPadding + logoTopSpacing + logoHeight;
 
     return Scaffold(
@@ -125,7 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
             left: 0,
             right: 0,
             child: Image.asset(
-              'assets/images/bg_mapv2.png',
+              'assets/images/bg_mapv1.png',
               width: double.infinity,
               height: bgHeight,
               fit: BoxFit.cover,
@@ -152,15 +153,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: logoTopSpacing),
+                          SizedBox(height: logoTopSpacing),
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(8),
+                            clipBehavior: Clip.antiAlias,
                             child: SizedBox(
-                              width: 260,
+                              width: isCompact ? 240 : 260,
                               height: logoHeight,
                               child: Image.asset(
                                 'assets/images/logo.png',
-                                fit: BoxFit.contain,
+                                fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Center(
                                     child: Text(
@@ -176,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          SizedBox(height: isCompact ? 16 : 24),
                           Text(
                             'Welcome',
                             style: Theme.of(context).textTheme.titleLarge
@@ -187,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: isCompact ? 12 : 20),
                           Text(
                             'Login to continue',
                             style: Theme.of(context).textTheme.titleSmall
@@ -198,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 26),
+                          SizedBox(height: isCompact ? 18 : 26),
                           if (_error != null) ...[
                             Padding(
                               padding: const EdgeInsets.symmetric(
@@ -251,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             .titleSmall
                                             ?.copyWith(
                                               fontWeight: FontWeight.w700,
-                                              color: Colors.black,
+                                              color: _linkRed,
                                               height: 1.19,
                                             ),
                                       ),
@@ -267,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                          color: _hintRed,
+                                          color: Colors.black,
                                           fontWeight: FontWeight.w600,
                                           height: 1.5,
                                         ),
@@ -365,10 +367,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 36),
+                          SizedBox(height: isCompact ? 22 : 36),
                           SizedBox(
                             width: double.infinity,
-                            height: 48,
+                            height: isCompact ? 46 : 48,
                             child: ElevatedButton(
                               onPressed: _loading
                                   ? null
@@ -418,7 +420,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
-                          const SizedBox(height: 44),
+                          SizedBox(height: isCompact ? 28 : 44),
                           GestureDetector(
                             onTap: _loading
                                 ? null
@@ -435,7 +437,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Forgot your Password?',
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
-                                    color: Colors.black,
+                                    color: _linkRed,
                                     fontWeight: FontWeight.w600,
                                     height: 1.5,
                                   ),

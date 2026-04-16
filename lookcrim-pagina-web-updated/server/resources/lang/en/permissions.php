@@ -6,6 +6,7 @@ return [
         'management' => 'Management',
         'roles' => 'Roles',
         'cities' => 'Cities',
+        'statistics' => 'Statistics',
     ],
 
     // Registers
@@ -48,4 +49,7 @@ return [
     'create_city' => 'Create city',
     'edit_city' => 'Edit city',
     'delete_city' => 'Delete city',
+
+    // Statistics
+    'view_page_statistics' => 'View page statistics',
 ];

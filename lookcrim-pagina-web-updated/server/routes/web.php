@@ -133,6 +133,11 @@ Route::namespace('App\\Http\\Controllers')->group(function () {
         ->name('settings.city.index')
         ->middleware(['auth']);
 
+    // Page Settings - Statistics
+    Route::get('/settings/statistics', [\App\Http\Controllers\Settings\StatisticsController::class, 'index'])
+        ->name('settings.statistics.index')
+        ->middleware(['auth']);
+
     Route::get('/settings/city/create', [\App\Http\Controllers\Settings\CitiesController::class, 'create'])
         ->name('settings.city.create')
         ->middleware(['auth']);

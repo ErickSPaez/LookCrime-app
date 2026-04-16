@@ -63,7 +63,7 @@ gcloud run deploy lookcrime-staging --image gcr.io/lookcrime-staging/lookcrime-s
 .........
 
 DEV LOCAL (en tu PC, con HMR):
-Set-Location "C:\aaaaaa PROYECTOS PROVISORIO\LAB PROGRAMACION\LookCrime\LookCrime-app\lookcrim-pagina-web-updated";
+Set-Location "C:\AA PROYECTO_FINAL\LookCrim\LookCrime-app\lookcrim-pagina-web-updated";
 Set-Location .\server; php artisan optimize:clear; Start-Process php -WorkingDirectory $PWD -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow;
 Set-Location .\frontend; npm run dev
 

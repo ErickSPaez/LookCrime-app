@@ -169,6 +169,22 @@ return [
     'city_settings_title' => 'City Settings',
     'nav_city_settings' => 'CITY SETTINGS',
 
+    // Settings / Statistics
+    'statistics_title' => 'Statistics',
+    'nav_statistics' => 'STATISTICS',
+    'total_registers' => 'Total registers',
+    'top_category' => 'Top category',
+    'top_city' => 'Top city',
+    'top_users' => 'Users with most registers',
+    'registers_by_category' => 'Registers by category',
+    'users_per_city' => 'Users per city',
+    'total_users' => 'Total users',
+    'users_without_city' => 'Users without city',
+    'no_data' => 'No data',
+    'total' => 'Total',
+    'user' => 'User',
+    'email' => 'Email',
+
     // Admin - Users Management
     'city' => 'City',
     'no_cities_defined' => 'No cities defined',

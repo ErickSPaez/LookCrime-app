@@ -49,7 +49,7 @@
 
                     <div class="row">
                         @php
-                            $preferredOrder = ['registers','management','roles','cities'];
+                            $preferredOrder = ['registers','management','roles','cities','statistics'];
                             $permissionGroupsArr = $permissionGroups instanceof \Illuminate\Support\Collection
                                 ? $permissionGroups->all()
                                 : (array) $permissionGroups;
@@ -146,6 +146,10 @@
                                     @if(($isChecked)('view_any_city'))
                                         <input type="hidden" name="permissions[view_any_city]" value="1">
                                     @endif
+                                @elseif($category === 'statistics')
+                                    @php
+                                        $renderPerm('view_page_statistics');
+                                    @endphp
                                 @else
                                     @foreach($group as $perm)
                                         @php
@@ -198,6 +202,7 @@
 #perm-view_page_management + label,
 #perm-view_page_settings_roles + label,
 #perm-view_page_settings_city + label,
+#perm-view_page_statistics + label,
 #perm-view_own_registers + label,
 #perm-view_any_registers + label,
 #perm-view_any_city_registers + label{

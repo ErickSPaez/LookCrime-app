@@ -6,6 +6,7 @@ return [
         'management' => 'Gestão',
         'roles' => 'Funções',
         'cities' => 'Cidades',
+        'statistics' => 'Estatisticas',
     ],
 
     // Registros
@@ -48,4 +49,7 @@ return [
     'create_city' => 'Criar cidade',
     'edit_city' => 'Editar cidade',
     'delete_city' => 'Excluir cidade',
+
+    // Estatisticas
+    'view_page_statistics' => 'Visualizar pagina de estatisticas',
 ];
