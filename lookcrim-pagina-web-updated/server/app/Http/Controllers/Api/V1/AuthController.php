@@ -20,6 +20,7 @@ class AuthController extends Controller
 
         /** @var User|null $user */
         $user = User::query()->where('email', $data['email'])->first();
+
         if ($user && (bool) ($user->banned ?? false)) {
             return response()->json([
                 'message' => 'User is banned.',
@@ -32,7 +33,18 @@ class AuthController extends Controller
             ]);
         }
 
+        $user->loadMissing(['roles', 'city']);
+
         $token = $user->createToken('flutter')->plainTextToken;
+
+        $roleName = 'user';
+
+        try {
+            $roleNames = $user->roles->pluck('name');
+            $roleName = $roleNames->contains('admin') ? 'admin' : ($roleNames->first() ?: 'user');
+        } catch (\Throwable $e) {
+            $roleName = 'user';
+        }
 
         return response()->json([
             'token' => $token,
@@ -41,7 +53,14 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+
                 'city_id' => $user->city_id,
+                'city_name' => $user->city?->name,
+                'city_center_lat' => $user->city?->center_lat,
+                'city_center_lng' => $user->city?->center_lng,
+                'city_radius_m' => $user->city?->radius_m,
+
+                'role_name' => $roleName,
             ],
         ]);
     }
@@ -51,11 +70,23 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
 
+        $user->loadMissing(['roles', 'city']);
+
         $permissions = [];
+
         try {
             $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
         } catch (\Throwable $e) {
             $permissions = [];
+        }
+
+        $roleName = 'user';
+
+        try {
+            $roleNames = $user->roles->pluck('name');
+            $roleName = $roleNames->contains('admin') ? 'admin' : ($roleNames->first() ?: 'user');
+        } catch (\Throwable $e) {
+            $roleName = 'user';
         }
 
         return response()->json([
@@ -63,7 +94,14 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+
                 'city_id' => $user->city_id,
+                'city_name' => $user->city?->name,
+                'city_center_lat' => $user->city?->center_lat,
+                'city_center_lng' => $user->city?->center_lng,
+                'city_radius_m' => $user->city?->radius_m,
+
+                'role_name' => $roleName,
             ],
             'permissions' => $permissions,
         ]);
@@ -76,6 +114,7 @@ class AuthController extends Controller
 
         try {
             $token = $user->currentAccessToken();
+
             if ($token) {
                 $token->delete();
             }

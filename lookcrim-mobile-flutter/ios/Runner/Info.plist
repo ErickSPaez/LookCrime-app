@@ -27,9 +27,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Necesitamos acceso a tus fotos para adjuntar una imagen al registro.</string>
+	<string>We need access to your photos to attach an image to the register.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save photos related to a register.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Necesitamos acceso a la cámara para tomar una foto para el registro.</string>
+	<string>We need access to the camera to take a photo for the register.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need access to your location to set the register location.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

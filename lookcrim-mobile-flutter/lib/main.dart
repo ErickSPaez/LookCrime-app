@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'api/lookcrime_api.dart';
 import 'config/app_config.dart';
-import 'screens/create_register_screen.dart';
+import 'screens/list_registers_screen.dart';
 import 'screens/login_screen.dart';
 import 'storage/token_storage.dart';
 
@@ -70,7 +70,7 @@ class _MyAppState extends State<MyApp> {
                           tokenStorage: _tokenStorage,
                           onLoggedIn: _onLoggedIn,
                         )
-                      : CreateRegisterScreen(
+                      : ListRegistersScreen(
                           api: _api,
                           tokenStorage: _tokenStorage,
                           authorizationHeaderValue: _authorizationHeaderValue!,

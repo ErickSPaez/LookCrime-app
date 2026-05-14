@@ -25,10 +25,14 @@ class User extends Authenticatable
         'nickname',
         'institution',
         'email',
+        'pending_email',
+        'email_change_token',
+        'email_change_expires_at',
         'password',
         'admin',
         'banned',
         'city_id',
+
     ];
 
     /**
@@ -48,9 +52,11 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'email_change_expires_at' => 'datetime',
         'admin' => 'boolean',
         'banned' => 'boolean',
         'city_id' => 'integer',
+        
     ];
 
     public function city(): BelongsTo

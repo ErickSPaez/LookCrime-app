@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../config/app_config.dart';
@@ -152,6 +153,74 @@ class LookCrimeApi {
         .toList(growable: false);
   }
 
+  Future<({List<Map<String, dynamic>> items, int page, int perPage, int total})>
+  getRegisters({
+    required String authorizationHeaderValue,
+    int page = 1,
+    int perPage = 20,
+    String? query,
+  }) async {
+    final queryParams = <String, String>{
+      'page': page.toString(),
+      'per_page': perPage.toString(),
+    };
+    if (query != null && query.trim().isNotEmpty) {
+      queryParams['q'] = query.trim();
+    }
+
+    final res = await _client.get(
+      _uri('/api/v1/registers', queryParams),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorizationHeaderValue,
+      },
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+
+    dynamic decoded;
+    try {
+      decoded = jsonDecode(res.body);
+    } catch (_) {
+      throw ApiException(
+        'Respuesta invalida de registros: JSON malformado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    if (decoded is! Map) {
+      throw ApiException(
+        'Respuesta invalida de registros: formato no soportado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    final map = Map<String, dynamic>.from(decoded);
+    final data = map['data'];
+    if (data is! List) {
+      throw ApiException(
+        'Respuesta invalida de registros: data no es lista. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    final meta = map['meta'] is Map
+        ? Map<String, dynamic>.from(map['meta'] as Map)
+        : <String, dynamic>{};
+
+    return (
+      items: data
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList(),
+      page: (meta['page'] as int?) ?? page,
+      perPage: (meta['per_page'] as int?) ?? perPage,
+      total: (meta['total'] as int?) ?? data.length,
+    );
+  }
+
   Future<void> createRegister({
     required String authorizationHeaderValue,
     required String title,
@@ -186,5 +255,83 @@ class LookCrimeApi {
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(_extractMessage(res), statusCode: res.statusCode);
     }
+  }
+
+  Future<({Map<String, dynamic> user, List<String> permissions})> getMe({
+    required String authorizationHeaderValue,
+  }) async {
+    final res = await _client.get(
+      _uri('/api/v1/me'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorizationHeaderValue,
+      },
+    );
+
+    debugPrint('GET /api/v1/me STATUS: ${res.statusCode}');
+    debugPrint('GET /api/v1/me BODY: ${res.body}');
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+
+    dynamic decoded;
+
+    try {
+      decoded = jsonDecode(res.body);
+    } catch (_) {
+      throw ApiException(
+        'Respuesta invalida de usuario: JSON malformado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    if (decoded is! Map) {
+      throw ApiException(
+        'Respuesta invalida de usuario: formato no soportado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    final map = Map<String, dynamic>.from(decoded);
+
+    debugPrint('GET /api/v1/me DECODED MAP: $map');
+
+    final user = map['user'] is Map
+        ? Map<String, dynamic>.from(map['user'] as Map)
+        : <String, dynamic>{};
+
+    /*
+    Esto es por si el backend manda role_name fuera del objeto user.
+    Ejemplo:
+    {
+      "user": {...},
+      "role_name": "Citizen"
+    }
+  */
+    for (final key in const [
+      'role',
+      'role_name',
+      'roleName',
+      'user_role',
+      'userRole',
+    ]) {
+      final value = map[key];
+
+      if (value != null && user[key] == null) {
+        user[key] = value;
+      }
+    }
+
+    final permissions = map['permissions'] is List
+        ? (map['permissions'] as List).whereType<String>().toList(
+            growable: false,
+          )
+        : const <String>[];
+
+    debugPrint('GET /api/v1/me FINAL USER MAP: $user');
+    debugPrint('GET /api/v1/me PERMISSIONS: $permissions');
+
+    return (user: user, permissions: permissions);
   }
 }
