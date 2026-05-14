@@ -510,7 +510,7 @@ class _RegisterCard extends StatelessWidget {
                   : Image.network(
                       imageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) {
+                      errorBuilder: (_, _, _) {
                         return Container(
                           color: const Color(0xFFD5D5D5),
                           child: const Icon(
