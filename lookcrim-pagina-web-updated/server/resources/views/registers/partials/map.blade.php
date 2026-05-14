@@ -1,4 +1,4 @@
-<div id="register-map" style="height: 400px; width: 100%; margin-bottom:1rem;"></div>
+<div id="register-map" style="height: 400px; width: 100%; margin-bottom:0.75rem;"></div>
 
 @php
     $userCity = (isset($city) && $city) ? [
@@ -7,10 +7,23 @@
         'radius_m' => (int) $city->radius_m,
         'name' => (string) ($city->name ?? ''),
     ] : null;
+
+    $initialAddress = old('address', isset($register) ? ($register->address ?? '') : '');
 @endphp
 
 <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', isset($register) ? $register->latitude : '') }}">
 <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', isset($register) ? $register->longitude : '') }}">
+<input type="hidden" name="address" id="address" value="{{ $initialAddress }}">
+
+<div id="lc-selected-address-box" style="{{ trim($initialAddress) !== '' ? '' : 'display:none;' }} background:#F5ECEC;border-radius:10px;padding:12px 14px;margin-bottom:1rem;">
+    <div style="color:#6B6B6B;font-weight:600;margin-bottom:6px;">Your location</div>
+    <div style="display:flex;align-items:flex-start;gap:8px;color:#000;font-weight:600;">
+        <span style="color:#820000;font-size:18px;line-height:1;">
+            <i class="fa fa-map-marker"></i>
+        </span>
+        <span id="lc-selected-address-text">{{ $initialAddress }}</span>
+    </div>
+</div>
 
 <div id="lc-city-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;align-items:center;justify-content:center;padding:16px;">
     <div style="background:#fff;border-radius:8px;max-width:520px;width:100%;padding:18px 16px;box-shadow:0 10px 30px rgba(0,0,0,0.25);text-align:center;">
@@ -23,6 +36,10 @@
 document.addEventListener('DOMContentLoaded', function () {
     const latInput = document.getElementById('latitude');
     const lngInput = document.getElementById('longitude');
+    const addressInput = document.getElementById('address');
+    const addressBox = document.getElementById('lc-selected-address-box');
+    const addressText = document.getElementById('lc-selected-address-text');
+
     if (!latInput || !lngInput) return;
 
     const popupEl = document.getElementById('lc-city-popup');
@@ -89,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (popupOkEl) {
         popupOkEl.addEventListener('click', hidePopup);
     }
+
     if (popupEl) {
         popupEl.addEventListener('click', function (e) {
             if (e.target === popupEl) hidePopup();
@@ -102,8 +120,58 @@ document.addEventListener('DOMContentLoaded', function () {
         return p.distanceTo(c) <= userCity.radius_m;
     }
 
+    function fallbackAddress(lat, lng) {
+        return Number(lat).toFixed(6) + ', ' + Number(lng).toFixed(6);
+    }
+
+    function setAddress(value) {
+        const cleaned = (value || '').trim();
+
+        if (addressInput) {
+            addressInput.value = cleaned;
+        }
+
+        if (addressText) {
+            addressText.textContent = cleaned;
+        }
+
+        if (addressBox) {
+            addressBox.style.display = cleaned ? 'block' : 'none';
+        }
+    }
+
+    async function reverseGeocode(lat, lng) {
+        setAddress('Loading address...');
+
+        try {
+            const url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='
+                + encodeURIComponent(lat)
+                + '&lon='
+                + encodeURIComponent(lng)
+                + '&zoom=18&addressdetails=1';
+
+            const response = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Reverse geocoding failed');
+            }
+
+            const data = await response.json();
+            const displayName = data && data.display_name ? String(data.display_name) : '';
+
+            setAddress(displayName || fallbackAddress(lat, lng));
+        } catch (e) {
+            setAddress(fallbackAddress(lat, lng));
+        }
+    }
+
     map.on('click', function(e) {
-        const { lat, lng } = e.latlng;
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
 
         if (userCity && !isInsideCity(lat, lng)) {
             if (!allowOutsideCity) {
@@ -111,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Allowed by permission: show info but continue.
             showPopup(msgOutsideAllowed);
         }
 
@@ -123,6 +190,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         latInput.value = lat;
         lngInput.value = lng;
+
+        reverseGeocode(lat, lng);
     });
 });
 </script>

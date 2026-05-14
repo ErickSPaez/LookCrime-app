@@ -19,49 +19,67 @@ class RegistersController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
-    {
-        if (!Auth::check()) {
-            abort(401);
-        }
-
-        $user = Auth::user();
-        $canViewPage =
-            $user->can('view_page_registers') ||
-            $user->can('view_any_registers') ||
-            $user->can('view_all_registers') ||
-            $user->can('view_own_registers') ||
-            $user->can('create_own_registers') ||
-            $user->can('create_registers') ||
-            $user->can('edit_any_registers') ||
-            $user->can('edit_all_registers') ||
-            $user->can('edit_own_registers') ||
-            $user->can('delete_any_registers') ||
-            $user->can('delete_own_registers') ||
-            $user->can('delete_registers');
-
-        if (!$canViewPage) {
-            abort(403);
-        }
-
-        $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
-        $canViewOwn = $user->can('view_own_registers');
-
-        if ($canViewAny) {
-            $q = Register::with('images')->orderBy('created_at', 'DESC');
-            $q = $this->applyCityReadRestriction($q);
-            $registers = $q->paginate(15);
-        } elseif ($canViewOwn) {
-            $q = Register::with('images')->where('user_id', Auth::id())
-                ->orderBy('created_at', 'DESC');
-            $q = $this->applyCityReadRestriction($q);
-            $registers = $q->paginate(15);
-        } else {
-            abort(403);
-        }
-
-        return view('registers.list', ['registers' => $registers]);
+    public function index(Request $request)
+{
+    if (!Auth::check()) {
+        abort(401);
     }
+
+    $user = Auth::user();
+
+    $canViewPage =
+        $user->can('view_page_registers') ||
+        $user->can('view_any_registers') ||
+        $user->can('view_all_registers') ||
+        $user->can('view_own_registers') ||
+        $user->can('create_own_registers') ||
+        $user->can('create_registers') ||
+        $user->can('edit_any_registers') ||
+        $user->can('edit_all_registers') ||
+        $user->can('edit_own_registers') ||
+        $user->can('delete_any_registers') ||
+        $user->can('delete_own_registers') ||
+        $user->can('delete_registers');
+
+    if (!$canViewPage) {
+        abort(403);
+    }
+
+    $canViewAny = $user->can('view_any_registers') || $user->can('view_all_registers');
+    $canViewOwn = $user->can('view_own_registers');
+
+    $search = trim((string) $request->query('q', ''));
+
+    if ($canViewAny) {
+        $q = Register::with('images')->orderBy('created_at', 'DESC');
+    } elseif ($canViewOwn) {
+        $q = Register::with('images')
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'DESC');
+    } else {
+        abort(403);
+    }
+
+    if ($search !== '') {
+        $like = '%' . str_replace('%', '\\%', $search) . '%';
+
+        $q->where(function ($sub) use ($like) {
+            $sub->where('title_pt', 'ILIKE', $like)
+                ->orWhere('title_en', 'ILIKE', $like);
+        });
+    }
+
+    $q = $this->applyCityReadRestriction($q);
+
+    $registers = $q->paginate(15)->appends([
+        'q' => $search,
+    ]);
+
+    return view('registers.list', [
+        'registers' => $registers,
+        'search' => $search,
+    ]);
+}
 
     public function show($id)
     {
@@ -143,6 +161,7 @@ class RegistersController extends Controller
             'category' => 'nullable|string|max:64',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'address' => 'nullable|string|max:500',
             'images' => 'nullable|array|max:3',
             'images.*' => 'image|max:8192',
             'image' => 'nullable|image|max:8192',
@@ -172,6 +191,7 @@ class RegistersController extends Controller
         $register->content_en = $content;
         $register->latitude = $request->input('latitude');
         $register->longitude = $request->input('longitude');
+        $register->address = $request->input('address');
         $register->category = $request->input('category');
         $register->save();
 
@@ -258,6 +278,7 @@ class RegistersController extends Controller
             'category' => 'nullable|string|max:64',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'address' => 'nullable|string|max:500',
             'images' => 'nullable|array|max:3',
             'images.*' => 'image|max:8192',
             'image' => 'nullable|image|max:8192',
@@ -320,6 +341,7 @@ class RegistersController extends Controller
         $register->private = $request->has('private') ? $request->input('private') : 0;
         $register->latitude = $request->input('latitude');
         $register->longitude = $request->input('longitude');
+        $register->address = $request->input('address');
 
         $lat = $request->input('latitude');
         $lng = $request->input('longitude');

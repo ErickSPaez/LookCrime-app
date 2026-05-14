@@ -210,6 +210,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
         category: cat,
         latitude: _latController.text.trim(),
         longitude: _lngController.text.trim(),
+        address: _selectedAddress ?? '',
         imageBytes: img,
         imageFilename: imgName,
       );

@@ -12,7 +12,7 @@
 
 @section('pagestyles')
 	<style>
-		/* Make register "read more" view more compact */
+		/* Register read more view */
 		:root {
 			--register-line-width: 720px;
 			--register-media-width: 680px;
@@ -36,11 +36,51 @@
 		}
 
 		#register-show-map {
-			height: 180px;
-			width: min(60%, var(--register-line-width));
-			margin: 10px auto 0 auto;
-			border-radius: 4px;
+			height: 420px;
+			width: min(90%, 980px);
+			margin: 16px auto 0 auto;
+			border-radius: 10px 10px 0 0;
 			overflow: hidden;
+		}
+
+		.register-location-card {
+			width: min(90%, 980px);
+			margin: 0 auto 18px auto;
+			background: #F5ECEC;
+			border-radius: 0 0 14px 14px;
+			padding: 16px 20px;
+		}
+
+		.register-location-title {
+			color: #6B6B6B;
+			font-weight: 600;
+			margin-bottom: 8px;
+		}
+
+		.register-location-row {
+			display: flex;
+			align-items: flex-start;
+			gap: 10px;
+			color: #000;
+			font-weight: 600;
+			line-height: 1.4;
+		}
+
+		.register-location-icon {
+			color: #820000;
+			font-size: 20px;
+			min-width: 20px;
+		}
+
+		@media (max-width: 720px) {
+			#register-show-map {
+				height: 330px;
+				width: 100%;
+			}
+
+			.register-location-card {
+				width: 100%;
+			}
 		}
 
 		.register-meta-bar {
@@ -50,10 +90,6 @@
 			flex-wrap: nowrap;
 			gap: 10px;
 			margin-top: 10px;
-		}
-		@media (max-width: 720px) {
-			.register-meta-bar { flex-wrap: wrap; }
-			.register-meta-right { text-align: left; }
 		}
 		.register-author {
 			display: flex;

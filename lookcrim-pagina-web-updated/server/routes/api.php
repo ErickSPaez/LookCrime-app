@@ -10,11 +10,6 @@ use App\Http\Controllers\Api\V1\MetaController;
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -27,11 +22,15 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
+        Route::patch('/me', [AuthController::class, 'updateMe']);
+        Route::post('/me/email-change', [AuthController::class, 'requestEmailChange']);
+        Route::put('/me/password', [AuthController::class, 'updatePassword']);
         Route::post('/logout', [AuthController::class, 'logout']);
 
         Route::get('/registers', [RegistersController::class, 'index']);
         Route::post('/registers', [RegistersController::class, 'store']);
         Route::get('/registers/{id}', [RegistersController::class, 'show'])->where('id', '[0-9]+');
+
         // PHP file uploads work reliably with POST multipart; accept POST for updates as well.
         Route::post('/registers/{id}', [RegistersController::class, 'update'])->where('id', '[0-9]+');
         Route::match(['put', 'patch'], '/registers/{id}', [RegistersController::class, 'update'])->where('id', '[0-9]+');

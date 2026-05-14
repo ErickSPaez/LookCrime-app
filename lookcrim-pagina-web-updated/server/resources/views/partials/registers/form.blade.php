@@ -63,6 +63,6 @@
 	@include('registers.partials.map')
 </div>
 
-<div class="lc-register-form-submit">
+<div class="lc-register-form-submit" style="margin-top:28px; padding-bottom:24px;">
 	<button type="submit" class="btn btn-lookcrim btn-sm">{{ Lang::get('buttons.submit') }}</button>
 </div>

@@ -21,6 +21,7 @@ class Register extends Model
         'private',
         'latitude',
         'longitude',
+        'address',
         'category',
         'user_id',
         'city_id',

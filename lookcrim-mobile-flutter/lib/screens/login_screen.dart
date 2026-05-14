@@ -246,17 +246,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 2),
-                                      child: Text(
-                                        'Login',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: _linkRed,
-                                              height: 1.19,
-                                            ),
-                                      ),
                                     ),
                                   ],
                                 ),
@@ -346,7 +335,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     enabled: !_loading,
                                     obscureText: true,
                                     decoration: _fieldDecoration(
-                                      hint: '•••• •••• ••••',
+                                      hint: '••••••••••••',
                                     ),
                                     validator: (value) {
                                       final v = value ?? '';

@@ -231,80 +231,88 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
             Positioned(
               top: 12,
               left: 12,
-              child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
-                borderRadius: BorderRadius.circular(9),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: _deepRed,
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: const Icon(
-                    Icons.chevron_left,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 14,
-              left: 60,
-              right: 90,
-              child: Container(
-                height: 38,
-                decoration: BoxDecoration(
-                  color: _searchFill,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search, color: _textDark),
-                    hintText: 'Search',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(top: 8),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 16,
               right: 12,
-              child: SizedBox(
-                height: 32,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _deepRed,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () => Navigator.of(context).maybePop(),
+                        borderRadius: BorderRadius.circular(9),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: _deepRed,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: const Icon(
+                            Icons.chevron_left,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Container(
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: _searchFill,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            readOnly: true,
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.search, color: _textDark),
+                              hintText: 'Search',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.only(top: 8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      height: 34,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _deepRed,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        onPressed: _loadingLocation
+                            ? null
+                            : (_usingCurrentLocation
+                                  ? _showCityArea
+                                  : _requestCurrentLocation),
+                        child: _loadingLocation
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text(
+                                _usingCurrentLocation
+                                    ? 'City area'
+                                    : 'Current location',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                      ),
                     ),
                   ),
-                  onPressed: _loadingLocation
-                      ? null
-                      : (_usingCurrentLocation
-                            ? _showCityArea
-                            : _requestCurrentLocation),
-                  child: _loadingLocation
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          _usingCurrentLocation
-                              ? 'City area'
-                              : 'Current location',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                ),
+                ],
               ),
             ),
             Positioned(

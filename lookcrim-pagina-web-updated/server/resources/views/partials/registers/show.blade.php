@@ -63,10 +63,23 @@
     </div>
 
     <div class="register-map-block">
-        <div id="register-show-map"></div>
-        @if(is_null($lat) || is_null($lng))
-            <div class="text-muted" style="margin-top:8px;">{{ __('Location not available.') }}</div>
-        @endif
+    <div id="register-show-map"></div>
+
+    @if(!empty($register->address))
+        <div class="register-location-card">
+            <div class="register-location-title">Your location</div>
+            <div class="register-location-row">
+                <span class="register-location-icon">
+                    <i class="fa fa-map-marker"></i>
+                </span>
+                <span>{{ $register->address }}</span>
+            </div>
+        </div>
+    @endif
+
+    @if(is_null($lat) || is_null($lng))
+        <div class="text-muted" style="margin-top:8px;">{{ __('Location not available.') }}</div>
+    @endif
     </div>
 
     @if($canEdit || $canDelete)

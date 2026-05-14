@@ -29,6 +29,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   static const Color _darkText = Color(0xFF09051C);
   static const Color _cardBg = Color(0xFFF3E9E9);
 
+  bool _savingName = false;
+  bool _sendingEmailChange = false;
+  bool _savingPassword = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,9 +45,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     final user = res.user;
-
-    debugPrint('USER FROM /api/v1/me: $user');
-    debugPrint('PERMISSIONS FROM /api/v1/me: ${res.permissions}');
 
     return {
       'name': _extractString(user, [
@@ -58,6 +59,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       'role': _extractRole(user, res.permissions),
       'city': _extractCity(user),
     };
+  }
+
+  Future<void> _reloadUser() async {
+    setState(() {
+      _userFuture = _fetchUserData();
+    });
   }
 
   String _extractString(Map<String, dynamic> user, List<String> keys) {
@@ -99,7 +106,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (role is Map) {
       final map = Map<String, dynamic>.from(role);
-
       final name = _extractString(map, ['name', 'label', 'title', 'role']);
 
       if (name != 'N/A') {
@@ -118,17 +124,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       if (firstRole is Map) {
         final map = Map<String, dynamic>.from(firstRole);
-
         final name = _extractString(map, ['name', 'label', 'title', 'role']);
 
         if (name != 'N/A') {
           return _capitalizeFirst(name);
         }
       }
-    }
-
-    if (permissions.contains('admin') || permissions.contains('Admin')) {
-      return 'Admin';
     }
 
     return 'N/A';
@@ -167,6 +168,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return cleaned[0].toUpperCase() + cleaned.substring(1);
   }
 
+  void _showMessage(String message, {bool isError = false}) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red.shade700 : _red,
+      ),
+    );
+  }
+
   Future<void> _logout(BuildContext context) async {
     await widget.tokenStorage.clear();
 
@@ -175,6 +187,297 @@ class _ProfileScreenState extends State<ProfileScreen> {
     widget.onLogout();
 
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  Future<void> _openEditNameSheet(String currentName) async {
+    final controller = TextEditingController(
+      text: currentName == 'N/A' ? '' : currentName,
+    );
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Future<void> saveName() async {
+              final newName = controller.text.trim();
+
+              if (newName.isEmpty) {
+                _showMessage('Name cannot be empty.', isError: true);
+                return;
+              }
+
+              setSheetState(() {
+                _savingName = true;
+              });
+
+              try {
+                await widget.api.updateMeName(
+                  authorizationHeaderValue: widget.authorizationHeaderValue,
+                  name: newName,
+                );
+
+                if (!mounted) return;
+
+                Navigator.of(sheetContext).pop();
+                await _reloadUser();
+                _showMessage('Name updated successfully.');
+              } catch (e) {
+                _showMessage(e.toString(), isError: true);
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _savingName = false;
+                  });
+                }
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 8,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSheetTitle('Edit Name'),
+                  const SizedBox(height: 16),
+                  _buildDisabledField(
+                    label: 'Current Name',
+                    value: currentName,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildTextField(
+                    controller: controller,
+                    label: 'New Name',
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => saveName(),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSheetButton(
+                    label: 'Save edit',
+                    loading: _savingName,
+                    onPressed: saveName,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _openChangeEmailSheet(String currentEmail) async {
+    final passwordController = TextEditingController();
+    final emailController = TextEditingController();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Future<void> sendVerification() async {
+              final currentPassword = passwordController.text;
+              final newEmail = emailController.text.trim();
+
+              if (currentPassword.isEmpty || newEmail.isEmpty) {
+                _showMessage('Please complete all fields.', isError: true);
+                return;
+              }
+
+              setSheetState(() {
+                _sendingEmailChange = true;
+              });
+
+              try {
+                await widget.api.requestEmailChange(
+                  authorizationHeaderValue: widget.authorizationHeaderValue,
+                  currentPassword: currentPassword,
+                  newEmail: newEmail,
+                );
+
+                if (!mounted) return;
+
+                Navigator.of(sheetContext).pop();
+                _showMessage('Verification link sent. Check your new email.');
+              } catch (e) {
+                _showMessage(e.toString(), isError: true);
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _sendingEmailChange = false;
+                  });
+                }
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 8,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSheetTitle('Change Email'),
+                  const SizedBox(height: 16),
+                  _buildDisabledField(
+                    label: 'Current Email',
+                    value: currentEmail,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildTextField(
+                    controller: passwordController,
+                    label: 'Current Password',
+                    obscureText: true,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildTextField(
+                    controller: emailController,
+                    label: 'New Email',
+                    keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => sendVerification(),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSheetButton(
+                    label: 'Send confirmation email',
+                    loading: _sendingEmailChange,
+                    onPressed: sendVerification,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _openChangePasswordSheet() async {
+    final currentPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Future<void> savePassword() async {
+              final currentPassword = currentPasswordController.text;
+              final newPassword = newPasswordController.text;
+              final confirmPassword = confirmPasswordController.text;
+
+              if (currentPassword.isEmpty ||
+                  newPassword.isEmpty ||
+                  confirmPassword.isEmpty) {
+                _showMessage('Please complete all fields.', isError: true);
+                return;
+              }
+
+              if (newPassword != confirmPassword) {
+                _showMessage('Passwords do not match.', isError: true);
+                return;
+              }
+
+              if (newPassword.length < 8) {
+                _showMessage(
+                  'The new password must be at least 8 characters.',
+                  isError: true,
+                );
+                return;
+              }
+
+              setSheetState(() {
+                _savingPassword = true;
+              });
+
+              try {
+                await widget.api.updatePassword(
+                  authorizationHeaderValue: widget.authorizationHeaderValue,
+                  currentPassword: currentPassword,
+                  newPassword: newPassword,
+                  confirmPassword: confirmPassword,
+                );
+
+                if (!mounted) return;
+
+                Navigator.of(sheetContext).pop();
+                _showMessage('Password updated successfully.');
+              } catch (e) {
+                _showMessage(e.toString(), isError: true);
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    _savingPassword = false;
+                  });
+                }
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 8,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSheetTitle('Change Password'),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    controller: currentPasswordController,
+                    label: 'Current Password',
+                    obscureText: true,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildTextField(
+                    controller: newPasswordController,
+                    label: 'New Password',
+                    obscureText: true,
+                    textInputAction: TextInputAction.next,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildTextField(
+                    controller: confirmPasswordController,
+                    label: 'Confirm Password',
+                    obscureText: true,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => savePassword(),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSheetButton(
+                    label: 'Save password',
+                    loading: _savingPassword,
+                    onPressed: savePassword,
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -198,7 +501,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-
             FutureBuilder<Map<String, String>>(
               future: _userFuture,
               builder: (context, snapshot) {
@@ -231,21 +533,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       _buildHeader(context),
-
                       const SizedBox(height: 28),
-
                       _buildAvatar(),
-
                       const SizedBox(height: 28),
-
                       _buildInfoCard(userData),
-
-                      const SizedBox(height: 40),
-
-                      _buildEditButton(),
-
-                      const SizedBox(height: 20),
-
+                      const SizedBox(height: 24),
                       _buildLogoutButton(context),
                     ],
                   ),
@@ -329,7 +621,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildInfoCard(Map<String, String> userData) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0),
-      padding: const EdgeInsets.fromLTRB(14, 8, 14, 48),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 36),
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(6),
@@ -348,7 +640,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-
           Container(
             padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
             decoration: BoxDecoration(
@@ -361,18 +652,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             child: Column(
               children: [
-                _buildInfoRow('User Name', userData['name'] ?? 'N/A'),
-                _buildDividerSpace(),
                 _buildInfoRow(
-                  'Password',
-                  userData['password'] ?? '************',
+                  label: 'User Name',
+                  value: userData['name'] ?? 'N/A',
+                  actionIcon: Icons.edit,
+                  onActionTap: () {
+                    _openEditNameSheet(userData['name'] ?? 'N/A');
+                  },
                 ),
                 _buildDividerSpace(),
-                _buildInfoRow('Email', userData['email'] ?? 'N/A'),
+                _buildInfoRow(
+                  label: 'Password',
+                  value: userData['password'] ?? '************',
+                  actionIcon: Icons.edit,
+                  onActionTap: _openChangePasswordSheet,
+                ),
                 _buildDividerSpace(),
-                _buildInfoRow('Role', userData['role'] ?? 'N/A'),
+                _buildInfoRow(
+                  label: 'Email',
+                  value: userData['email'] ?? 'N/A',
+                  actionIcon: Icons.edit,
+                  onActionTap: () {
+                    _openChangeEmailSheet(userData['email'] ?? 'N/A');
+                  },
+                ),
                 _buildDividerSpace(),
-                _buildInfoRow('City', userData['city'] ?? 'N/A'),
+                _buildInfoRow(
+                  label: 'Role',
+                  value: userData['role'] ?? 'N/A',
+                  actionIcon: Icons.lock_outline,
+                ),
+                _buildDividerSpace(),
+                _buildInfoRow(
+                  label: 'City',
+                  value: userData['city'] ?? 'N/A',
+                  actionIcon: Icons.lock_outline,
+                ),
               ],
             ),
           ),
@@ -385,7 +700,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return const SizedBox(height: 24);
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow({
+    required String label,
+    required String value,
+    IconData? actionIcon,
+    VoidCallback? onActionTap,
+  }) {
+    final isEditable = onActionTap != null;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -400,7 +722,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         Expanded(
           flex: 5,
           child: Text(
@@ -415,37 +737,116 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 28,
+          height: 28,
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: onActionTap,
+            icon: Icon(
+              actionIcon,
+              size: isEditable ? 18 : 17,
+              color: isEditable ? _red : const Color(0xFF8A8A8A),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildEditButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      child: SizedBox(
-        height: 44,
-        child: ElevatedButton.icon(
-          onPressed: () {
-            // Luego aquí conectamos la pantalla de Edit Profile.
-          },
-          icon: const Icon(Icons.edit, size: 18, color: Colors.white),
-          label: Text(
-            'Edit profile',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _red,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),
+  Widget _buildSheetTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.poppins(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: _darkText,
+      ),
+    );
+  }
+
+  Widget _buildDisabledField({required String label, required String value}) {
+    return TextFormField(
+      enabled: false,
+      initialValue: value,
+      style: GoogleFonts.poppins(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: Colors.black,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
+        filled: true,
+        fillColor: const Color(0xFFF3F4F6),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    TextInputAction? textInputAction,
+    ValueChanged<String>? onSubmitted,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
+      style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w500),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.poppins(color: const Color(0xFF6B7280)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: _red, width: 1.4),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSheetButton({
+    required String label,
+    required bool loading,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 46,
+      child: ElevatedButton(
+        onPressed: loading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _red,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: _red.withValues(alpha: 0.45),
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: loading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }

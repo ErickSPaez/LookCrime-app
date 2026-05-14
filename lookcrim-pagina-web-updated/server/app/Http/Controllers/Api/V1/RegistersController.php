@@ -132,6 +132,7 @@ class RegistersController extends Controller
             'category' => ['required', 'string', 'in:' . implode(',', $categoryKeys)],
             'latitude' => ['required', 'numeric'],
             'longitude' => ['required', 'numeric'],
+            'address' => ['nullable', 'string', 'max:500'],
             'image' => ['required', 'image', 'max:8192'],
         ]);
 
@@ -153,6 +154,7 @@ class RegistersController extends Controller
         $register->category = $data['category'];
         $register->latitude = $lat;
         $register->longitude = $lng;
+        $register->address = $data['address'] ?? null;
         $register->save();
 
         DB::update(
@@ -177,6 +179,7 @@ class RegistersController extends Controller
             'category' => ['sometimes', 'required', 'string', 'in:' . implode(',', $categoryKeys)],
             'latitude' => ['sometimes', 'required', 'numeric'],
             'longitude' => ['sometimes', 'required', 'numeric'],
+            'address' => ['sometimes', 'nullable', 'string', 'max:500'],
             'image' => ['sometimes', 'image', 'max:8192'],
         ]);
 
@@ -188,6 +191,7 @@ class RegistersController extends Controller
             array_key_exists('category', $data) ||
             array_key_exists('latitude', $data) ||
             array_key_exists('longitude', $data) ||
+            array_key_exists('address', $data) ||
             $request->hasFile('image');
 
         if (!$hasAnyField) {
@@ -225,6 +229,10 @@ class RegistersController extends Controller
         }
         if (array_key_exists('category', $data)) {
             $register->category = $data['category'];
+        }
+
+        if (array_key_exists('address', $data)) {
+            $register->address = $data['address'];
         }
 
         $hasLat = array_key_exists('latitude', $data);
@@ -298,6 +306,7 @@ class RegistersController extends Controller
             'category' => $r->category,
             'latitude' => $lat,
             'longitude' => $lng,
+            'address' => $r->address,
             'city_id' => $r->city_id,
             'user_id' => $r->user_id,
             'image_url' => $r->image_url(),

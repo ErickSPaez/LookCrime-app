@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\VerifyNewEmailNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -104,6 +108,96 @@ class AuthController extends Controller
                 'role_name' => $roleName,
             ],
             'permissions' => $permissions,
+        ]);
+    }
+
+    public function updateMe(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+        ]);
+
+        $user->name = $data['name'];
+        $user->save();
+
+        return $this->me($request);
+    }
+
+    public function requestEmailChange(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $data = $request->validate([
+            'current_password' => ['required', 'string'],
+            'email' => [
+                'required',
+                'string',
+                'lowercase',
+                'email',
+                'max:255',
+                Rule::unique(User::class)->ignore($user->id),
+            ],
+        ]);
+
+        if (!Hash::check($data['current_password'], (string) $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => __('The current password is incorrect.'),
+            ]);
+        }
+
+        $newEmail = strtolower(trim($data['email']));
+
+        if ($newEmail === strtolower((string) $user->email)) {
+            throw ValidationException::withMessages([
+                'email' => __('The new email must be different from your current email.'),
+            ]);
+        }
+
+        $plainToken = Str::random(64);
+
+        $user->pending_email = $newEmail;
+        $user->email_change_token = hash('sha256', $plainToken);
+        $user->email_change_expires_at = now()->addMinutes(60);
+        $user->save();
+
+        $verificationUrl = route('profile.email-change.verify', [
+            'token' => $plainToken,
+        ]);
+
+        Notification::route('mail', $newEmail)
+            ->notify(new VerifyNewEmailNotification($verificationUrl));
+
+        return response()->json([
+            'message' => 'Verification link sent to the new email address.',
+            'pending_email' => $newEmail,
+        ]);
+    }
+
+    public function updatePassword(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $data = $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (!Hash::check($data['current_password'], (string) $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => __('The current password is incorrect.'),
+            ]);
+        }
+
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Password updated successfully.',
         ]);
     }
 

@@ -10,6 +10,7 @@ typedef RegisterItem = ({
   int id,
   String title,
   String description,
+  String? address,
   String? imageUrl,
   String? createdAt,
 });
@@ -166,7 +167,12 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
       id: (raw['id'] as int?) ?? 0,
       title: (raw['title'] as String?) ?? 'Untitled',
       description: description,
-      imageUrl: imageUrl,
+      address: (raw['address'] as String?)?.trim().isEmpty == true
+          ? null
+          : raw['address'] as String?,
+      imageUrl: (raw['image_url'] as String?)?.trim().isEmpty == true
+          ? null
+          : raw['image_url'] as String?,
       createdAt: raw['created_at'] as String?,
     );
   }
@@ -427,7 +433,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
 
                               return _RegisterCard(
                                 title: item.title,
-                                description: item.description,
+                                address: item.address,
                                 imageUrl: item.imageUrl,
                                 mutedText: mutedText,
                               );
@@ -472,13 +478,13 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
 
 class _RegisterCard extends StatelessWidget {
   final String title;
-  final String description;
+  final String? address;
   final String? imageUrl;
   final Color mutedText;
 
   const _RegisterCard({
     required this.title,
-    required this.description,
+    required this.address,
     required this.imageUrl,
     required this.mutedText,
   });
@@ -552,8 +558,8 @@ class _RegisterCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              description.isNotEmpty
-                                  ? description
+                              (address != null && address!.trim().isNotEmpty)
+                                  ? address!.trim()
                                   : 'Location not available',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

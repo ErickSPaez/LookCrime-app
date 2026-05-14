@@ -228,6 +228,7 @@ class LookCrimeApi {
     required String category,
     required String latitude,
     required String longitude,
+    required String address,
     required List<int> imageBytes,
     required String imageFilename,
   }) async {
@@ -240,6 +241,7 @@ class LookCrimeApi {
     req.fields['category'] = category;
     req.fields['latitude'] = latitude;
     req.fields['longitude'] = longitude;
+    req.fields['address'] = address;
 
     req.files.add(
       http.MultipartFile.fromBytes(
@@ -301,14 +303,6 @@ class LookCrimeApi {
         ? Map<String, dynamic>.from(map['user'] as Map)
         : <String, dynamic>{};
 
-    /*
-    Esto es por si el backend manda role_name fuera del objeto user.
-    Ejemplo:
-    {
-      "user": {...},
-      "role_name": "Citizen"
-    }
-  */
     for (final key in const [
       'role',
       'role_name',
@@ -333,5 +327,98 @@ class LookCrimeApi {
     debugPrint('GET /api/v1/me PERMISSIONS: $permissions');
 
     return (user: user, permissions: permissions);
+  }
+
+  Future<({Map<String, dynamic> user, List<String> permissions})> updateMeName({
+    required String authorizationHeaderValue,
+    required String name,
+  }) async {
+    final res = await _client.patch(
+      _uri('/api/v1/me'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorizationHeaderValue,
+      },
+      body: {'name': name},
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+
+    dynamic decoded;
+
+    try {
+      decoded = jsonDecode(res.body);
+    } catch (_) {
+      throw ApiException(
+        'Respuesta invalida al actualizar usuario: JSON malformado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    if (decoded is! Map) {
+      throw ApiException(
+        'Respuesta invalida al actualizar usuario: formato no soportado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    final map = Map<String, dynamic>.from(decoded);
+
+    final user = map['user'] is Map
+        ? Map<String, dynamic>.from(map['user'] as Map)
+        : <String, dynamic>{};
+
+    final permissions = map['permissions'] is List
+        ? (map['permissions'] as List).whereType<String>().toList(
+            growable: false,
+          )
+        : const <String>[];
+
+    return (user: user, permissions: permissions);
+  }
+
+  Future<void> requestEmailChange({
+    required String authorizationHeaderValue,
+    required String currentPassword,
+    required String newEmail,
+  }) async {
+    final res = await _client.post(
+      _uri('/api/v1/me/email-change'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorizationHeaderValue,
+      },
+      body: {'current_password': currentPassword, 'email': newEmail},
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+  }
+
+  Future<void> updatePassword({
+    required String authorizationHeaderValue,
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final res = await _client.put(
+      _uri('/api/v1/me/password'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorizationHeaderValue,
+      },
+      body: {
+        'current_password': currentPassword,
+        'password': newPassword,
+        'password_confirmation': confirmPassword,
+      },
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
   }
 }
