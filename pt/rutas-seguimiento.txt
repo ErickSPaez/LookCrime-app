@@ -67,6 +67,10 @@ Set-Location "C:\AA PROYECTO_FINAL\LookCrim\LookCrime-app\lookcrim-pagina-web-up
 Set-Location .\server; php artisan optimize:clear; Start-Process php -WorkingDirectory $PWD -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow;
 Set-Location .\frontend; npm run dev
 
+DEV LOCAL (en tu PC, con HMR):
+Set-Location "C:\AA PROYECTO_FINAL\LookCrim\LookCrime-app\lookcrim-pagina-web-updated";
+Set-Location .\server; php artisan optimize:clear; Start-Process php -WorkingDirectory $PWD -ArgumentList 'artisan','serve','--host=127.0.0.1','--port=8000' -NoNewWindow;
+Set-Location .\frontend; npm run dev
 
 DEMO PUBLICO:
 Pendiente: deploy a un hosting real (ej. Google Cloud) cuando el proyecto esté listo.
