@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../api/lookcrime_api.dart';
+import '../utils/user_friendly_error.dart';
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   final LookCrimeApi api;
@@ -15,6 +18,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  late final VoidCallback _localeListener;
 
   bool _loading = false;
   String? _error;
@@ -25,7 +29,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   static const Color _cardTint = Color(0xFFF2E7E7);
 
   @override
+  void initState() {
+    super.initState();
+    _localeListener = () {
+      if (mounted) setState(() {});
+    };
+    LanguageService.instance.localeNotifier.addListener(_localeListener);
+  }
+
+  @override
   void dispose() {
+    LanguageService.instance.localeNotifier.removeListener(_localeListener);
     _emailController.dispose();
     super.dispose();
   }
@@ -81,13 +95,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
 
       setState(() {
-        _success = 'We sent a password reset link to your email address.';
+        _success = AppLocalizations.t('forgot_sent');
       });
     } catch (e) {
+      debugPrint('Forgot password failed: $e');
       if (!mounted) return;
 
       setState(() {
-        _error = e.toString();
+        _error = userFriendlyErrorMessage(
+          e,
+          fallback: AppLocalizations.t('forgot_fail'),
+          operation: 'forgotPassword',
+        );
       });
     } finally {
       if (mounted) {
@@ -186,7 +205,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Center(
                                     child: Text(
-                                      'LookCrim',
+                                      AppLocalizations.t('app_name'),
                                       style: GoogleFonts.poppins(
                                         color: Colors.white,
                                         fontSize: 30,
@@ -202,7 +221,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           SizedBox(height: isCompact ? 22 : 30),
 
                           Text(
-                            'Forgot your password?',
+                            AppLocalizations.t('forgot_password'),
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               fontSize: 19,
@@ -216,7 +235,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 22),
                             child: Text(
-                              'No problem. Enter your email and we will send you a password reset link.',
+                              AppLocalizations.t('forgot_description'),
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
@@ -276,7 +295,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Email address',
+                                  AppLocalizations.t('email_address'),
                                   style: GoogleFonts.poppins(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -295,7 +314,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     final v = value?.trim() ?? '';
 
                                     if (v.isEmpty) {
-                                      return 'Email is required';
+                                      return AppLocalizations.t(
+                                        'email_required',
+                                      );
                                     }
 
                                     final emailOk = RegExp(
@@ -303,7 +324,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                     ).hasMatch(v);
 
                                     if (!emailOk) {
-                                      return 'Please enter a valid email';
+                                      return AppLocalizations.t('valid_email');
                                     }
 
                                     return null;
@@ -342,7 +363,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       ),
                                     )
                                   : Text(
-                                      'Email Password Reset Link',
+                                      AppLocalizations.t('forgot_submit'),
                                       style: GoogleFonts.poppins(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w700,

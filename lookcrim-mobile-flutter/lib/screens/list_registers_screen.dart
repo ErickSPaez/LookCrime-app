@@ -6,6 +6,9 @@ import '../storage/token_storage.dart';
 import 'create_register_screen.dart';
 import 'profile_screen.dart';
 import 'read_register_screen.dart';
+import '../utils/user_friendly_error.dart';
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
 
 typedef RegisterItem = ({
   int id,
@@ -36,6 +39,7 @@ class ListRegistersScreen extends StatefulWidget {
 
 class _ListRegistersScreenState extends State<ListRegistersScreen> {
   final _searchController = TextEditingController();
+  late final VoidCallback _localeListener;
 
   bool _loading = false;
   String? _error;
@@ -45,12 +49,19 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
   @override
   void initState() {
     super.initState();
+    _localeListener = () {
+      if (mounted) {
+        setState(() {});
+      }
+    };
+    LanguageService.instance.localeNotifier.addListener(_localeListener);
     _loadUserCity();
     _loadRegisters();
   }
 
   @override
   void dispose() {
+    LanguageService.instance.localeNotifier.removeListener(_localeListener);
     _searchController.dispose();
     super.dispose();
   }
@@ -79,10 +90,14 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
 
       _precacheImages(items);
     } catch (e) {
+      debugPrint('Load registers failed: $e');
       if (!mounted) return;
 
       setState(() {
-        _error = e.toString();
+        _error = userFriendlyErrorMessage(
+          e,
+          fallback: 'Could not load the reports. Please try again.',
+        );
       });
     } finally {
       if (mounted && showLoader) {
@@ -166,7 +181,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
 
     return (
       id: (raw['id'] as int?) ?? 0,
-      title: (raw['title'] as String?) ?? 'Untitled',
+      title: (raw['title'] as String?) ?? AppLocalizations.t('untitled'),
       description: description,
       address: (raw['address'] as String?)?.trim().isEmpty == true
           ? null
@@ -257,7 +272,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.person),
-                  title: const Text('Profile'),
+                  title: Text(AppLocalizations.t('profile')),
                   onTap: () {
                     Navigator.of(context).pop();
                     _openProfile();
@@ -265,7 +280,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.logout),
-                  title: const Text('Cerrar sesión'),
+                  title: Text(AppLocalizations.t('sign_out')),
                   onTap: () {
                     Navigator.of(context).pop();
                     _logout();
@@ -312,20 +327,87 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: lightRed,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          'ENG',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: red,
+                      GestureDetector(
+                        onTap: () {
+                          final code = LanguageService
+                              .instance
+                              .currentLocale
+                              .languageCode
+                              .toUpperCase();
+                          final langLabel = code == 'PT'
+                              ? AppLocalizations.t('portuguese_pt')
+                              : AppLocalizations.t('english');
+                          showDialog<void>(
+                            context: context,
+                            builder: (dctx) {
+                              return AlertDialog(
+                                title: Text(
+                                  AppLocalizations.t('language_dialog_title'),
+                                ),
+                                content: Text(
+                                  AppLocalizations.t(
+                                    'language_dialog_message_profile',
+                                    args: {'lang': langLabel},
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(dctx).pop();
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => ProfileScreen(
+                                            api: widget.api,
+                                            tokenStorage: widget.tokenStorage,
+                                            authorizationHeaderValue:
+                                                widget.authorizationHeaderValue,
+                                            onLogout: widget.onLogout,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      AppLocalizations.t('go_to_profile'),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.of(dctx).pop(),
+                                    child: Text(AppLocalizations.t('ok')),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: lightRed,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.public, color: red, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                (LanguageService
+                                            .instance
+                                            .currentLocale
+                                            .languageCode
+                                            .toUpperCase() ==
+                                        'PT')
+                                    ? 'PT'
+                                    : 'ENG',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: red,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -394,7 +476,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                       },
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Search',
+                        hintText: AppLocalizations.t('search'),
                         hintStyle: const TextStyle(color: Colors.white70),
                         prefixIcon: const Icon(
                           Icons.search,
@@ -473,9 +555,9 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text(
-                    'Create New Register',
-                    style: TextStyle(
+                  label: Text(
+                    AppLocalizations.t('create_new_register'),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
@@ -580,7 +662,9 @@ class _RegisterCard extends StatelessWidget {
                               child: Text(
                                 (address != null && address!.trim().isNotEmpty)
                                     ? address!.trim()
-                                    : 'Location not available',
+                                    : AppLocalizations.t(
+                                        'location_not_available',
+                                      ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.bodySmall?.copyWith(

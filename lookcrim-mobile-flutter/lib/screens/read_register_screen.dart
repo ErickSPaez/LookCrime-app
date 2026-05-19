@@ -6,6 +6,8 @@ import 'package:latlong2/latlong.dart';
 
 import '../api/lookcrime_api.dart';
 import 'view_register_location_screen.dart';
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
 
 class ReadRegisterScreen extends StatefulWidget {
   final LookCrimeApi api;
@@ -26,6 +28,7 @@ class ReadRegisterScreen extends StatefulWidget {
 class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
   late Future<Map<String, dynamic>> _future;
   final PageController _pageController = PageController();
+  late final VoidCallback _localeListener;
 
   int _imageIndex = 0;
   bool _descriptionExpanded = false;
@@ -39,6 +42,10 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
   @override
   void initState() {
     super.initState();
+    _localeListener = () {
+      if (mounted) setState(() {});
+    };
+    LanguageService.instance.localeNotifier.addListener(_localeListener);
     _future = widget.api.getRegister(
       authorizationHeaderValue: widget.authorizationHeaderValue,
       id: widget.registerId,
@@ -47,6 +54,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
 
   @override
   void dispose() {
+    LanguageService.instance.localeNotifier.removeListener(_localeListener);
     _pageController.dispose();
     super.dispose();
   }
@@ -77,31 +85,46 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
 
   String _formatDate(dynamic raw) {
     final value = _string(raw);
-    if (value.isEmpty) return 'N/A';
+    if (value.isEmpty) return AppLocalizations.t('na');
 
     final date = DateTime.tryParse(value);
     if (date == null) return value;
 
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
+    final months = LanguageService.instance.currentLocale.languageCode == 'pt'
+        ? const [
+            'Jan',
+            'Fev',
+            'Mar',
+            'Abr',
+            'Mai',
+            'Jun',
+            'Jul',
+            'Ago',
+            'Set',
+            'Out',
+            'Nov',
+            'Dez',
+          ]
+        : const [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+          ];
 
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
   String _formatCategory(String value) {
-    if (value.trim().isEmpty) return 'N/A';
+    if (value.trim().isEmpty) return AppLocalizations.t('na');
 
     return value
         .replaceAll('_', ' ')
@@ -183,7 +206,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Text(
-                        'Error loading register:\n${snapshot.error}',
+                        '${AppLocalizations.t('error_loading_register')}${snapshot.error}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.red),
                       ),
@@ -193,21 +216,27 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
 
                 final data = snapshot.data ?? <String, dynamic>{};
 
-                final title = _string(data['title'], fallback: 'Untitled');
+                final title = _string(
+                  data['title'],
+                  fallback: AppLocalizations.t('untitled'),
+                );
                 final author = _string(
                   data['author_name'],
-                  fallback: 'Unknown',
+                  fallback: AppLocalizations.t('unknown'),
                 );
                 final category = _formatCategory(
-                  _string(data['category'], fallback: 'N/A'),
+                  _string(data['category'], fallback: AppLocalizations.t('na')),
                 );
                 final date = _formatDate(data['created_at']);
                 final description = _cleanDescription(
-                  _string(data['description'], fallback: 'No description'),
+                  _string(
+                    data['description'],
+                    fallback: AppLocalizations.t('no_description'),
+                  ),
                 );
                 final address = _string(
                   data['address'],
-                  fallback: 'Location not available',
+                  fallback: AppLocalizations.t('location_not_available'),
                 );
                 final lat = _double(data['latitude']);
                 final lng = _double(data['longitude']);
@@ -286,7 +315,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
             ),
           ),
           Text(
-            'Read Register',
+            AppLocalizations.t('read_register'),
             style: GoogleFonts.poppins(
               fontSize: 21,
               fontWeight: FontWeight.w700,
@@ -447,7 +476,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
         Expanded(
           child: _buildMetaCard(
             icon: Icons.person,
-            label: 'Author',
+            label: AppLocalizations.t('author'),
             value: author,
           ),
         ),
@@ -455,7 +484,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
         Expanded(
           child: _buildMetaCard(
             icon: Icons.local_offer,
-            label: 'Category',
+            label: AppLocalizations.t('category'),
             value: category,
           ),
         ),
@@ -463,7 +492,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
         Expanded(
           child: _buildMetaCard(
             icon: Icons.calendar_month,
-            label: 'Date',
+            label: AppLocalizations.t('date'),
             value: date,
           ),
         ),
@@ -528,7 +557,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Description',
+          AppLocalizations.t('description'),
           style: GoogleFonts.poppins(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -568,7 +597,9 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
                     });
                   },
                   child: Text(
-                    _descriptionExpanded ? 'Show less' : 'Read more',
+                    _descriptionExpanded
+                        ? AppLocalizations.t('show_less')
+                        : AppLocalizations.t('read_more'),
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: _red,
@@ -651,7 +682,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
         color: _softCard,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: const Center(child: Text('Map not available')),
+      child: Center(child: Text(AppLocalizations.t('map_not_available'))),
     );
   }
 
@@ -688,7 +719,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Location',
+                    AppLocalizations.t('location'),
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       color: Colors.black,
@@ -725,7 +756,7 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
         onPressed: null,
         icon: const Icon(Icons.download, color: Colors.white),
         label: Text(
-          'Export Register',
+          AppLocalizations.t('export_register'),
           style: GoogleFonts.poppins(
             color: Colors.white,
             fontWeight: FontWeight.w700,

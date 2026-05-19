@@ -4,6 +4,9 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
+
 typedef LocationResult = ({double latitude, double longitude, String address});
 
 class SetLocationScreen extends StatefulWidget {
@@ -41,11 +44,16 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
   late LatLng _selectedLocation;
   bool _usingCurrentLocation = false;
   bool _loadingLocation = false;
-  String _address = 'City area';
+  String _address = AppLocalizations.t('city_area');
+  late final VoidCallback _localeListener;
 
   @override
   void initState() {
     super.initState();
+    _localeListener = () {
+      if (mounted) setState(() {});
+    };
+    LanguageService.instance.localeNotifier.addListener(_localeListener);
     _cityCenter = LatLng(widget.initialLatitude, widget.initialLongitude);
     _cityRadiusMeters = (widget.radiusMeters ?? 4000).toDouble();
     _cityZoom = _zoomForRadius(_cityRadiusMeters);
@@ -54,6 +62,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
 
   @override
   void dispose() {
+    LanguageService.instance.localeNotifier.removeListener(_localeListener);
     _searchController.dispose();
     super.dispose();
   }
@@ -66,7 +75,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        _showError('Location services are disabled.');
+        _showError(AppLocalizations.t('location_services_disabled'));
         return;
       }
 
@@ -75,17 +84,21 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.denied) {
-        _showError('Location permission denied.');
+        _showError(AppLocalizations.t('location_permission_denied'));
         return;
       }
       if (permission == LocationPermission.deniedForever) {
-        _showError('Location permission permanently denied.');
+        _showError(AppLocalizations.t('location_permission_denied_forever'));
         return;
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+      Position? position = await Geolocator.getLastKnownPosition();
+      position ??= await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+        ),
       );
+
       final latLng = LatLng(position.latitude, position.longitude);
       final address = await _reverseGeocode(latLng);
       if (!mounted) return;
@@ -98,7 +111,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
       });
       _mapController.move(latLng, 16);
     } catch (_) {
-      _showError('Unable to get current location.');
+      _showError(AppLocalizations.t('unable_get_current_location'));
     } finally {
       if (mounted) {
         setState(() => _loadingLocation = false);
@@ -112,7 +125,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
         latLng.latitude,
         latLng.longitude,
       );
-      if (placemarks.isEmpty) return 'Your location';
+      if (placemarks.isEmpty) return AppLocalizations.t('your_location');
       final place = placemarks.first;
       final parts = <String>[
         if ((place.street ?? '').trim().isNotEmpty) place.street!.trim(),
@@ -121,9 +134,11 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
         if ((place.locality ?? '').trim().isNotEmpty) place.locality!.trim(),
         if ((place.country ?? '').trim().isNotEmpty) place.country!.trim(),
       ];
-      return parts.isEmpty ? 'Your location' : parts.join(', ');
+      return parts.isEmpty
+          ? AppLocalizations.t('your_location')
+          : parts.join(', ');
     } catch (_) {
-      return 'Your location';
+      return AppLocalizations.t('your_location');
     }
   }
 
@@ -140,7 +155,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
   void _showCityArea() {
     setState(() {
       _usingCurrentLocation = false;
-      _address = 'City area';
+      _address = AppLocalizations.t('city_area');
       _selectedLocation = _cityCenter;
     });
     _mapController.move(_cityCenter, _cityZoom);
@@ -206,9 +221,9 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
                             point: _cityCenter,
                             radius: _cityRadiusMeters,
                             useRadiusInMeter: true,
-                            color: _deepRed.withOpacity(0.18),
+                            color: _deepRed.withValues(alpha: 0.18),
                             borderStrokeWidth: 1.5,
-                            borderColor: _deepRed.withOpacity(0.35),
+                            borderColor: _deepRed.withValues(alpha: 0.35),
                           ),
                         ],
                 ),
@@ -265,9 +280,9 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
                           child: TextField(
                             controller: _searchController,
                             readOnly: true,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               prefixIcon: Icon(Icons.search, color: _textDark),
-                              hintText: 'Search',
+                              hintText: AppLocalizations.t('search'),
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.only(top: 8),
                             ),
@@ -305,8 +320,8 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
                               )
                             : Text(
                                 _usingCurrentLocation
-                                    ? 'City area'
-                                    : 'Current location',
+                                    ? AppLocalizations.t('city_area')
+                                    : AppLocalizations.t('current_location'),
                                 style: const TextStyle(color: Colors.white),
                               ),
                       ),
@@ -330,7 +345,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Your Location',
+                      AppLocalizations.t('your_location_title'),
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         color: _textMuted,
                         fontWeight: FontWeight.w600,
@@ -370,8 +385,8 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
                           Icons.location_on,
                           color: Colors.white,
                         ),
-                        label: const Text(
-                          'Set location',
+                        label: Text(
+                          AppLocalizations.t('set_location'),
                           style: TextStyle(color: Colors.white),
                         ),
                       ),

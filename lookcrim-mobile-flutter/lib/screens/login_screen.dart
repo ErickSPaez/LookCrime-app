@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../api/lookcrime_api.dart';
 import '../storage/token_storage.dart';
 import 'forgot_password_screen.dart';
+import '../utils/user_friendly_error.dart';
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   final LookCrimeApi api;
@@ -25,12 +28,23 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  late final VoidCallback _localeListener;
 
   bool _loading = false;
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    _localeListener = () {
+      if (mounted) setState(() {});
+    };
+    LanguageService.instance.localeNotifier.addListener(_localeListener);
+  }
+
+  @override
   void dispose() {
+    LanguageService.instance.localeNotifier.removeListener(_localeListener);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -55,13 +69,20 @@ class _LoginScreenState extends State<LoginScreen> {
       final header = await widget.tokenStorage.readAuthorizationHeaderValue();
       if (!mounted) return;
       if (header == null) {
-        setState(() => _error = 'No se pudo guardar el token');
+        setState(() => _error = AppLocalizations.t('token_save_error'));
         return;
       }
 
       widget.onLoggedIn(header);
     } catch (e) {
-      setState(() => _error = e.toString());
+      debugPrint('Login failed: $e');
+      setState(
+        () => _error = userFriendlyErrorMessage(
+          e,
+          fallback: AppLocalizations.t('incorrect_credentials'),
+          operation: 'login',
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -167,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Center(
                                     child: Text(
-                                      'LookCrim',
+                                      AppLocalizations.t('app_name'),
                                       style: GoogleFonts.poppins(
                                         color: _primaryRed,
                                         fontSize: 28,
@@ -181,7 +202,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(height: isCompact ? 16 : 24),
                           Text(
-                            'Welcome',
+                            AppLocalizations.t('welcome'),
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(
                                   fontWeight: FontWeight.w800,
@@ -192,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           SizedBox(height: isCompact ? 12 : 20),
                           Text(
-                            'Login to continue',
+                            AppLocalizations.t('login_to_continue'),
                             style: Theme.of(context).textTheme.titleSmall
                                 ?.copyWith(
                                   fontWeight: FontWeight.w600,
@@ -235,14 +256,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Access',
+                                      AppLocalizations.t('access'),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .titleMedium
+                                          .titleLarge
                                           ?.copyWith(
                                             fontWeight: FontWeight.w800,
                                             color: Colors.black,
-                                            height: 1.5,
+                                            height: 1.4,
                                           ),
                                     ),
                                     Padding(
@@ -250,26 +271,26 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 4),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 10),
                                   child: Text(
-                                    'Use your email and password',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
+                                    AppLocalizations.t('use_email_password'),
+                                    style: Theme.of(context).textTheme.bodySmall
                                         ?.copyWith(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w600,
-                                          height: 1.5,
+                                          color: Colors.black.withValues(
+                                            alpha: 0.55,
+                                          ),
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.3,
                                         ),
                                   ),
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: 14),
                                 Padding(
                                   padding: const EdgeInsets.only(left: 10),
                                   child: Text(
-                                    'Email address',
+                                    AppLocalizations.t('email_address'),
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
@@ -295,13 +316,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                     validator: (value) {
                                       final v = value?.trim() ?? '';
                                       if (v.isEmpty) {
-                                        return 'Email is required';
+                                        return AppLocalizations.t(
+                                          'email_required',
+                                        );
                                       }
                                       final emailOk = RegExp(
                                         r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$',
                                       ).hasMatch(v);
                                       if (!emailOk) {
-                                        return 'Please enter a valid email';
+                                        return AppLocalizations.t(
+                                          'valid_email',
+                                        );
                                       }
                                       return null;
                                     },
@@ -315,7 +340,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Padding(
                                   padding: const EdgeInsets.only(left: 10),
                                   child: Text(
-                                    'Password',
+                                    AppLocalizations.t('password'),
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
@@ -341,10 +366,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     validator: (value) {
                                       final v = value ?? '';
                                       if (v.isEmpty) {
-                                        return 'Password is required';
+                                        return AppLocalizations.t(
+                                          'password_required',
+                                        );
                                       }
                                       if (v.length < 6) {
-                                        return 'Password must be at least 6 characters';
+                                        return AppLocalizations.t(
+                                          'password_min_length',
+                                        );
                                       }
                                       return null;
                                     },
@@ -400,9 +429,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                           size: 18,
                                         ),
                                         const SizedBox(width: 8),
-                                        const Text(
-                                          'Login',
-                                          style: TextStyle(
+                                        Text(
+                                          AppLocalizations.t('login'),
+                                          style: const TextStyle(
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
@@ -424,7 +453,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
                                   },
                             child: Text(
-                              'Forgot your Password?',
+                              AppLocalizations.t('forgot_password'),
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
                                     color: _linkRed,

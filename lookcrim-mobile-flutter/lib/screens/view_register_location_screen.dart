@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
+
 class ViewRegisterLocationScreen extends StatelessWidget {
   final double latitude;
   final double longitude;
@@ -23,88 +26,95 @@ class ViewRegisterLocationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final point = LatLng(latitude, longitude);
 
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            FlutterMap(
-              options: MapOptions(initialCenter: point, initialZoom: 16),
+    return AnimatedBuilder(
+      animation: LanguageService.instance.localeNotifier,
+      builder: (context, _) {
+        return Scaffold(
+          body: SafeArea(
+            child: Stack(
               children: [
-                TileLayer(
-                  urlTemplate: _tileTemplate,
-                  userAgentPackageName: 'lookcrime_mobile',
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      width: 44,
-                      height: 44,
-                      point: point,
-                      child: const Icon(
-                        Icons.location_on,
-                        color: _deepRed,
-                        size: 40,
-                      ),
+                FlutterMap(
+                  options: MapOptions(initialCenter: point, initialZoom: 16),
+                  children: [
+                    TileLayer(
+                      urlTemplate: _tileTemplate,
+                      userAgentPackageName: 'lookcrime_mobile',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          width: 44,
+                          height: 44,
+                          point: point,
+                          child: const Icon(
+                            Icons.location_on,
+                            color: _deepRed,
+                            size: 40,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
+                ),
+                Positioned(
+                  top: 14,
+                  left: 14,
+                  child: InkWell(
+                    onTap: () => Navigator.of(context).maybePop(),
+                    borderRadius: BorderRadius.circular(9),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: _deepRed,
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: const Icon(
+                        Icons.chevron_left,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                    decoration: const BoxDecoration(
+                      color: _panelFill,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(18),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.location_on, color: _deepRed),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            address.trim().isEmpty
+                                ? AppLocalizations.t('location_not_available')
+                                : address,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
-            Positioned(
-              top: 14,
-              left: 14,
-              child: InkWell(
-                onTap: () => Navigator.of(context).maybePop(),
-                borderRadius: BorderRadius.circular(9),
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: _deepRed,
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                  child: const Icon(
-                    Icons.chevron_left,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                decoration: const BoxDecoration(
-                  color: _panelFill,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.location_on, color: _deepRed),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        address.trim().isEmpty
-                            ? 'Location not available'
-                            : address,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w600,
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -5,6 +5,9 @@ import 'package:image_picker/image_picker.dart';
 
 import '../api/lookcrime_api.dart';
 import 'set_location_screen.dart';
+import '../utils/user_friendly_error.dart';
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
 
 class CreateRegisterScreen extends StatefulWidget {
   final LookCrimeApi api;
@@ -40,16 +43,22 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
   Uint8List? _imageBytes;
   String? _imageFilename;
   String? _selectedAddress;
+  late final VoidCallback _localeListener;
 
   @override
   void initState() {
     super.initState();
+    _localeListener = () {
+      if (mounted) setState(() {});
+    };
+    LanguageService.instance.localeNotifier.addListener(_localeListener);
     _loadCategories();
     _loadCityCenter();
   }
 
   @override
   void dispose() {
+    LanguageService.instance.localeNotifier.removeListener(_localeListener);
     _titleController.dispose();
     _descriptionController.dispose();
     _latController.dispose();
@@ -71,8 +80,15 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
         _selectedCategory = null;
       });
     } catch (e) {
+      debugPrint('Load categories failed: $e');
       if (!mounted) return;
-      setState(() => _error = e.toString());
+      setState(
+        () => _error = userFriendlyErrorMessage(
+          e,
+          fallback: AppLocalizations.t('categories_load_fail'),
+          operation: 'createRegister',
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loadingCategories = false);
     }
@@ -127,12 +143,12 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_camera_outlined),
-                title: const Text('Camera'),
+                title: Text(AppLocalizations.t('camera')),
                 onTap: () => Navigator.of(context).pop(ImageSource.camera),
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library_outlined),
-                title: const Text('Files'),
+                title: Text(AppLocalizations.t('files')),
                 onTap: () => Navigator.of(context).pop(ImageSource.gallery),
               ),
             ],
@@ -179,7 +195,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
             _latController.text = result.latitude.toStringAsFixed(6);
             _lngController.text = result.longitude.toStringAsFixed(6);
             _selectedAddress = result.address.trim().isEmpty
-                ? 'Selected location'
+                ? AppLocalizations.t('selected_location')
                 : result.address;
           });
         });
@@ -197,10 +213,10 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
       final imgName = _imageFilename;
 
       if (cat == null || cat.trim().isEmpty) {
-        throw Exception('Select a category');
+        throw Exception(AppLocalizations.t('select_category'));
       }
       if (img == null || imgName == null) {
-        throw Exception('Select an image');
+        throw Exception(AppLocalizations.t('select_image'));
       }
 
       await widget.api.createRegister(
@@ -218,8 +234,15 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
       if (!mounted) return;
       Navigator.of(context).pop(true);
     } catch (e) {
+      debugPrint('Create register failed: $e');
       if (!mounted) return;
-      setState(() => _error = e.toString());
+      setState(
+        () => _error = userFriendlyErrorMessage(
+          e,
+          fallback: AppLocalizations.t('create_fail'),
+          operation: 'createRegister',
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -301,7 +324,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'CREATE REGISTER',
+                        AppLocalizations.t('create_register_title'),
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               fontWeight: FontWeight.w800,
@@ -342,7 +365,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Title',
+                              AppLocalizations.t('title'),
                               style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.w600,
@@ -353,12 +376,12 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                             TextField(
                               controller: _titleController,
                               decoration: buildFieldDecoration(
-                                'Set title to register',
+                                AppLocalizations.t('set_title_to_register'),
                               ),
                             ),
                             const SizedBox(height: sectionSpacing),
                             Text(
-                              'Category',
+                              AppLocalizations.t('category'),
                               style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.w600,
@@ -372,7 +395,9 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                               DropdownButtonFormField<String>(
                                 key: ValueKey(_selectedCategory),
                                 initialValue: _selectedCategory,
-                                hint: const Text('Tap to select category'),
+                                hint: Text(
+                                  AppLocalizations.t('tap_select_category'),
+                                ),
                                 items: _categories
                                     .map(
                                       (c) => DropdownMenuItem<String>(
@@ -388,7 +413,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                                     : (v) =>
                                           setState(() => _selectedCategory = v),
                                 decoration: buildFieldDecoration(
-                                  'Set Category',
+                                  AppLocalizations.t('set_category'),
                                 ),
                                 icon: const Icon(
                                   Icons.keyboard_arrow_down_rounded,
@@ -398,7 +423,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                               ),
                             const SizedBox(height: sectionSpacing),
                             Text(
-                              'Images',
+                              AppLocalizations.t('images'),
                               style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.w600,
@@ -422,15 +447,15 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                                 ),
                                 label: Text(
                                   _imageFilename == null
-                                      ? 'Add Images'
-                                      : 'Image: $_imageFilename',
+                                      ? AppLocalizations.t('add_images')
+                                      : '${AppLocalizations.t('image')}: $_imageFilename',
                                   style: const TextStyle(color: Colors.white),
                                 ),
                               ),
                             ),
                             const SizedBox(height: sectionSpacing),
                             Text(
-                              'Content',
+                              AppLocalizations.t('content'),
                               style: Theme.of(context).textTheme.titleSmall
                                   ?.copyWith(
                                     fontWeight: FontWeight.w600,
@@ -441,7 +466,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                             TextField(
                               controller: _descriptionController,
                               decoration: buildFieldDecoration(
-                                'Details of Incident',
+                                AppLocalizations.t('details_of_incident'),
                               ),
                               maxLines: 4,
                             ),
@@ -462,8 +487,8 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                                 ),
                                 label: Text(
                                   hasSelectedLocation
-                                      ? 'Edit Location'
-                                      : 'Set location',
+                                      ? AppLocalizations.t('edit_location')
+                                      : AppLocalizations.t('set_location'),
                                   style: const TextStyle(color: Colors.white),
                                 ),
                               ),
@@ -529,9 +554,9 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                                   Icons.check_box_outlined,
                                   color: Colors.white,
                                 ),
-                          label: const Text(
-                            'Create Register',
-                            style: TextStyle(color: Colors.white),
+                          label: Text(
+                            AppLocalizations.t('create_register'),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'api/lookcrime_api.dart';
 import 'config/app_config.dart';
 import 'screens/list_registers_screen.dart';
 import 'screens/login_screen.dart';
 import 'storage/token_storage.dart';
+import 'services/language_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,6 +31,13 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _loadAuth();
+    LanguageService.instance.init().then((_) {
+      LanguageService.instance.localeNotifier.addListener(() {
+        if (!mounted) return;
+        setState(() {});
+      });
+      setState(() {});
+    });
   }
 
   Future<void> _loadAuth() async {
@@ -57,6 +66,13 @@ class _MyAppState extends State<MyApp> {
 
     return MaterialApp(
       title: 'LookCrime Mobile',
+      locale: LanguageService.instance.currentLocale,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: LanguageService.instance.supportedLocales,
       theme: baseTheme.copyWith(
         textTheme: GoogleFonts.poppinsTextTheme(baseTheme.textTheme),
       ),
@@ -86,14 +102,14 @@ class _MissingConfigScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Config requerida')),
+      appBar: AppBar(title: const Text('Missing config')),
       body: const SafeArea(
         child: Padding(
           padding: EdgeInsets.all(16),
           child: Text(
-            'Falta configurar API_BASE_URL.\n\n'
-            'Ejemplo:\n'
-            'flutter run --dart-define=API_BASE_URL=https://TU-CLOUD-RUN-URL',
+            'API_BASE_URL is not configured.\n\n'
+            'Example:\n'
+            'flutter run --dart-define=API_BASE_URL=https://YOUR-CLOUD-RUN-URL',
           ),
         ),
       ),

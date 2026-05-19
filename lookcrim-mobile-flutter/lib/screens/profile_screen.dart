@@ -3,6 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../api/lookcrime_api.dart';
 import '../storage/token_storage.dart';
+import '../utils/user_friendly_error.dart';
+import '../services/language_service.dart';
+import '../utils/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   final LookCrimeApi api;
@@ -24,6 +27,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late Future<Map<String, String>> _userFuture;
+  late final VoidCallback _localeListener;
 
   static const Color _red = Color(0xFF820000);
   static const Color _darkText = Color(0xFF09051C);
@@ -36,7 +40,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _localeListener = () {
+      if (mounted) setState(() {});
+    };
+    LanguageService.instance.localeNotifier.addListener(_localeListener);
     _userFuture = _fetchUserData();
+  }
+
+  @override
+  void dispose() {
+    LanguageService.instance.localeNotifier.removeListener(_localeListener);
+    super.dispose();
   }
 
   Future<Map<String, String>> _fetchUserData() async {
@@ -205,7 +219,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final newName = controller.text.trim();
 
               if (newName.isEmpty) {
-                _showMessage('Name cannot be empty.', isError: true);
+                _showMessage(
+                  AppLocalizations.t('name_required'),
+                  isError: true,
+                );
                 return;
               }
 
@@ -223,9 +240,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 Navigator.of(sheetContext).pop();
                 await _reloadUser();
-                _showMessage('Name updated successfully.');
+                _showMessage(AppLocalizations.t('name_updated'));
               } catch (e) {
-                _showMessage(e.toString(), isError: true);
+                _showMessage(
+                  userFriendlyErrorMessage(
+                    e,
+                    fallback: AppLocalizations.t('name_save_fail'),
+                    operation: 'profile',
+                  ),
+                  isError: true,
+                );
               } finally {
                 if (mounted) {
                   setState(() {
@@ -246,22 +270,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSheetTitle('Edit Name'),
+                  _buildSheetTitle(AppLocalizations.t('edit_name')),
                   const SizedBox(height: 16),
                   _buildDisabledField(
-                    label: 'Current Name',
+                    label: AppLocalizations.t('current_name'),
                     value: currentName,
                   ),
                   const SizedBox(height: 14),
                   _buildTextField(
                     controller: controller,
-                    label: 'New Name',
+                    label: AppLocalizations.t('new_name'),
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => saveName(),
                   ),
                   const SizedBox(height: 20),
                   _buildSheetButton(
-                    label: 'Save edit',
+                    label: AppLocalizations.t('save_edit'),
                     loading: _savingName,
                     onPressed: saveName,
                   ),
@@ -290,7 +314,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final newEmail = emailController.text.trim();
 
               if (currentPassword.isEmpty || newEmail.isEmpty) {
-                _showMessage('Please complete all fields.', isError: true);
+                _showMessage(
+                  AppLocalizations.t('fill_all_fields'),
+                  isError: true,
+                );
                 return;
               }
 
@@ -308,9 +335,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (!mounted) return;
 
                 Navigator.of(sheetContext).pop();
-                _showMessage('Verification link sent. Check your new email.');
+                _showMessage(AppLocalizations.t('verification_sent'));
               } catch (e) {
-                _showMessage(e.toString(), isError: true);
+                _showMessage(
+                  userFriendlyErrorMessage(
+                    e,
+                    fallback: AppLocalizations.t('verification_failed'),
+                    operation: 'profile',
+                  ),
+                  isError: true,
+                );
               } finally {
                 if (mounted) {
                   setState(() {
@@ -331,30 +365,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSheetTitle('Change Email'),
+                  _buildSheetTitle(AppLocalizations.t('change_email')),
                   const SizedBox(height: 16),
                   _buildDisabledField(
-                    label: 'Current Email',
+                    label: AppLocalizations.t('current_email'),
                     value: currentEmail,
                   ),
                   const SizedBox(height: 14),
                   _buildTextField(
                     controller: passwordController,
-                    label: 'Current Password',
+                    label: AppLocalizations.t('current_password'),
                     obscureText: true,
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 14),
                   _buildTextField(
                     controller: emailController,
-                    label: 'New Email',
+                    label: AppLocalizations.t('new_email'),
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => sendVerification(),
                   ),
                   const SizedBox(height: 20),
                   _buildSheetButton(
-                    label: 'Send confirmation email',
+                    label: AppLocalizations.t('send_confirmation_email'),
                     loading: _sendingEmailChange,
                     onPressed: sendVerification,
                   ),
@@ -387,18 +421,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (currentPassword.isEmpty ||
                   newPassword.isEmpty ||
                   confirmPassword.isEmpty) {
-                _showMessage('Please complete all fields.', isError: true);
+                _showMessage(
+                  AppLocalizations.t('fill_all_fields'),
+                  isError: true,
+                );
                 return;
               }
 
               if (newPassword != confirmPassword) {
-                _showMessage('Passwords do not match.', isError: true);
+                _showMessage(
+                  AppLocalizations.t('passwords_no_match'),
+                  isError: true,
+                );
                 return;
               }
 
               if (newPassword.length < 8) {
                 _showMessage(
-                  'The new password must be at least 8 characters.',
+                  AppLocalizations.t('password_min_8'),
                   isError: true,
                 );
                 return;
@@ -419,9 +459,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (!mounted) return;
 
                 Navigator.of(sheetContext).pop();
-                _showMessage('Password updated successfully.');
+                _showMessage(AppLocalizations.t('password_changed'));
               } catch (e) {
-                _showMessage(e.toString(), isError: true);
+                _showMessage(
+                  userFriendlyErrorMessage(
+                    e,
+                    fallback: AppLocalizations.t('password_change_failed'),
+                    operation: 'profile',
+                  ),
+                  isError: true,
+                );
               } finally {
                 if (mounted) {
                   setState(() {
@@ -442,32 +489,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSheetTitle('Change Password'),
+                  _buildSheetTitle(AppLocalizations.t('change_password')),
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: currentPasswordController,
-                    label: 'Current Password',
+                    label: AppLocalizations.t('current_password'),
                     obscureText: true,
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 14),
                   _buildTextField(
                     controller: newPasswordController,
-                    label: 'New Password',
+                    label: AppLocalizations.t('new_password'),
                     obscureText: true,
                     textInputAction: TextInputAction.next,
                   ),
                   const SizedBox(height: 14),
                   _buildTextField(
                     controller: confirmPasswordController,
-                    label: 'Confirm Password',
+                    label: AppLocalizations.t('confirm_password'),
                     obscureText: true,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => savePassword(),
                   ),
                   const SizedBox(height: 20),
                   _buildSheetButton(
-                    label: 'Save password',
+                    label: AppLocalizations.t('save_password'),
                     loading: _savingPassword,
                     onPressed: savePassword,
                   ),
@@ -513,7 +560,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Text(
-                        'Error cargando usuario:\n${snapshot.error}',
+                        '${AppLocalizations.t('error_loading_user')}${snapshot.error}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(color: Colors.red, fontSize: 14),
                       ),
@@ -522,7 +569,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
 
                 if (!snapshot.hasData) {
-                  return const Center(child: Text('No data available'));
+                  return Center(
+                    child: Text(AppLocalizations.t('no_data_available')),
+                  );
                 }
 
                 final userData = snapshot.data!;
@@ -538,6 +587,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 28),
                       _buildInfoCard(userData),
                       const SizedBox(height: 24),
+                      _buildLanguageTile(),
+                      const SizedBox(height: 12),
                       _buildLogoutButton(context),
                     ],
                   ),
@@ -582,7 +633,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           Text(
-            'Profile',
+            AppLocalizations.t('profile'),
             style: GoogleFonts.poppins(
               fontSize: 26,
               fontWeight: FontWeight.w700,
@@ -632,7 +683,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 0, bottom: 16),
             child: Text(
-              'Personal Info',
+              AppLocalizations.t('personal_info'),
               style: GoogleFonts.poppins(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
@@ -653,39 +704,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 _buildInfoRow(
-                  label: 'User Name',
-                  value: userData['name'] ?? 'N/A',
+                  label: AppLocalizations.t('user_name'),
+                  value: userData['name'] ?? AppLocalizations.t('na'),
                   actionIcon: Icons.edit,
                   onActionTap: () {
-                    _openEditNameSheet(userData['name'] ?? 'N/A');
+                    _openEditNameSheet(
+                      userData['name'] ?? AppLocalizations.t('na'),
+                    );
                   },
                 ),
                 _buildDividerSpace(),
                 _buildInfoRow(
-                  label: 'Password',
+                  label: AppLocalizations.t('password'),
                   value: userData['password'] ?? '************',
                   actionIcon: Icons.edit,
                   onActionTap: _openChangePasswordSheet,
                 ),
                 _buildDividerSpace(),
                 _buildInfoRow(
-                  label: 'Email',
-                  value: userData['email'] ?? 'N/A',
+                  label: AppLocalizations.t('email'),
+                  value: userData['email'] ?? AppLocalizations.t('na'),
                   actionIcon: Icons.edit,
                   onActionTap: () {
-                    _openChangeEmailSheet(userData['email'] ?? 'N/A');
+                    _openChangeEmailSheet(
+                      userData['email'] ?? AppLocalizations.t('na'),
+                    );
                   },
                 ),
                 _buildDividerSpace(),
                 _buildInfoRow(
-                  label: 'Role',
-                  value: userData['role'] ?? 'N/A',
+                  label: AppLocalizations.t('role'),
+                  value: userData['role'] ?? AppLocalizations.t('na'),
                   actionIcon: Icons.lock_outline,
                 ),
                 _buildDividerSpace(),
                 _buildInfoRow(
-                  label: 'City',
-                  value: userData['city'] ?? 'N/A',
+                  label: AppLocalizations.t('city'),
+                  value: userData['city'] ?? AppLocalizations.t('na'),
                   actionIcon: Icons.lock_outline,
                 ),
               ],
@@ -858,20 +913,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           context: context,
           builder: (dialogContext) {
             return AlertDialog(
-              title: const Text('Logout Account'),
-              content: const Text('Are you sure you want to logout?'),
+              title: Text(AppLocalizations.t('logout_account')),
+              content: Text(AppLocalizations.t('logout_confirm')),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.of(dialogContext).pop(false);
                   },
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.t('cancel')),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.of(dialogContext).pop(true);
                   },
-                  child: const Text('Logout'),
+                  child: Text(AppLocalizations.t('logout')),
                 ),
               ],
             );
@@ -883,12 +938,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       },
       child: Text(
-        'Log out account',
+        AppLocalizations.t('logout_account_short'),
         style: GoogleFonts.poppins(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: const Color(0xFFD00022),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageTile() {
+    final code = LanguageService.instance.currentLocale.languageCode;
+    final langLabel = code == 'pt'
+        ? AppLocalizations.t('portuguese_pt')
+        : AppLocalizations.t('english');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.t('app_language'),
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                langLabel,
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.black54),
+              ),
+            ],
+          ),
+          TextButton(
+            onPressed: () async {
+              final chosen = await showDialog<String>(
+                context: context,
+                builder: (dctx) {
+                  return SimpleDialog(
+                    title: Text(AppLocalizations.t('app_language')),
+                    children: [
+                      SimpleDialogOption(
+                        onPressed: () => Navigator.of(dctx).pop('en'),
+                        child: Text(AppLocalizations.t('english')),
+                      ),
+                      SimpleDialogOption(
+                        onPressed: () => Navigator.of(dctx).pop('pt'),
+                        child: Text(AppLocalizations.t('portuguese_pt')),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (chosen != null) {
+                await LanguageService.instance.setLocale(Locale(chosen));
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${AppLocalizations.t('app_language')}: ${chosen.toUpperCase()}',
+                    ),
+                  ),
+                );
+                setState(() {});
+              }
+            },
+            child: Text(AppLocalizations.t('edit')),
+          ),
+        ],
       ),
     );
   }

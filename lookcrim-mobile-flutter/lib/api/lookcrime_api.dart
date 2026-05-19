@@ -104,7 +104,7 @@ class LookCrimeApi {
     final tokenType = (map['token_type'] as String?) ?? 'Bearer';
 
     if (token.trim().isEmpty) {
-      throw ApiException('Login OK pero no se recibió token');
+      throw ApiException('Login succeeded, but no token was received.');
     }
 
     return (tokenType: tokenType, token: token);
@@ -139,7 +139,7 @@ class LookCrimeApi {
       decoded = jsonDecode(res.body);
     } catch (_) {
       throw ApiException(
-        'Respuesta inválida de categorías: JSON malformado. Body: ${_previewBody(res.body)}',
+        'Invalid categories response: malformed JSON. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
@@ -147,7 +147,7 @@ class LookCrimeApi {
     final list = _extractListFromDecoded(decoded);
     if (list == null) {
       throw ApiException(
-        'Respuesta inválida de categorías: formato no soportado. Body: ${_previewBody(res.body)}',
+        'Invalid categories response: unsupported format. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
@@ -204,7 +204,7 @@ class LookCrimeApi {
 
     if (decoded is! Map) {
       throw ApiException(
-        'Respuesta invalida de registros: formato no soportado. Body: ${_previewBody(res.body)}',
+        'Invalid registers response: unsupported format. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
@@ -262,7 +262,7 @@ class LookCrimeApi {
 
     if (decoded is! Map) {
       throw ApiException(
-        'Respuesta invalida del registro: formato no soportado. Body: ${_previewBody(res.body)}',
+        'Invalid record response: unsupported format. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
@@ -338,14 +338,14 @@ class LookCrimeApi {
       decoded = jsonDecode(res.body);
     } catch (_) {
       throw ApiException(
-        'Respuesta invalida de usuario: JSON malformado. Body: ${_previewBody(res.body)}',
+        'Invalid user response: malformed JSON. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
 
     if (decoded is! Map) {
       throw ApiException(
-        'Respuesta invalida de usuario: formato no soportado. Body: ${_previewBody(res.body)}',
+        'Invalid user response: unsupported format. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
@@ -407,14 +407,14 @@ class LookCrimeApi {
       decoded = jsonDecode(res.body);
     } catch (_) {
       throw ApiException(
-        'Respuesta invalida al actualizar usuario: JSON malformado. Body: ${_previewBody(res.body)}',
+        'Invalid response while updating user: malformed JSON. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
 
     if (decoded is! Map) {
       throw ApiException(
-        'Respuesta invalida al actualizar usuario: formato no soportado. Body: ${_previewBody(res.body)}',
+        'Invalid response while updating user: unsupported format. Body: ${_previewBody(res.body)}',
         statusCode: res.statusCode,
       );
     }
