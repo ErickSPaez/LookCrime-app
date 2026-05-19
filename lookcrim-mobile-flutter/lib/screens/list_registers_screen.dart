@@ -5,6 +5,7 @@ import '../api/lookcrime_api.dart';
 import '../storage/token_storage.dart';
 import 'create_register_screen.dart';
 import 'profile_screen.dart';
+import 'read_register_screen.dart';
 
 typedef RegisterItem = ({
   int id,
@@ -216,6 +217,18 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
     if (created == true && mounted) {
       await _loadRegisters(showLoader: false);
     }
+  }
+
+  void _openReadRegister(int registerId) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ReadRegisterScreen(
+          api: widget.api,
+          authorizationHeaderValue: widget.authorizationHeaderValue,
+          registerId: registerId,
+        ),
+      ),
+    );
   }
 
   void _openProfile() {
@@ -436,6 +449,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                                 address: item.address,
                                 imageUrl: item.imageUrl,
                                 mutedText: mutedText,
+                                onTap: () => _openReadRegister(item.id),
                               );
                             },
                           ),
@@ -481,12 +495,14 @@ class _RegisterCard extends StatelessWidget {
   final String? address;
   final String? imageUrl;
   final Color mutedText;
+  final VoidCallback onTap;
 
   const _RegisterCard({
     required this.title,
     required this.address,
     required this.imageUrl,
     required this.mutedText,
+    required this.onTap,
   });
 
   @override
@@ -497,90 +513,95 @@ class _RegisterCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 14),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: AspectRatio(
-              aspectRatio: 16 / 10,
-              child: imageUrl == null
-                  ? Container(
-                      color: const Color(0xFFD5D5D5),
-                      child: const Icon(
-                        Icons.photo,
-                        size: 48,
-                        color: Colors.white70,
-                      ),
-                    )
-                  : Image.network(
-                      imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) {
-                        return Container(
-                          color: const Color(0xFFD5D5D5),
-                          child: const Icon(
-                            Icons.broken_image,
-                            size: 40,
-                            color: Colors.white70,
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+      child: InkWell(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
+              child: AspectRatio(
+                aspectRatio: 16 / 10,
+                child: imageUrl == null
+                    ? Container(
+                        color: const Color(0xFFD5D5D5),
+                        child: const Icon(
+                          Icons.photo,
+                          size: 48,
+                          color: Colors.white70,
                         ),
+                      )
+                    : Image.network(
+                        imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) {
+                          return Container(
+                            color: const Color(0xFFD5D5D5),
+                            child: const Icon(
+                              Icons.broken_image,
+                              size: 40,
+                              color: Colors.white70,
+                            ),
+                          );
+                        },
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.location_on,
-                            size: 14,
-                            color: Color(0xFFB34242),
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
                           ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              (address != null && address!.trim().isNotEmpty)
-                                  ? address!.trim()
-                                  : 'Location not available',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: mutedText,
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on,
+                              size: 14,
+                              color: Color(0xFFB34242),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                (address != null && address!.trim().isNotEmpty)
+                                    ? address!.trim()
+                                    : 'Location not available',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: mutedText,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: _showOptionsDisabled,
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.more_vert),
+                    onPressed: _showOptionsDisabled,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

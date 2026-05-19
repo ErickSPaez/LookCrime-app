@@ -18,6 +18,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::get('/register-categories', [MetaController::class, 'registerCategories']);
 
     Route::middleware('auth:sanctum')->group(function () {

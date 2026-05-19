@@ -1,6 +1,6 @@
 {
-    "name": "lookcrime_mobile",
-    "short_name": "lookcrime_mobile",
+    "name": "LookCrim",
+    "short_name": "LookCrim",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

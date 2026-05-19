@@ -110,6 +110,18 @@ class LookCrimeApi {
     return (tokenType: tokenType, token: token);
   }
 
+  Future<void> forgotPassword({required String email}) async {
+    final res = await _client.post(
+      _uri('/api/v1/forgot-password'),
+      headers: {'Accept': 'application/json'},
+      body: {'email': email},
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+  }
+
   Future<List<({String key, String label})>> getRegisterCategories({
     String lang = 'pt',
   }) async {
@@ -219,6 +231,49 @@ class LookCrimeApi {
       perPage: (meta['per_page'] as int?) ?? perPage,
       total: (meta['total'] as int?) ?? data.length,
     );
+  }
+
+  Future<Map<String, dynamic>> getRegister({
+    required String authorizationHeaderValue,
+    required int id,
+  }) async {
+    final res = await _client.get(
+      _uri('/api/v1/registers/$id'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorizationHeaderValue,
+      },
+    );
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+
+    dynamic decoded;
+
+    try {
+      decoded = jsonDecode(res.body);
+    } catch (_) {
+      throw ApiException(
+        'Respuesta invalida del registro: JSON malformado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    if (decoded is! Map) {
+      throw ApiException(
+        'Respuesta invalida del registro: formato no soportado. Body: ${_previewBody(res.body)}',
+        statusCode: res.statusCode,
+      );
+    }
+
+    final map = Map<String, dynamic>.from(decoded);
+
+    if (map['data'] is Map) {
+      return Map<String, dynamic>.from(map['data'] as Map);
+    }
+
+    return map;
   }
 
   Future<void> createRegister({

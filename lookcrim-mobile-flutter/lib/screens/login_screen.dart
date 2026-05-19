@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../api/lookcrime_api.dart';
 import '../storage/token_storage.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final LookCrimeApi api;
@@ -414,10 +415,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             onTap: _loading
                                 ? null
                                 : () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Password recovery feature coming soon!',
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => ForgotPasswordScreen(
+                                          api: widget.api,
                                         ),
                                       ),
                                     );

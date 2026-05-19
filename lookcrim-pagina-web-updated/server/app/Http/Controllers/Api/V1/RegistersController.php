@@ -299,6 +299,20 @@ class RegistersController extends Controller
         $lat = $r->lat_from_location ?? $r->latitude;
         $lng = $r->lng_from_location ?? $r->longitude;
 
+        $images = [];
+
+        try {
+            if ($r->relationLoaded('images') && $r->images) {
+                $images = $r->images
+                    ->map(fn ($img) => $img->url())
+                    ->filter()
+                    ->values()
+                    ->all();
+            }
+        } catch (\Throwable $e) {
+            $images = [];
+        }
+
         return [
             'id' => $r->id,
             'title' => $r->title_pt,
@@ -309,7 +323,9 @@ class RegistersController extends Controller
             'address' => $r->address,
             'city_id' => $r->city_id,
             'user_id' => $r->user_id,
+            'author_name' => $r->user?->name,
             'image_url' => $r->image_url(),
+            'images' => $images,
             'created_at' => optional($r->created_at)->toISOString(),
             'updated_at' => optional($r->updated_at)->toISOString(),
         ];

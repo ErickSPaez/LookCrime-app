@@ -9,9 +9,11 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -66,6 +68,61 @@ class AuthController extends Controller
 
                 'role_name' => $roleName,
             ],
+        ]);
+    }
+
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $startedAt = microtime(true);
+
+        logger()->info('LC_API_PASSWORD_RESET_ATTEMPT', [
+            'email_hash' => sha1((string) $request->input('email')),
+        ]);
+
+        try {
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
+        } catch (Throwable $e) {
+            $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+
+            logger()->error('LC_API_PASSWORD_RESET_SEND_FAILED', [
+                'exception_class' => get_class($e),
+                'message' => $e->getMessage(),
+                'mail_mailer' => config('mail.default'),
+                'mail_host' => config('mail.mailers.smtp.host'),
+                'mail_port' => config('mail.mailers.smtp.port'),
+                'mail_encryption' => config('mail.mailers.smtp.encryption'),
+                'duration_ms' => $durationMs,
+            ]);
+
+            report($e);
+
+            return response()->json([
+                'message' => __('passwords.send_failed'),
+            ], 500);
+        }
+
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+
+        logger()->info('LC_API_PASSWORD_RESET_STATUS', [
+            'status' => $status,
+            'duration_ms' => $durationMs,
+            'email_hash' => sha1((string) $request->input('email')),
+        ]);
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            return response()->json([
+                'message' => __($status),
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Password reset link sent successfully.',
         ]);
     }
 
