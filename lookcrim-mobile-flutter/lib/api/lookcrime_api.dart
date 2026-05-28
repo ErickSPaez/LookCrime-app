@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'dart:typed_data';
 
 import '../config/app_config.dart';
 
@@ -308,6 +309,69 @@ class LookCrimeApi {
 
     final streamed = await req.send();
     final res = await http.Response.fromStream(streamed);
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+  }
+
+  Future<void> updateRegister({
+    required String authorizationHeaderValue,
+    required int id,
+    required String title,
+    required String description,
+    required String category,
+    required String latitude,
+    required String longitude,
+    required String address,
+    List<Uint8List> imageBytes = const [],
+    List<String> imageFilenames = const [],
+    bool clearImages = false,
+  }) async {
+    final req = http.MultipartRequest('POST', _uri('/api/v1/registers/$id'));
+    req.headers['Accept'] = 'application/json';
+    req.headers['Authorization'] = authorizationHeaderValue;
+
+    req.fields['title'] = title;
+    req.fields['description'] = description;
+    req.fields['category'] = category;
+    req.fields['latitude'] = latitude;
+    req.fields['longitude'] = longitude;
+    req.fields['address'] = address;
+    if (clearImages) {
+      req.fields['clear_images'] = '1';
+    }
+
+    for (var i = 0; i < imageBytes.length; i++) {
+      final bytes = imageBytes[i];
+      final filename =
+          i < imageFilenames.length && imageFilenames[i].trim().isNotEmpty
+          ? imageFilenames[i].trim()
+          : 'image_${i + 1}.jpg';
+      req.files.add(
+        http.MultipartFile.fromBytes('images[]', bytes, filename: filename),
+      );
+    }
+
+    final streamed = await req.send();
+    final res = await http.Response.fromStream(streamed);
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw ApiException(_extractMessage(res), statusCode: res.statusCode);
+    }
+  }
+
+  Future<void> deleteRegister({
+    required String authorizationHeaderValue,
+    required int id,
+  }) async {
+    final res = await _client.delete(
+      _uri('/api/v1/registers/$id'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': authorizationHeaderValue,
+      },
+    );
 
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(_extractMessage(res), statusCode: res.statusCode);

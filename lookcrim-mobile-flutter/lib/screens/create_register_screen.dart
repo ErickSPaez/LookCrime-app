@@ -7,6 +7,8 @@ import '../api/lookcrime_api.dart';
 import 'set_location_screen.dart';
 import '../utils/user_friendly_error.dart';
 import '../services/language_service.dart';
+import '../services/map_view_preset_service.dart';
+import '../services/offline_sync_service.dart';
 import '../utils/app_localizations.dart';
 
 class CreateRegisterScreen extends StatefulWidget {
@@ -39,6 +41,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
   double? _cityCenterLat;
   double? _cityCenterLng;
   int? _cityRadiusMeters;
+  double? _cityZoom;
 
   Uint8List? _imageBytes;
   String? _imageFilename;
@@ -73,7 +76,10 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
     });
 
     try {
-      final cats = await widget.api.getRegisterCategories(lang: 'pt');
+      final cats = await OfflineSyncService.instance.getCategories(
+        lang: 'pt',
+        remoteLoader: () => widget.api.getRegisterCategories(lang: 'pt'),
+      );
       if (!mounted) return;
       setState(() {
         _categories = cats;
@@ -96,40 +102,49 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
 
   Future<void> _loadCityCenter() async {
     try {
-      final res = await widget.api.getMe(
-        authorizationHeaderValue: widget.authorizationHeaderValue,
+      final ctx = await OfflineSyncService.instance.getUserContext(
+        remoteLoader: () => widget.api.getMe(
+          authorizationHeaderValue: widget.authorizationHeaderValue,
+        ),
       );
-      final user = res.user;
-      final lat = _parseDouble(user['city_center_lat']);
-      final lng = _parseDouble(user['city_center_lng']);
-      final radius = _parseInt(user['city_radius_m']);
+      final lat = ctx.cityCenterLat;
+      final lng = ctx.cityCenterLng;
+      final radius = ctx.cityRadiusMeters;
 
       if (!mounted) return;
       setState(() {
         _cityCenterLat = lat;
         _cityCenterLng = lng;
         _cityRadiusMeters = radius;
-        if (lat != null && lng != null) {
-          _latController.text = lat.toStringAsFixed(6);
-          _lngController.text = lng.toStringAsFixed(6);
-        }
+        _cityZoom = _zoomForRadius((radius ?? 4000).toDouble());
+
+        if (lat == null || lng == null) return;
+
+        final preset = MapViewPresetService.instance.current;
+        final useCustom =
+            preset.mode == MapDefaultMode.custom &&
+            preset.latitude != null &&
+            preset.longitude != null;
+
+        final targetLat = useCustom ? preset.latitude! : lat;
+        final targetLng = useCustom ? preset.longitude! : lng;
+
+        _latController.text = targetLat.toStringAsFixed(6);
+        _lngController.text = targetLng.toStringAsFixed(6);
       });
     } catch (_) {
       // ignore
     }
   }
 
-  double? _parseDouble(dynamic value) {
-    if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value);
-    return null;
-  }
-
-  int? _parseInt(dynamic value) {
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    if (value is String) return int.tryParse(value);
-    return null;
+  double _zoomForRadius(double radiusMeters) {
+    if (radiusMeters >= 30000) return 10.5;
+    if (radiusMeters >= 20000) return 11.0;
+    if (radiusMeters >= 12000) return 11.6;
+    if (radiusMeters >= 8000) return 12.2;
+    if (radiusMeters >= 5000) return 12.7;
+    if (radiusMeters >= 3000) return 13.2;
+    return 14.0;
   }
 
   Future<ImageSource?> _selectImageSource() async {
@@ -177,14 +192,32 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
   }
 
   void _openSetLocation() {
-    final initialLat = double.tryParse(_latController.text.trim()) ?? -22.9;
-    final initialLng = double.tryParse(_lngController.text.trim()) ?? -43.2;
+    final cityLat = _cityCenterLat ?? -22.9;
+    final cityLng = _cityCenterLng ?? -43.2;
+
+    final preset = MapViewPresetService.instance.current;
+    final useCustom =
+        preset.mode == MapDefaultMode.custom &&
+        preset.latitude != null &&
+        preset.longitude != null;
+
+    final initialLat = useCustom ? preset.latitude! : cityLat;
+    final initialLng = useCustom ? preset.longitude! : cityLng;
+    final initialZoom = useCustom
+        ? (preset.zoom ??
+              (_cityZoom ??
+                  _zoomForRadius((_cityRadiusMeters ?? 4000).toDouble())))
+        : (_cityZoom ?? _zoomForRadius((_cityRadiusMeters ?? 4000).toDouble()));
+
     Navigator.of(context)
         .push<LocationResult>(
           MaterialPageRoute(
             builder: (_) => SetLocationScreen(
+              cityLatitude: cityLat,
+              cityLongitude: cityLng,
               initialLatitude: initialLat,
               initialLongitude: initialLng,
+              initialZoom: initialZoom,
               radiusMeters: _cityRadiusMeters,
             ),
           ),
@@ -207,11 +240,11 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
       _error = null;
     });
 
-    try {
-      final cat = _selectedCategory;
-      final img = _imageBytes;
-      final imgName = _imageFilename;
+    final cat = _selectedCategory;
+    final img = _imageBytes;
+    final imgName = _imageFilename;
 
+    try {
       if (cat == null || cat.trim().isEmpty) {
         throw Exception(AppLocalizations.t('select_category'));
       }
@@ -219,21 +252,67 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
         throw Exception(AppLocalizations.t('select_image'));
       }
 
-      await widget.api.createRegister(
-        authorizationHeaderValue: widget.authorizationHeaderValue,
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        category: cat,
-        latitude: _latController.text.trim(),
-        longitude: _lngController.text.trim(),
-        address: _selectedAddress ?? '',
-        imageBytes: img,
-        imageFilename: imgName,
-      );
+      final online = await OfflineSyncService.instance.isOnline();
+      final address = _addressForSave();
+
+      if (online) {
+        await widget.api.createRegister(
+          authorizationHeaderValue: widget.authorizationHeaderValue,
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          category: cat,
+          latitude: _latController.text.trim(),
+          longitude: _lngController.text.trim(),
+          address: address,
+          imageBytes: img,
+          imageFilename: imgName,
+        );
+      } else {
+        await OfflineSyncService.instance.addPendingRegister(
+          title: _titleController.text.trim(),
+          description: _descriptionController.text.trim(),
+          category: cat,
+          latitude: _latController.text.trim(),
+          longitude: _lngController.text.trim(),
+          address: address,
+          imageBytes: img,
+          imageFilename: imgName,
+        );
+      }
 
       if (!mounted) return;
+      if (!online && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.t('pending_register_saved'))),
+        );
+      }
       Navigator.of(context).pop(true);
     } catch (e) {
+      final online = await OfflineSyncService.instance.isOnline();
+      if (!online) {
+        try {
+          await OfflineSyncService.instance.addPendingRegister(
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            category: cat ?? '',
+            latitude: _latController.text.trim(),
+            longitude: _lngController.text.trim(),
+            address: _addressForSave(),
+            imageBytes: img ?? Uint8List(0),
+            imageFilename: imgName ?? 'image.jpg',
+          );
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.t('pending_register_saved')),
+            ),
+          );
+          Navigator.of(context).pop(true);
+          return;
+        } catch (_) {
+          // Fall through to the visible error below.
+        }
+      }
       debugPrint('Create register failed: $e');
       if (!mounted) return;
       setState(
@@ -246,6 +325,31 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  String _addressForSave() {
+    final selected = _selectedAddress?.trim();
+    if (selected != null &&
+        selected.isNotEmpty &&
+        !_isGenericLocationLabel(selected)) {
+      return selected;
+    }
+
+    final lat = double.tryParse(_latController.text.trim());
+    final lng = double.tryParse(_lngController.text.trim());
+    if (lat != null && lng != null) {
+      return 'Lat ${lat.toStringAsFixed(6)}, Lng ${lng.toStringAsFixed(6)}';
+    }
+
+    return AppLocalizations.t('selected_location');
+  }
+
+  bool _isGenericLocationLabel(String value) {
+    final normalized = value.trim().toLowerCase();
+    return normalized ==
+            AppLocalizations.t('selected_location').toLowerCase() ||
+        normalized == AppLocalizations.t('city_area').toLowerCase() ||
+        normalized == AppLocalizations.t('custom_area').toLowerCase();
   }
 
   @override
@@ -355,7 +459,7 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.06),
+                              color: Colors.black.withValues(alpha: 0.06),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             ),

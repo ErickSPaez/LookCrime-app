@@ -275,8 +275,6 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
                         latitude: lat,
                         longitude: lng,
                       ),
-                      const SizedBox(height: 18),
-                      _buildExportButton(),
                     ],
                   ),
                 );
@@ -744,31 +742,6 @@ class _ReadRegisterScreenState extends State<ReadRegisterScreen> {
             if (canOpen)
               const Icon(Icons.chevron_right, color: Colors.black, size: 27),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildExportButton() {
-    return SizedBox(
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: null,
-        icon: const Icon(Icons.download, color: Colors.white),
-        label: Text(
-          AppLocalizations.t('export_register'),
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        style: ElevatedButton.styleFrom(
-          disabledBackgroundColor: _red,
-          disabledForegroundColor: Colors.white,
-          backgroundColor: _red,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
         ),
       ),
     );

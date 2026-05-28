@@ -120,6 +120,61 @@ class AppLocalizations {
       'go_to_profile': 'Go to Profile',
       'ok': 'OK',
       'edit': 'Edit',
+      'delete': 'Delete',
+      'delete_register': 'Delete Register',
+      'delete_register_confirm':
+          'Are you sure you want to delete this register? This action cannot be undone.',
+      'delete_register_success': 'Register deleted successfully.',
+      'delete_register_failed':
+          'Could not delete the register. Please try again.',
+      'no_permission_for_action':
+          'You do not have permission to perform this action.',
+      'edit_register': 'Edit Register',
+      'save_changes': 'Save Changes',
+      'edit_images': 'Edit Images',
+      'add_image': 'Add Image',
+      'remove_image': 'Remove image',
+      'map_default_area': 'Map default area',
+      'map_default_area_description':
+          'Move and zoom the map to choose your default working area.',
+      'city_default_area': 'City default area',
+      'custom_area': 'Custom area',
+      'preview_city_default': 'Preview city default',
+      'save_custom_area': 'Save custom area',
+      'use_city_default': 'Use city default',
+      'map_default_saved': 'Custom map area saved.',
+      'map_default_reset_city': 'Map area reset to city default.',
+      'map_default_load_failed':
+          'Could not load city map settings. Please try again.',
+      'map_default_city_unavailable':
+          'City center is not available for this user.',
+      'recenter_map': 'Recenter map',
+      'offline_missing_categories':
+          'Offline mode is not ready yet. Categories are not cached.',
+      'offline_missing_user_context':
+          'Offline mode is not ready yet. City settings are not cached.',
+      'offline_missing_register_cache':
+          'Offline mode is not ready yet. Recent registers are not cached.',
+      'offline_blocked_title': 'No internet connection',
+      'offline_blocked_message':
+          'The app cannot continue offline because the required data is not available yet. Please try again when you have internet.',
+      'offline_only_profile_message':
+          'This section is not available without internet. Please try again later.',
+      'pending_register_saved':
+          'Register saved locally and will be uploaded when internet is available.',
+      'pending_register_sync_started': 'Uploading pending registers...',
+      'pending_register_sync_done': 'Pending registers uploaded successfully.',
+      'pending_register_sync_failed':
+          'Some pending registers could not be uploaded yet.',
+      'image_too_large':
+          'Selected image is too large. Please choose a smaller image (<2.5MB).',
+      'pending_cancelled': 'Pending register cancelled.',
+      'sync_pending': 'Sync pending',
+      'pending_synced_success': 'Pending registers uploaded successfully.',
+      'pending_synced_nothing': 'No pending registers to upload.',
+      'pending_synced_success_single': 'Pending register uploaded.',
+      'pending_synced_failed_single':
+          'Could not upload the pending register yet.',
     },
     'pt': {
       'incorrect_credentials': 'Email ou senha incorretos. Tente novamente.',
@@ -243,6 +298,62 @@ class AppLocalizations {
       'go_to_profile': 'Ir para Perfil',
       'ok': 'OK',
       'edit': 'Editar',
+      'delete': 'Excluir',
+      'delete_register': 'Excluir registro',
+      'delete_register_confirm':
+          'Tem certeza de que deseja excluir este registro? Esta ação não pode ser desfeita.',
+      'delete_register_success': 'Registro excluído com sucesso.',
+      'delete_register_failed':
+          'Não foi possível excluir o registro. Tente novamente.',
+      'no_permission_for_action':
+          'Você não tem permissão para executar esta ação.',
+      'edit_register': 'Editar registro',
+      'save_changes': 'Salvar alterações',
+      'edit_images': 'Editar imagens',
+      'add_image': 'Adicionar imagem',
+      'remove_image': 'Remover imagem',
+      'map_default_area': 'Area padrao do mapa',
+      'map_default_area_description':
+          'Mova e ajuste o zoom do mapa para definir sua area padrao de trabalho.',
+      'city_default_area': 'Area padrao da cidade',
+      'custom_area': 'Area personalizada',
+      'preview_city_default': 'Ver area da cidade',
+      'save_custom_area': 'Salvar area personalizada',
+      'use_city_default': 'Usar area da cidade',
+      'map_default_saved': 'Area personalizada do mapa salva.',
+      'map_default_reset_city':
+          'Area do mapa redefinida para o padrao da cidade.',
+      'map_default_load_failed':
+          'Nao foi possivel carregar as configuracoes do mapa da cidade. Tente novamente.',
+      'map_default_city_unavailable':
+          'Centro da cidade indisponivel para este usuario.',
+      'recenter_map': 'Recentralizar mapa',
+      'offline_missing_categories':
+          'O modo offline ainda não está pronto. As categorias não estão salvas.',
+      'offline_missing_user_context':
+          'O modo offline ainda não está pronto. As configurações da cidade não estão salvas.',
+      'offline_missing_register_cache':
+          'O modo offline ainda não está pronto. Os registros recentes não estão salvas.',
+      'offline_blocked_title': 'Sem conexão com a internet',
+      'offline_blocked_message':
+          'O aplicativo não pode continuar sem internet porque os dados mínimos ainda não estão disponíveis. Tente novamente quando tiver conexão.',
+      'offline_only_profile_message':
+          'Esta seção não está disponível sem internet. Tente novamente mais tarde.',
+      'pending_register_saved':
+          'Registro salvo localmente e será enviado quando houver internet.',
+      'pending_register_sync_started': 'Enviando registros pendentes...',
+      'pending_register_sync_done': 'Registros pendentes enviados com sucesso.',
+      'pending_register_sync_failed':
+          'Alguns registros pendentes ainda não puderam ser enviados.',
+      'image_too_large':
+          'A imagem selecionada é muito grande. Escolha uma imagem menor (<2.5MB).',
+      'pending_cancelled': 'Registro pendente cancelado.',
+      'sync_pending': 'Sincronizar pendentes',
+      'pending_synced_success': 'Registros pendentes enviados com sucesso.',
+      'pending_synced_nothing': 'Não há registros pendentes para enviar.',
+      'pending_synced_success_single': 'Registro pendente enviado.',
+      'pending_synced_failed_single':
+          'Não foi possível enviar o registro pendente ainda.',
     },
   };
 

@@ -5,6 +5,9 @@ import '../api/lookcrime_api.dart';
 import '../storage/token_storage.dart';
 import '../utils/user_friendly_error.dart';
 import '../services/language_service.dart';
+import '../services/map_view_preset_service.dart';
+import '../services/offline_sync_service.dart';
+import 'map_default_area_screen.dart';
 import '../utils/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -54,25 +57,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<Map<String, String>> _fetchUserData() async {
-    final res = await widget.api.getMe(
-      authorizationHeaderValue: widget.authorizationHeaderValue,
-    );
+    try {
+      final res = await widget.api.getMe(
+        authorizationHeaderValue: widget.authorizationHeaderValue,
+      );
 
-    final user = res.user;
+      final user = res.user;
 
-    return {
-      'name': _extractString(user, [
-        'name',
-        'full_name',
-        'fullname',
-        'username',
-        'user_name',
-      ]),
-      'password': '************',
-      'email': _extractString(user, ['email', 'mail']),
-      'role': _extractRole(user, res.permissions),
-      'city': _extractCity(user),
-    };
+      await OfflineSyncService.instance.cacheUserContext(
+        userId: _parseInt(user['id']),
+        cityCenterLat: _parseDouble(user['city_center_lat']),
+        cityCenterLng: _parseDouble(user['city_center_lng']),
+        cityRadiusMeters: _parseInt(user['city_radius_m']),
+        cityName: _extractCity(user),
+        permissions: res.permissions,
+      );
+
+      return {
+        'name': _extractString(user, [
+          'name',
+          'full_name',
+          'fullname',
+          'username',
+          'user_name',
+        ]),
+        'password': '************',
+        'email': _extractString(user, ['email', 'mail']),
+        'role': _extractRole(user, res.permissions),
+        'city': _extractCity(user),
+      };
+    } catch (e) {
+      debugPrint('Profile load failed, using cached context: $e');
+
+      final cached = await OfflineSyncService.instance.loadCachedUserContext();
+
+      return {
+        'name': 'N/A',
+        'password': '************',
+        'email': 'N/A',
+        'role': 'N/A',
+        'city': cached?.cityName?.trim().isNotEmpty == true
+            ? cached!.cityName!.trim()
+            : 'N/A',
+      };
+    }
   }
 
   Future<void> _reloadUser() async {
@@ -180,6 +208,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (cleaned.isEmpty) return cleaned;
 
     return cleaned[0].toUpperCase() + cleaned.substring(1);
+  }
+
+  double? _parseDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  int? _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  double _zoomForRadius(double radiusMeters) {
+    if (radiusMeters >= 30000) return 10.5;
+    if (radiusMeters >= 20000) return 11.0;
+    if (radiusMeters >= 12000) return 11.6;
+    if (radiusMeters >= 8000) return 12.2;
+    if (radiusMeters >= 5000) return 12.7;
+    if (radiusMeters >= 3000) return 13.2;
+    return 14.0;
+  }
+
+  Future<void> _openMapDefaultAreaEditor() async {
+    try {
+      final res = await widget.api.getMe(
+        authorizationHeaderValue: widget.authorizationHeaderValue,
+      );
+      final user = res.user;
+      final cityLat = _parseDouble(user['city_center_lat']);
+      final cityLng = _parseDouble(user['city_center_lng']);
+      final radius = _parseInt(user['city_radius_m']);
+
+      if (cityLat == null || cityLng == null) {
+        _showMessage(
+          AppLocalizations.t('map_default_city_unavailable'),
+          isError: true,
+        );
+        return;
+      }
+
+      final cityZoom = _zoomForRadius((radius ?? 4000).toDouble());
+      final preset = MapViewPresetService.instance.current;
+      final useCustom =
+          preset.mode == MapDefaultMode.custom &&
+          preset.latitude != null &&
+          preset.longitude != null;
+
+      final changed = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => MapDefaultAreaScreen(
+            cityLatitude: cityLat,
+            cityLongitude: cityLng,
+            cityZoom: cityZoom,
+            initialLatitude: useCustom ? preset.latitude! : cityLat,
+            initialLongitude: useCustom ? preset.longitude! : cityLng,
+            initialZoom: useCustom ? (preset.zoom ?? cityZoom) : cityZoom,
+          ),
+        ),
+      );
+
+      if (changed == true && mounted) {
+        final mode = MapViewPresetService.instance.current.mode;
+        _showMessage(
+          mode == MapDefaultMode.custom
+              ? AppLocalizations.t('map_default_saved')
+              : AppLocalizations.t('map_default_reset_city'),
+        );
+        setState(() {});
+      }
+    } catch (e) {
+      _showMessage(
+        userFriendlyErrorMessage(
+          e,
+          fallback: AppLocalizations.t('map_default_load_failed'),
+          operation: 'profile',
+        ),
+        isError: true,
+      );
+    }
   }
 
   void _showMessage(String message, {bool isError = false}) {
@@ -587,6 +697,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 28),
                       _buildInfoCard(userData),
                       const SizedBox(height: 24),
+                      _buildMapDefaultAreaTile(),
+                      const SizedBox(height: 12),
                       _buildLanguageTile(),
                       const SizedBox(height: 12),
                       _buildLogoutButton(context),
@@ -1014,6 +1126,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 setState(() {});
               }
             },
+            child: Text(AppLocalizations.t('edit')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMapDefaultAreaTile() {
+    final preset = MapViewPresetService.instance.current;
+    final isCustom = preset.mode == MapDefaultMode.custom;
+    final modeLabel = isCustom
+        ? AppLocalizations.t('custom_area')
+        : AppLocalizations.t('city_default_area');
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocalizations.t('map_default_area'),
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                modeLabel,
+                style: GoogleFonts.poppins(fontSize: 13, color: Colors.black54),
+              ),
+            ],
+          ),
+          TextButton(
+            onPressed: _openMapDefaultAreaEditor,
             child: Text(AppLocalizations.t('edit')),
           ),
         ],

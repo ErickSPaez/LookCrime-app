@@ -181,6 +181,9 @@ class RegistersController extends Controller
             'longitude' => ['sometimes', 'required', 'numeric'],
             'address' => ['sometimes', 'nullable', 'string', 'max:500'],
             'image' => ['sometimes', 'image', 'max:8192'],
+            'images' => ['sometimes', 'array', 'max:3'],
+            'images.*' => ['image', 'max:8192'],
+            'clear_images' => ['sometimes', 'boolean'],
         ]);
 
         // If body parsing fails (common with PATCH multipart in PHP) or the client sends an empty update,
@@ -192,7 +195,9 @@ class RegistersController extends Controller
             array_key_exists('latitude', $data) ||
             array_key_exists('longitude', $data) ||
             array_key_exists('address', $data) ||
-            $request->hasFile('image');
+            $request->hasFile('image') ||
+            $request->hasFile('images') ||
+            array_key_exists('clear_images', $data);
 
         if (!$hasAnyField) {
             throw ValidationException::withMessages([
@@ -258,8 +263,26 @@ class RegistersController extends Controller
             );
         }
 
-        if ($request->hasFile('image')) {
-            $this->replaceRegisterImages($register, [$request->file('image')]);
+        if ($request->hasFile('images') || $request->hasFile('image') || array_key_exists('clear_images', $data)) {
+            if (array_key_exists('clear_images', $data) && (bool) $data['clear_images']) {
+                try {
+                    $register->images()->get()->each(function (RegisterImage $img) {
+                        $img->delete();
+                    });
+                } catch (\Throwable $e) {
+                    // ignore
+                }
+            }
+
+            $files = [];
+            if ($request->hasFile('images')) {
+                $files = array_merge($files, (array) $request->file('images'));
+            }
+            if ($request->hasFile('image')) {
+                $files[] = $request->file('image');
+            }
+
+            $this->replaceRegisterImages($register, $files);
         }
 
         $register->save();
