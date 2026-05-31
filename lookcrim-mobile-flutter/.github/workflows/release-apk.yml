@@ -7,7 +7,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-apk:
@@ -65,3 +65,12 @@ jobs:
           name: lookcrime-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: APK Build ${{ github.run_number }}
+          prerelease: true
+          generate_release_notes: true
+          files: build/app/outputs/flutter-apk/app-release.apk
