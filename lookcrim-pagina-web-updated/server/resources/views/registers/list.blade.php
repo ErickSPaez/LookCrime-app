@@ -2,6 +2,90 @@
 
 @section('titulo_browser',$aux=trans('layout.registers'). ' - LookCrim')
 
+@section('pagestyles')
+<style>
+    .lc-register-pagination {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        margin: 28px 0 8px;
+        font-family: "Trebuchet MS", Arial, sans-serif;
+    }
+
+    .lc-register-pagination__list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .lc-register-pagination__link,
+    .lc-register-pagination__disabled,
+    .lc-register-pagination__active {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 40px;
+        padding: 0 14px;
+        border: 1px solid #d6dde3;
+        border-radius: 4px;
+        background: #fff;
+        color: #1f252b;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1;
+        text-decoration: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+
+    .lc-register-pagination__link:hover,
+    .lc-register-pagination__link:focus {
+        border-color: rgb(123,30,33);
+        background: rgba(123,30,33,0.08);
+        color: rgb(123,30,33);
+        text-decoration: none;
+    }
+
+    .lc-register-pagination__active {
+        border-color: rgb(123,30,33);
+        background: rgb(123,30,33);
+        color: #fff;
+        cursor: default;
+    }
+
+    .lc-register-pagination__disabled {
+        color: #8d98a3;
+        background: #f5f7f8;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .lc-register-pagination__summary {
+        color: #4c5965;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 575px) {
+        .lc-register-pagination__link,
+        .lc-register-pagination__disabled,
+        .lc-register-pagination__active {
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            font-size: 14px;
+        }
+    }
+</style>
+@endsection
+
 @section('conteudo')
 
 <div class="main-website-interior container">
@@ -83,7 +167,7 @@
     @endif
 
     <div class="mt-3">
-        {{ $registers->links() }}
+        {{ $registers->onEachSide(1)->links('vendor.pagination.lookcrim') }}
     </div>
 </div>
 

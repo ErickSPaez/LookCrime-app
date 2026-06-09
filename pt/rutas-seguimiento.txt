@@ -56,10 +56,10 @@ Documentar todo. (Tarea 9)
 
 .........
 construir el cambio: 
-gcloud builds submit --tag gcr.io/lookcrime-staging/lookcrime-staging:staging-debug-8
+gcloud builds submit --tag gcr.io/lookcrime-staging/lookcrime-staging:staging-debug-17
 
 Deploy:
-gcloud run deploy lookcrime-staging --image gcr.io/lookcrime-staging/lookcrime-staging:staging-debug-8 --region europe-southwest1 --platform managed --allow-unauthenticated --port 8080
+gcloud run deploy lookcrime-staging --image gcr.io/lookcrime-staging/lookcrime-staging:staging-debug-17 --region europe-southwest1 --platform managed --allow-unauthenticated --port 8080
 .........
 
 DEV LOCAL (en tu PC, con HMR):
