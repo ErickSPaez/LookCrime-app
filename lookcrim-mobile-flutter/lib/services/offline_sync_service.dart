@@ -77,7 +77,6 @@ class OfflineSyncService {
     List<({String key, String label})> categories,
   ) async {
     await _db.saveCategories(lang, categories);
-    // nothing else
   }
 
   Future<List<({String key, String label})>> loadCachedCategories(
@@ -91,9 +90,17 @@ class OfflineSyncService {
     required Future<List<({String key, String label})>> Function() remoteLoader,
   }) async {
     if (await isOnline()) {
-      final remote = await remoteLoader();
-      await cacheCategories(lang, remote);
-      return remote;
+      try {
+        final remote = await remoteLoader();
+        await cacheCategories(lang, remote);
+        return remote;
+      } catch (_) {
+        final cachedFallback = await loadCachedCategories(lang);
+        if (cachedFallback.isNotEmpty) {
+          return cachedFallback;
+        }
+        rethrow;
+      }
     }
 
     final cached = await loadCachedCategories(lang);
@@ -228,6 +235,10 @@ class OfflineSyncService {
     return _db.pendingCount();
   }
 
+  Future<List<Map<String, dynamic>>> loadPendingRegisters() async {
+    return _db.loadPendingRegisters();
+  }
+
   Future<void> cancelPending(int localId) async {
     await _db.removePendingRegister(localId);
     pendingCountNotifier.value = await pendingCount();
@@ -259,6 +270,9 @@ class OfflineSyncService {
         final imageBase64 = item['image_base64'] as String? ?? '';
         final imageBytes = base64Decode(imageBase64);
         final resolvedAddress = await _resolvePendingAddress(item);
+        if (_pendingAddressNeedsResolution(item) && resolvedAddress == null) {
+          throw OfflineUnavailableException('Pending address not resolved yet.');
+        }
         final addressToSend =
             resolvedAddress ?? item['address']?.toString() ?? '';
 
@@ -318,6 +332,9 @@ class OfflineSyncService {
       final imageBase64 = item['image_base64'] as String? ?? '';
       final imageBytes = base64Decode(imageBase64);
       final resolvedAddress = await _resolvePendingAddress(item);
+      if (_pendingAddressNeedsResolution(item) && resolvedAddress == null) {
+        return false;
+      }
       final addressToSend =
           resolvedAddress ?? item['address']?.toString() ?? '';
 
@@ -357,6 +374,22 @@ class OfflineSyncService {
     }
   }
 
+  bool addressNeedsResolution(String address) {
+    return address.trim().isEmpty || _looksLikeCoordinates(address);
+  }
+
+  Future<String?> resolveAddressForUpload({
+    required String latitude,
+    required String longitude,
+    required String address,
+  }) async {
+    return _resolvePendingAddress({
+      'latitude': latitude,
+      'longitude': longitude,
+      'address': address,
+    });
+  }
+
   Future<String?> _resolvePendingAddress(Map<String, dynamic> item) async {
     final currentAddress = item['address']?.toString() ?? '';
     if (currentAddress.trim().isNotEmpty &&
@@ -391,9 +424,19 @@ class OfflineSyncService {
     }
   }
 
+  bool _pendingAddressNeedsResolution(Map<String, dynamic> item) {
+    final currentAddress = item['address']?.toString() ?? '';
+    return addressNeedsResolution(currentAddress);
+  }
+
   bool _looksLikeCoordinates(String value) {
     final normalized = value.trim().toLowerCase();
-    return normalized.startsWith('lat ') || normalized.contains(', lng ');
+    return RegExp(
+      r'\blat(?:itude)?\b[^0-9-+]*[-+]?\d+([.,]\d+)?',
+    ).hasMatch(normalized) ||
+        RegExp(
+          r'\b(?:lng|longitude)\b[^0-9-+]*[-+]?\d+([.,]\d+)?',
+        ).hasMatch(normalized);
   }
 
   String _buildPendingSearchText({
@@ -477,6 +520,30 @@ class OfflineSyncService {
 
   Future<bool> canOpenOfflineApp({String lang = 'pt'}) async {
     return hasOfflineMinimum(lang: lang);
+  }
+
+  /// Returns the missing items required before the app can work offline.
+  Future<List<String>> offlineMissingReasons({String lang = 'pt'}) async {
+    final missing = <String>[];
+
+    try {
+      final hasCategories = await _db.hasCategories(lang);
+      if (!hasCategories) missing.add('categories');
+
+      final hasContext = await _db.hasUserContext();
+      if (!hasContext) missing.add('user_context');
+
+      final hasRegisters =
+          (await _db.pendingCount()) > 0 ||
+          (await _db.loadRegisters()).isNotEmpty;
+      if (!hasRegisters) missing.add('registers');
+    } catch (e) {
+      // If any DB check throws, include a general failure marker.
+      debugPrint('offlineMissingReasons check failed: $e');
+      missing.add('db_error');
+    }
+
+    return missing;
   }
 
   String _searchBlob(Map<String, dynamic> item) {

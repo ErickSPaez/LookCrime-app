@@ -259,6 +259,7 @@ class _SetLocationScreenState extends State<SetLocationScreen> {
     await MapTileCacheService.instance.prefetchRectangleArea(
       center: _defaultViewCenter,
       radiusMeters: _cityRadiusMeters,
+      label: AppLocalizations.t('map_default_area'),
       paddingFactor: 0.4,
       minZoom: 11,
       maxZoom: 17,

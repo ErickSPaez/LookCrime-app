@@ -5,9 +5,11 @@ import '../api/lookcrime_api.dart';
 import '../storage/token_storage.dart';
 import '../utils/user_friendly_error.dart';
 import '../services/language_service.dart';
+import '../services/map_tile_cache_service.dart';
 import '../services/map_view_preset_service.dart';
 import '../services/offline_sync_service.dart';
 import 'map_default_area_screen.dart';
+import 'map_downloads_screen.dart';
 import '../utils/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -31,6 +33,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   late Future<Map<String, String>> _userFuture;
   late final VoidCallback _localeListener;
+  late final VoidCallback _downloadListener;
 
   static const Color _red = Color(0xFF820000);
   static const Color _darkText = Color(0xFF09051C);
@@ -47,12 +50,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (mounted) setState(() {});
     };
     LanguageService.instance.localeNotifier.addListener(_localeListener);
+    _downloadListener = () {
+      if (!mounted) return;
+      final state = MapTileCacheService.instance.downloadStatusNotifier.value;
+      if (state == null) {
+        setState(() {});
+        return;
+      }
+
+      setState(() {});
+    };
+    MapTileCacheService.instance.downloadStatusNotifier.addListener(
+      _downloadListener,
+    );
     _userFuture = _fetchUserData();
   }
 
   @override
   void dispose() {
     LanguageService.instance.localeNotifier.removeListener(_localeListener);
+    MapTileCacheService.instance.downloadStatusNotifier.removeListener(
+      _downloadListener,
+    );
     super.dispose();
   }
 
@@ -251,6 +270,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return;
       }
 
+      if (!mounted) return;
       final cityZoom = _zoomForRadius((radius ?? 4000).toDouble());
       final preset = MapViewPresetService.instance.current;
       final useCustom =
@@ -306,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _logout(BuildContext context) async {
     await widget.tokenStorage.clear();
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     widget.onLogout();
 
@@ -346,7 +366,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   name: newName,
                 );
 
-                if (!mounted) return;
+                if (!mounted || !sheetContext.mounted) return;
 
                 Navigator.of(sheetContext).pop();
                 await _reloadUser();
@@ -420,7 +440,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return StatefulBuilder(
           builder: (context, setSheetState) {
             Future<void> sendVerification() async {
-              final currentPassword = passwordController.text;
+              final currentPassword = passwordController.text.trim();
               final newEmail = emailController.text.trim();
 
               if (currentPassword.isEmpty || newEmail.isEmpty) {
@@ -442,15 +462,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   newEmail: newEmail,
                 );
 
-                if (!mounted) return;
+                if (!mounted || !sheetContext.mounted) return;
 
                 Navigator.of(sheetContext).pop();
-                _showMessage(AppLocalizations.t('verification_sent'));
+                _showMessage(AppLocalizations.t('email_change_requested'));
+                await _reloadUser();
               } catch (e) {
                 _showMessage(
                   userFriendlyErrorMessage(
                     e,
-                    fallback: AppLocalizations.t('verification_failed'),
+                    fallback: AppLocalizations.t('email_change_failed'),
                     operation: 'profile',
                   ),
                   isError: true,
@@ -566,7 +587,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   confirmPassword: confirmPassword,
                 );
 
-                if (!mounted) return;
+                if (!mounted || !sheetContext.mounted) return;
 
                 Navigator.of(sheetContext).pop();
                 _showMessage(AppLocalizations.t('password_changed'));
@@ -697,7 +718,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 28),
                       _buildInfoCard(userData),
                       const SizedBox(height: 24),
+                      const SizedBox(height: 12),
                       _buildMapDefaultAreaTile(),
+                      const SizedBox(height: 12),
+                      _buildMapDownloadsTile(),
                       const SizedBox(height: 12),
                       _buildLanguageTile(),
                       const SizedBox(height: 12),
@@ -1060,6 +1084,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildTileIcon(IconData icon) {
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFECEC),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, color: _red, size: 20),
+    );
+  }
+
   Widget _buildLanguageTile() {
     final code = LanguageService.instance.currentLocale.languageCode;
     final langLabel = code == 'pt'
@@ -1073,25 +1109,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.t('app_language'),
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+          _buildTileIcon(Icons.language),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.t('app_language'),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                langLabel,
-                style: GoogleFonts.poppins(fontSize: 13, color: Colors.black54),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  langLabel,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           TextButton(
             onPressed: () async {
               final chosen = await showDialog<String>(
@@ -1147,25 +1191,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                AppLocalizations.t('map_default_area'),
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+          _buildTileIcon(Icons.map_outlined),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.t('map_default_area'),
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                modeLabel,
-                style: GoogleFonts.poppins(fontSize: 13, color: Colors.black54),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  modeLabel,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           TextButton(
             onPressed: _openMapDefaultAreaEditor,
             child: Text(AppLocalizations.t('edit')),
@@ -1173,5 +1227,115 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildMapDownloadsTile() {
+    return ValueListenableBuilder<MapTileDownloadState?>(
+      valueListenable: MapTileCacheService.instance.downloadStatusNotifier,
+      builder: (context, state, _) {
+        final isRunning = state?.isRunning == true;
+        final progress = state?.progress ?? 0.0;
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: _cardBg,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildTileIcon(Icons.download_for_offline_outlined),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.t('map_downloads'),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      isRunning
+                          ? '${AppLocalizations.t('download_started')} ${(progress * 100).round()}%'
+                          : AppLocalizations.t('map_downloads_description'),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    if (isRunning) ...[
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: LinearProgressIndicator(
+                          value: progress.clamp(0.0, 1.0),
+                          minHeight: 6,
+                          backgroundColor: const Color(0xFFF0DADA),
+                          valueColor: const AlwaysStoppedAnimation<Color>(_red),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: isRunning ? null : _openMapDownloads,
+                child: Text(AppLocalizations.t('download')),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _openMapDownloads() async {
+    try {
+      final res = await widget.api.getMe(
+        authorizationHeaderValue: widget.authorizationHeaderValue,
+      );
+      final user = res.user;
+      final cityLat = _parseDouble(user['city_center_lat']);
+      final cityLng = _parseDouble(user['city_center_lng']);
+      final radius = _parseInt(user['city_radius_m']) ?? 4000;
+
+      if (cityLat == null || cityLng == null) {
+        _showMessage(
+          AppLocalizations.t('map_default_city_unavailable'),
+          isError: true,
+        );
+        return;
+      }
+
+      if (!mounted) return;
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => MapDownloadsScreen(
+            cityLatitude: cityLat,
+            cityLongitude: cityLng,
+            cityRadiusMeters: radius,
+            currentDefaultPreset: MapViewPresetService.instance.current,
+          ),
+        ),
+      );
+    } catch (e) {
+      _showMessage(
+        userFriendlyErrorMessage(
+          e,
+          fallback: AppLocalizations.t('map_downloads_load_failed'),
+          operation: 'profile',
+        ),
+        isError: true,
+      );
+    }
   }
 }

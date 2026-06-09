@@ -331,7 +331,7 @@ class _EditRegisterScreenState extends State<EditRegisterScreen> {
           child: ListView.separated(
             shrinkWrap: true,
             itemCount: _categories.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final item = _categories[index];
               return ListTile(
@@ -782,7 +782,7 @@ class _EditRegisterScreenState extends State<EditRegisterScreen> {
                   ),
                 ),
               ),
-              if (trailing != null) trailing,
+              ?trailing,
             ],
           ),
           const SizedBox(height: 12),

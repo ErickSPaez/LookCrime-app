@@ -9,6 +9,7 @@ import '../utils/user_friendly_error.dart';
 import '../services/language_service.dart';
 import '../services/map_view_preset_service.dart';
 import '../services/offline_sync_service.dart';
+import '../services/notification_service.dart';
 import '../utils/app_localizations.dart';
 
 class CreateRegisterScreen extends StatefulWidget {
@@ -52,7 +53,9 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
   void initState() {
     super.initState();
     _localeListener = () {
-      if (mounted) setState(() {});
+      if (!mounted) return;
+      setState(() {});
+      _loadCategories();
     };
     LanguageService.instance.localeNotifier.addListener(_localeListener);
     _loadCategories();
@@ -70,21 +73,71 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
   }
 
   Future<void> _loadCategories() async {
+    final lang = LanguageService.instance.currentLocale.languageCode;
     setState(() {
       _loadingCategories = true;
       _error = null;
     });
 
     try {
-      final cats = await OfflineSyncService.instance.getCategories(
-        lang: 'pt',
-        remoteLoader: () => widget.api.getRegisterCategories(lang: 'pt'),
+      if (await OfflineSyncService.instance.isOnline()) {
+        final remote = await widget.api.getRegisterCategories(lang: lang);
+
+        var attempts = 0;
+        var cachedOk = false;
+        while (attempts < 3 && !cachedOk) {
+          attempts++;
+          try {
+            await OfflineSyncService.instance.cacheCategories(lang, remote);
+            final verify = await OfflineSyncService.instance
+                .loadCachedCategories(lang);
+            if (verify.isNotEmpty) {
+              cachedOk = true;
+              break;
+            }
+            throw Exception('cache verify returned 0 rows');
+          } catch (_) {
+            await Future.delayed(const Duration(seconds: 1));
+          }
+        }
+
+        if (!cachedOk) {
+          final fallback = await OfflineSyncService.instance
+              .loadCachedCategories(lang);
+          if (fallback.isNotEmpty) {
+            if (!mounted) return;
+            setState(() {
+              _categories = fallback;
+              _selectedCategory = null;
+            });
+            return;
+          }
+          throw Exception(
+            'Failed to cache categories after $attempts attempts',
+          );
+        }
+
+        if (!mounted) return;
+        setState(() {
+          _categories = remote;
+          _selectedCategory = null;
+        });
+        return;
+      }
+
+      final cached = await OfflineSyncService.instance.loadCachedCategories(
+        lang,
       );
-      if (!mounted) return;
-      setState(() {
-        _categories = cats;
-        _selectedCategory = null;
-      });
+      if (cached.isNotEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _categories = cached;
+          _selectedCategory = null;
+        });
+        return;
+      }
+
+      throw Exception('No network and no cached categories available');
     } catch (e) {
       debugPrint('Load categories failed: $e');
       if (!mounted) return;
@@ -254,19 +307,42 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
 
       final online = await OfflineSyncService.instance.isOnline();
       final address = _addressForSave();
+      var savedLocally = false;
 
       if (online) {
-        await widget.api.createRegister(
-          authorizationHeaderValue: widget.authorizationHeaderValue,
-          title: _titleController.text.trim(),
-          description: _descriptionController.text.trim(),
-          category: cat,
-          latitude: _latController.text.trim(),
-          longitude: _lngController.text.trim(),
-          address: address,
-          imageBytes: img,
-          imageFilename: imgName,
-        );
+        final resolvedAddress = await OfflineSyncService.instance
+            .resolveAddressForUpload(
+              latitude: _latController.text.trim(),
+              longitude: _lngController.text.trim(),
+              address: address,
+            );
+
+        if (OfflineSyncService.instance.addressNeedsResolution(address) &&
+            resolvedAddress == null) {
+          await OfflineSyncService.instance.addPendingRegister(
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            category: cat,
+            latitude: _latController.text.trim(),
+            longitude: _lngController.text.trim(),
+            address: address,
+            imageBytes: img,
+            imageFilename: imgName,
+          );
+          savedLocally = true;
+        } else {
+          await widget.api.createRegister(
+            authorizationHeaderValue: widget.authorizationHeaderValue,
+            title: _titleController.text.trim(),
+            description: _descriptionController.text.trim(),
+            category: cat,
+            latitude: _latController.text.trim(),
+            longitude: _lngController.text.trim(),
+            address: resolvedAddress ?? address,
+            imageBytes: img,
+            imageFilename: imgName,
+          );
+        }
       } else {
         await OfflineSyncService.instance.addPendingRegister(
           title: _titleController.text.trim(),
@@ -278,12 +354,13 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
           imageBytes: img,
           imageFilename: imgName,
         );
+        savedLocally = true;
       }
 
       if (!mounted) return;
-      if (!online && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.t('pending_register_saved'))),
+      if (savedLocally && mounted) {
+        NotificationService.instance.showTemporary(
+          AppLocalizations.t('pending_register_saved'),
         );
       }
       Navigator.of(context).pop(true);
@@ -302,10 +379,8 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
             imageFilename: imgName ?? 'image.jpg',
           );
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.t('pending_register_saved')),
-            ),
+          NotificationService.instance.showTemporary(
+            AppLocalizations.t('pending_register_saved'),
           );
           Navigator.of(context).pop(true);
           return;
@@ -352,6 +427,10 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
         normalized == AppLocalizations.t('custom_area').toLowerCase();
   }
 
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     const deepRed = Color(0xFF820000);
@@ -387,61 +466,66 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
     return Scaffold(
       backgroundColor: background,
       body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Opacity(
-                  opacity: 0.35,
-                  child: Image.asset(
-                    'assets/images/bg_mapv1.png',
-                    fit: BoxFit.cover,
-                    height: 180,
-                    width: double.infinity,
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: _dismissKeyboard,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Opacity(
+                    opacity: 0.35,
+                    child: Image.asset(
+                      'assets/images/bg_mapv1.png',
+                      fit: BoxFit.cover,
+                      height: 180,
+                      width: double.infinity,
+                    ),
                   ),
                 ),
               ),
-            ),
-            Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  child: Row(
-                    children: [
-                      InkWell(
-                        onTap: () => Navigator.of(context).maybePop(),
-                        borderRadius: BorderRadius.circular(9),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: deepRed,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: const Icon(
-                            Icons.chevron_left,
-                            color: Colors.white,
-                            size: 24,
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    child: Row(
+                      children: [
+                        InkWell(
+                          onTap: () => Navigator.of(context).maybePop(),
+                          borderRadius: BorderRadius.circular(9),
+                          child: Container(
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: deepRed,
+                              borderRadius: BorderRadius.circular(9),
+                            ),
+                            child: const Icon(
+                              Icons.chevron_left,
+                              color: Colors.white,
+                              size: 24,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.t('create_register_title'),
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: darkText,
-                              letterSpacing: 0.6,
-                              fontSize: 16,
-                            ),
-                      ),
-                    ],
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocalizations.t('create_register_title'),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: darkText,
+                                letterSpacing: 0.6,
+                                fontSize: 16,
+                              ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: ListView(
+                  Expanded(
+                    child: ListView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                     padding: const EdgeInsets.fromLTRB(16, 50, 16, 16),
                     children: [
                       if (_error != null) ...[
@@ -569,6 +653,8 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                             const SizedBox(height: labelSpacing),
                             TextField(
                               controller: _descriptionController,
+                              keyboardType: TextInputType.multiline,
+                              textInputAction: TextInputAction.newline,
                               decoration: buildFieldDecoration(
                                 AppLocalizations.t('details_of_incident'),
                               ),
@@ -665,11 +751,12 @@ class _CreateRegisterScreenState extends State<CreateRegisterScreen> {
                         ),
                       ),
                     ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

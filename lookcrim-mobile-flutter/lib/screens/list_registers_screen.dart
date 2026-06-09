@@ -1,17 +1,21 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'dart:typed_data';
 
 import '../api/lookcrime_api.dart';
 import '../storage/token_storage.dart';
 import 'create_register_screen.dart';
 import 'edit_register_screen.dart';
+import 'pending_registers_screen.dart';
 import 'profile_screen.dart';
 import 'read_register_screen.dart';
 import '../utils/user_friendly_error.dart';
 import '../services/language_service.dart';
 import '../services/offline_sync_service.dart';
+import '../services/notification_service.dart';
 import '../utils/app_localizations.dart';
 
 typedef RegisterItem = ({
@@ -49,6 +53,8 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
   final _searchController = TextEditingController();
   final _searchFocusNode = FocusNode();
   late final VoidCallback _localeListener;
+  Timer? _searchDebounce;
+  int _loadRequestId = 0;
 
   bool _loading = false;
   String? _error;
@@ -81,6 +87,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     LanguageService.instance.localeNotifier.removeListener(_localeListener);
     _searchFocusNode.dispose();
     _searchController.dispose();
@@ -109,6 +116,8 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
   }
 
   Future<void> _loadRegisters({String? query, bool showLoader = true}) async {
+    final requestId = ++_loadRequestId;
+
     if (showLoader) {
       setState(() {
         _loading = true;
@@ -177,7 +186,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
 
                   if (pageRes.items.isEmpty) break;
 
-                  if (!mounted) break;
+                  if (!mounted || requestId != _loadRequestId) break;
 
                   // Map and append without disturbing pending items at top.
                   final newItems = pageRes.items
@@ -220,7 +229,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
 
       final items = rawItems.map(_mapRegisterItem).toList(growable: false);
 
-      if (!mounted) return;
+      if (!mounted || requestId != _loadRequestId) return;
 
       setState(() {
         _items = items;
@@ -232,21 +241,39 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
       _precacheImages(items);
     } catch (e) {
       debugPrint('Load registers failed: $e');
-      if (!mounted) return;
+      if (!mounted || requestId != _loadRequestId) return;
+
+      final online = await OfflineSyncService.instance.isOnline();
+      if (!mounted || requestId != _loadRequestId) return;
+
+      if (!online) {
+        final cachedItems = await OfflineSyncService.instance
+            .loadCachedRegisters(query: query);
+        if (!mounted || requestId != _loadRequestId) return;
+
+        final items = cachedItems.map(_mapRegisterItem).toList(growable: false);
+        setState(() {
+          _items = items;
+          _error = items.isEmpty
+              ? AppLocalizations.t('offline_missing_register_cache')
+              : null;
+        });
+        return;
+      }
 
       setState(() {
         _error = userFriendlyErrorMessage(
           e,
-          fallback: 'Could not load the reports. Please try again.',
+          fallback: AppLocalizations.t('load_reports_fail'),
         );
       });
     } finally {
-      if (mounted && showLoader) {
+      if (mounted && requestId == _loadRequestId && showLoader) {
         setState(() {
           _loading = false;
         });
       }
-      if (mounted) await _refreshPendingCount();
+      if (mounted && requestId == _loadRequestId) await _refreshPendingCount();
     }
   }
 
@@ -352,16 +379,12 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
     }
   }
 
-  void _submitSearch() {
-    final query = _searchController.text.trim();
-    setState(() {
-      _activeQuery = query;
-    });
-    _loadRegisters(query: query, showLoader: true);
+  void _dismissSearchKeyboard() {
     FocusScope.of(context).unfocus();
   }
 
   void _clearSearch({bool keepFocus = false}) {
+    _searchDebounce?.cancel();
     if (_searchController.text.isNotEmpty) {
       _searchController.clear();
     }
@@ -377,14 +400,29 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
     }
   }
 
-  void _onSearchIconPressed() {
-    if (_activeQuery.trim().isNotEmpty) {
-      _searchController.clear();
-      _searchFocusNode.requestFocus();
-      return;
-    }
+  void _scheduleAutoSearch(String value) {
+    _searchDebounce?.cancel();
 
-    _submitSearch();
+    final query = value.trim();
+    setState(() {});
+
+    if (query == _activeQuery) return;
+
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+
+      final latestQuery = _searchController.text.trim();
+      if (latestQuery == _activeQuery) return;
+
+      setState(() {
+        _activeQuery = latestQuery;
+      });
+
+      _loadRegisters(
+        query: latestQuery.isEmpty ? null : latestQuery,
+        showLoader: false,
+      );
+    });
   }
 
   void _precacheImages(List<RegisterItem> items) {
@@ -493,20 +531,41 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
   void _showMessage(String message) {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    NotificationService.instance.showTemporary(message);
   }
 
   Future<void> _openCreateRegister() async {
     final navigator = Navigator.of(context);
     final online = await OfflineSyncService.instance.isOnline();
     if (!online) {
+      final lang = LanguageService.instance.currentLocale.languageCode;
       final ready = await OfflineSyncService.instance.canOpenOfflineApp(
-        lang: 'pt',
+        lang: lang,
       );
       if (!ready) {
-        _showMessage(AppLocalizations.t('offline_blocked_message'));
+        final missing = await OfflineSyncService.instance.offlineMissingReasons(
+          lang: lang,
+        );
+
+        final parts = <String>[];
+        if (missing.contains('categories')) {
+          parts.add(AppLocalizations.t('offline_missing_categories'));
+        }
+        if (missing.contains('user_context')) {
+          parts.add(AppLocalizations.t('offline_missing_user_context'));
+        }
+        if (missing.contains('registers')) {
+          parts.add(AppLocalizations.t('offline_missing_register_cache'));
+        }
+        if (missing.contains('db_error')) {
+          parts.add(AppLocalizations.t('offline_db_error'));
+        }
+
+        final message = parts.isEmpty
+            ? AppLocalizations.t('offline_blocked_message')
+            : parts.join('\n');
+
+        _showMessage(message);
         return;
       }
     }
@@ -544,6 +603,21 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _openPendingRegisters() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PendingRegistersScreen(
+          api: widget.api,
+          authorizationHeaderValue: widget.authorizationHeaderValue,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    await _loadRegisters(showLoader: false);
+    await _refreshPendingCount();
   }
 
   bool _canEditRegister(RegisterItem item) {
@@ -591,7 +665,9 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
       return;
     }
 
-    final edited = await Navigator.of(context).push<bool>(
+    if (!mounted) return;
+    final navigator = Navigator.of(context);
+    final edited = await navigator.push<bool>(
       MaterialPageRoute(
         builder: (_) => EditRegisterScreen(
           api: widget.api,
@@ -621,6 +697,7 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
       return;
     }
 
+    if (!mounted) return;
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -752,24 +829,26 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                                   TextButton(
                                     onPressed: () {
                                       Navigator.of(dctx).pop();
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => ProfileScreen(
-                                            api: widget.api,
-                                            tokenStorage: widget.tokenStorage,
-                                            authorizationHeaderValue:
-                                                widget.authorizationHeaderValue,
-                                            onLogout: widget.onLogout,
-                                          ),
-                                        ),
-                                      );
+                                      _openProfile();
                                     },
                                     child: Text(
                                       AppLocalizations.t('go_to_profile'),
                                     ),
                                   ),
                                   TextButton(
-                                    onPressed: () => Navigator.of(dctx).pop(),
+                                    onPressed: () async {
+                                      Navigator.of(dctx).pop();
+                                      final online = await OfflineSyncService
+                                          .instance
+                                          .isOnline();
+                                      if (!online) {
+                                        _showMessage(
+                                          AppLocalizations.t(
+                                            'offline_only_profile_message',
+                                          ),
+                                        );
+                                      }
+                                    },
                                     child: Text(AppLocalizations.t('ok')),
                                   ),
                                 ],
@@ -835,9 +914,14 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                       Row(
                         children: [
                           IconButton(
-                            tooltip: AppLocalizations.t('sync_pending'),
-                            onPressed: _loading ? null : _manualSync,
-                            icon: const Icon(Icons.sync, color: Colors.black87),
+                            tooltip: AppLocalizations.t('pending_registers'),
+                            onPressed: _loading ? null : _openPendingRegisters,
+                            icon: Icon(
+                              Icons.pending_actions,
+                              color: _pendingCount > 0
+                                  ? const Color(0xFFB45A00)
+                                  : Colors.black87,
+                            ),
                           ),
                           if (_pendingCount > 0)
                             Container(
@@ -898,15 +982,12 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                     child: TextField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
-                      textInputAction: TextInputAction.search,
+                      textInputAction: TextInputAction.done,
                       onChanged: (value) {
-                        setState(() {});
-                        if (value.trim().isEmpty && _activeQuery.isNotEmpty) {
-                          _clearSearch(keepFocus: true);
-                        }
+                        _scheduleAutoSearch(value);
                       },
                       onSubmitted: (_) {
-                        _submitSearch();
+                        _dismissSearchKeyboard();
                       },
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
@@ -920,41 +1001,64 @@ class _ListRegistersScreenState extends State<ListRegistersScreen> {
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 12,
                         ),
-                        suffixIcon: SizedBox(
-                          width: _searchController.text.trim().isEmpty
-                              ? 48
-                              : 88,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (_searchController.text.trim().isNotEmpty)
-                                IconButton(
-                                  tooltip: AppLocalizations.t('cancel'),
-                                  onPressed: _loading
-                                      ? null
-                                      : () => _clearSearch(),
-                                  icon: const Icon(
-                                    Icons.close,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              IconButton(
+                        suffixIcon: _searchController.text.trim().isEmpty
+                            ? null
+                            : IconButton(
+                                tooltip: AppLocalizations.t('cancel'),
                                 onPressed: _loading
                                     ? null
-                                    : () {
-                                        _onSearchIconPressed();
-                                      },
+                                    : () => _clearSearch(),
                                 icon: const Icon(
-                                  Icons.search,
+                                  Icons.close,
                                   color: Colors.white,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
                       ),
                     ),
                   ),
+                ),
+
+                // Inline banner area (below search)
+                ValueListenableBuilder<AppBannerMessage?>(
+                  valueListenable: NotificationService.instance.bannerNotifier,
+                  builder: (context, banner, _) {
+                    final message = banner?.text.trim() ?? '';
+                    if (message.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8EDEE),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                message,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.black87),
+                              ),
+                            ),
+                            if (banner?.dismissible == true)
+                              IconButton(
+                                onPressed: () =>
+                                    NotificationService.instance.clearBanner(),
+                                icon: const Icon(Icons.close),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
 
                 Expanded(
@@ -1096,7 +1200,7 @@ class _RegisterCard extends StatelessWidget {
                       CachedNetworkImage(
                         imageUrl: imageUrl!,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => Container(
+                        placeholder: (_, _) => Container(
                           color: const Color(0xFFD5D5D5),
                           child: const Center(
                             child: SizedBox(

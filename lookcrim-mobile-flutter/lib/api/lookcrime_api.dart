@@ -389,9 +389,6 @@ class LookCrimeApi {
       },
     );
 
-    debugPrint('GET /api/v1/me STATUS: ${res.statusCode}');
-    debugPrint('GET /api/v1/me BODY: ${res.body}');
-
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw ApiException(_extractMessage(res), statusCode: res.statusCode);
     }
@@ -416,8 +413,6 @@ class LookCrimeApi {
 
     final map = Map<String, dynamic>.from(decoded);
 
-    debugPrint('GET /api/v1/me DECODED MAP: $map');
-
     final user = map['user'] is Map
         ? Map<String, dynamic>.from(map['user'] as Map)
         : <String, dynamic>{};
@@ -441,9 +436,6 @@ class LookCrimeApi {
             growable: false,
           )
         : const <String>[];
-
-    debugPrint('GET /api/v1/me FINAL USER MAP: $user');
-    debugPrint('GET /api/v1/me PERMISSIONS: $permissions');
 
     return (user: user, permissions: permissions);
   }

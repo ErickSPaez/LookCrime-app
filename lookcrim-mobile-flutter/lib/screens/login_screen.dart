@@ -88,6 +88,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _submitIfValid() {
+    if (_loading) return;
+
+    final ok = _formKey.currentState?.validate() ?? false;
+    if (!ok) return;
+
+    _submit();
+  }
+
   Color get _primaryRed => const Color(0xFF7A0E0E);
   Color get _linkRed => const Color(0xFFE0003A);
   Color get _cardTint => const Color(0xFFF2E7E7);
@@ -310,6 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     controller: _emailController,
                                     enabled: !_loading,
                                     keyboardType: TextInputType.emailAddress,
+                                    textInputAction: TextInputAction.next,
                                     decoration: _fieldDecoration(
                                       hint: 'ekamcy@gmail.com',
                                     ),
@@ -360,6 +370,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     controller: _passwordController,
                                     enabled: !_loading,
                                     obscureText: true,
+                                    textInputAction: TextInputAction.done,
+                                    onFieldSubmitted: (_) => _submitIfValid(),
                                     decoration: _fieldDecoration(
                                       hint: '••••••••••••',
                                     ),
@@ -393,15 +405,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: ElevatedButton(
                               onPressed: _loading
                                   ? null
-                                  : () {
-                                      final ok =
-                                          _formKey.currentState?.validate() ??
-                                          false;
-                                      if (!ok) {
-                                        return;
-                                      }
-                                      _submit();
-                                    },
+                                  : _submitIfValid,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: _primaryRed,
                                 foregroundColor: Colors.white,

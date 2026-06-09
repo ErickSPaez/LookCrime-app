@@ -63,7 +63,18 @@ jobs:
         run: flutter pub get
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: |
+          set -euo pipefail
+          flutter build apk --release --no-pub 2>&1 | tee build.log || {
+            if grep -q "Already watching path" build.log; then
+              echo "Retrying after Flutter watcher exception..."
+              flutter clean
+              flutter pub get
+              flutter build apk --release --no-pub
+            else
+              exit 1
+            fi
+          }
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

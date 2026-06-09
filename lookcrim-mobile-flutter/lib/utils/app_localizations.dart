@@ -18,6 +18,10 @@ class AppLocalizations {
       'verification_sent': 'Verification link sent. Check your new email.',
       'verification_failed':
           'Could not send the verification email. Please try again.',
+      'email_change_requested':
+          'Confirmation email sent. Check your new email address.',
+      'email_change_failed':
+          'Could not request the email change. Please try again.',
       'password_changed': 'Password updated successfully.',
       'password_change_failed':
           'Could not change the password. Please try again.',
@@ -118,6 +122,43 @@ class AppLocalizations {
       'language_dialog_message_profile':
           'The app is currently in {lang}. To change the app language, go to your Profile.',
       'go_to_profile': 'Go to Profile',
+      'download': 'Download',
+      'map_downloads': 'Map downloads',
+      'map_downloads_description': 'Offline areas outside your city.',
+      'map_downloads_hint':
+          'Move and zoom the map, then download the visible area with a little extra margin for offline use.',
+      'download_started': 'Download started',
+      'download_started_title': 'Download started',
+      'download_started_message':
+          'The map download has started in the background. You can keep using the app while it finishes.',
+      'download_finished_title': 'Download finished',
+      'download_finished_message':
+          'The download for {area} is complete and ready for offline use.',
+      'download_failed_title': 'Download failed',
+      'map_downloads_load_failed':
+          'Could not open map downloads. Please try again.',
+      'map_downloads_invalid_values':
+          'Please enter valid map coordinates and zoom values.',
+      'download_city_area': 'Download city area',
+      'download_city_area_description':
+          'Download the full city coverage used by the app as a quick offline area.',
+      'download_default_area': 'Download default area',
+      'download_custom_area': 'Download custom area',
+      'download_custom_area_description':
+          'Choose another area, even outside your city, without changing the default map area.',
+      'download_this_area': 'Download this area',
+      'download_this_area_description':
+          'This downloads the area currently visible on the map, with a little extra coverage for offline use.',
+      'visible_map_area': 'visible map area',
+      'center_latitude': 'Center latitude',
+      'center_longitude': 'Center longitude',
+      'radius_meters': 'Radius in meters',
+      'min_zoom': 'Min zoom',
+      'max_zoom': 'Max zoom',
+      'map_downloads_started': 'Map download started for',
+      'map_downloads_failed': 'Map download failed:',
+      'map_downloads_cached': 'Map data cached for offline use.',
+      'map_downloads_cache_failed': 'Could not cache map data for offline use.',
       'ok': 'OK',
       'edit': 'Edit',
       'delete': 'Delete',
@@ -155,6 +196,8 @@ class AppLocalizations {
           'Offline mode is not ready yet. City settings are not cached.',
       'offline_missing_register_cache':
           'Offline mode is not ready yet. Recent registers are not cached.',
+      'offline_db_error':
+          'Offline mode could not read local data. Please try again.',
       'offline_blocked_title': 'No internet connection',
       'offline_blocked_message':
           'The app cannot continue offline because the required data is not available yet. Please try again when you have internet.',
@@ -170,6 +213,16 @@ class AppLocalizations {
           'Selected image is too large. Please choose a smaller image (<2.5MB).',
       'pending_cancelled': 'Pending register cancelled.',
       'sync_pending': 'Sync pending',
+      'pending_registers': 'Pending registers',
+      'no_pending_registers': 'No pending registers',
+      'no_pending_registers_message':
+          'Offline or delayed reports will appear here.',
+      'pending_short': 'Pending',
+      'pending_status_waiting_internet': 'Waiting for internet',
+      'pending_status_resolving_address': 'Resolving address',
+      'pending_status_waiting_upload': 'Ready to upload',
+      'upload_registers': 'Upload registers',
+      'retry_upload': 'Retry',
       'pending_synced_success': 'Pending registers uploaded successfully.',
       'pending_synced_nothing': 'No pending registers to upload.',
       'pending_synced_success_single': 'Pending register uploaded.',
@@ -194,6 +247,10 @@ class AppLocalizations {
           'Link de verificação enviado. Verifique seu novo e-mail.',
       'verification_failed':
           'Não foi possível enviar o e-mail de verificação. Tente novamente.',
+      'email_change_requested':
+          'E-mail de confirmação enviado. Verifique seu novo e-mail.',
+      'email_change_failed':
+          'Não foi possível solicitar a alteração de e-mail. Tente novamente.',
       'password_changed': 'Senha atualizada com sucesso.',
       'password_change_failed':
           'Não foi possível alterar a senha. Tente novamente.',
@@ -296,6 +353,44 @@ class AppLocalizations {
       'language_dialog_message_profile':
           'O aplicativo está em {lang}. Para alterar o idioma, vá para Perfil.',
       'go_to_profile': 'Ir para Perfil',
+      'download': 'Baixar',
+      'map_downloads': 'Downloads do mapa',
+      'map_downloads_description': 'Áreas offline fora da sua cidade.',
+      'map_downloads_hint':
+          'Mova e aproxime o mapa e depois baixe a área visível com uma pequena margem extra para uso offline.',
+      'download_started': 'Download iniciado',
+      'download_started_title': 'Download iniciado',
+      'download_started_message':
+          'O download do mapa começou em segundo plano. Você pode continuar usando o app enquanto ele termina.',
+      'download_finished_title': 'Download concluído',
+      'download_finished_message':
+          'O download de {area} foi concluído e já está pronto para uso offline.',
+      'download_failed_title': 'Falha no download',
+      'map_downloads_load_failed':
+          'Não foi possível abrir os downloads do mapa. Tente novamente.',
+      'map_downloads_invalid_values':
+          'Digite coordenadas e níveis de zoom válidos.',
+      'download_city_area': 'Baixar área da cidade',
+      'download_city_area_description':
+          'Baixe a cobertura completa da cidade usada pelo aplicativo como área offline rápida.',
+      'download_default_area': 'Baixar área padrão',
+      'download_custom_area': 'Baixar área personalizada',
+      'download_custom_area_description':
+          'Escolha outra área, até fora da sua cidade, sem alterar a área padrão do mapa.',
+      'download_this_area': 'Baixar esta área',
+      'download_this_area_description':
+          'Isso baixa a área visível no mapa, com uma pequena cobertura extra para uso offline.',
+      'visible_map_area': 'área visível do mapa',
+      'center_latitude': 'Latitude do centro',
+      'center_longitude': 'Longitude do centro',
+      'radius_meters': 'Raio em metros',
+      'min_zoom': 'Zoom mín.',
+      'max_zoom': 'Zoom máx.',
+      'map_downloads_started': 'Download do mapa iniciado para',
+      'map_downloads_failed': 'Falha no download do mapa:',
+      'map_downloads_cached': 'Dados do mapa em cache para uso offline.',
+      'map_downloads_cache_failed':
+          'Não foi possível armazenar em cache os dados do mapa para uso offline.',
       'ok': 'OK',
       'edit': 'Editar',
       'delete': 'Excluir',
@@ -334,6 +429,8 @@ class AppLocalizations {
           'O modo offline ainda não está pronto. As configurações da cidade não estão salvas.',
       'offline_missing_register_cache':
           'O modo offline ainda não está pronto. Os registros recentes não estão salvas.',
+      'offline_db_error':
+          'O modo offline não conseguiu ler os dados locais. Tente novamente.',
       'offline_blocked_title': 'Sem conexão com a internet',
       'offline_blocked_message':
           'O aplicativo não pode continuar sem internet porque os dados mínimos ainda não estão disponíveis. Tente novamente quando tiver conexão.',
@@ -349,6 +446,16 @@ class AppLocalizations {
           'A imagem selecionada é muito grande. Escolha uma imagem menor (<2.5MB).',
       'pending_cancelled': 'Registro pendente cancelado.',
       'sync_pending': 'Sincronizar pendentes',
+      'pending_registers': 'Registros pendentes',
+      'no_pending_registers': 'Sem registros pendentes',
+      'no_pending_registers_message':
+          'Registros offline ou aguardando envio aparecerão aqui.',
+      'pending_short': 'Pendente',
+      'pending_status_waiting_internet': 'Aguardando internet',
+      'pending_status_resolving_address': 'Resolvendo endereço',
+      'pending_status_waiting_upload': 'Pronto para enviar',
+      'upload_registers': 'Enviar registros',
+      'retry_upload': 'Tentar',
       'pending_synced_success': 'Registros pendentes enviados com sucesso.',
       'pending_synced_nothing': 'Não há registros pendentes para enviar.',
       'pending_synced_success_single': 'Registro pendente enviado.',
